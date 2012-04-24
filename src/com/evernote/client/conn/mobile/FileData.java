@@ -1,0 +1,161 @@
+/*
+ * Copyright 2012 Evernote Corporation
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ *  
+ * 1. Redistributions of source code must retain the above copyright notice, this 
+ *    list of conditions and the following disclaimer.
+ *     
+ * 2. Redistributions in binary form must reproduce the above copyright notice, 
+ *    this list of conditions and the following disclaimer in the documentation 
+ *    and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+package com.evernote.client.conn.mobile;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TField;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.protocol.TProtocolException;
+import org.apache.thrift.protocol.TStruct;
+import org.apache.thrift.protocol.TType;
+
+import com.evernote.edam.type.Data;
+
+/**
+ * Implements a replacement for com.evernote.edam.type.Data that retrieves
+ * the actual binary data to be sent from a File instead of a byte array.
+ * This allows large Thrift messages to be assembled without the entire message
+ * being stored in memory.
+ *
+ * To use this class, simply replace all uses of com.evernote.edam.type.Data with
+ * com.evernote.android.edam.FileData when creating new Data objects to send to
+ * Evernote.
+ */
+public class FileData extends Data {
+  private static final TStruct STRUCT_DESC = new TStruct("Data");
+  private static final TField BODY_HASH_FIELD_DESC =
+      new TField("bodyHash", TType.STRING, (short) 1);
+  private static final TField SIZE_FIELD_DESC =
+      new TField("size", TType.I32, (short) 2);
+  private static final TField BODY_FIELD_DESC =
+      new TField("body", TType.STRING, (short) 3);
+
+  private static final long serialVersionUID = 1L;
+  private static boolean mbStop = false;
+  private File mBodyFile;
+
+  public static synchronized void cancel() {
+    mbStop = true;
+  }
+
+  /**
+   * Create a new FileData.
+   *
+   * @param bodyHash An MD5 hash of the binary data contained in the file.
+   * @param file The file containing the binary data.
+   */
+  public FileData(byte[] bodyHash, File file) {
+    mbStop = false;
+    mBodyFile = file;
+    setBodyHash(bodyHash);
+    setSize((int) file.length());
+  }
+
+  public void write(TProtocol oprot) throws TException {
+    validate();
+    oprot.writeStructBegin(STRUCT_DESC);
+    if (this.getBodyHash() != null) {
+      if (isSetBodyHash()) {
+        oprot.writeFieldBegin(BODY_HASH_FIELD_DESC);
+        oprot.writeBinary(ByteBuffer.wrap(this.getBodyHash()));
+        oprot.writeFieldEnd();
+      }
+    }
+    oprot.writeFieldBegin(SIZE_FIELD_DESC);
+    oprot.writeI32(this.getSize());
+    oprot.writeFieldEnd();
+    if (this.mBodyFile != null && this.mBodyFile.isFile()) {
+      oprot.writeFieldBegin(BODY_FIELD_DESC);
+      InputStream s = null;
+      try {
+        s = new FileInputStream(mBodyFile);
+        oprot.writeStream(s, this.mBodyFile.length());
+      } catch (FileNotFoundException e) {
+        throw new TException("Failed to write binary body:" + mBodyFile, e);
+      } finally {
+        try {
+          if (s != null) {
+            s.close();
+          }
+        } catch (Exception e) {
+        }
+      }
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldStop();
+    oprot.writeStructEnd();
+  }
+
+  public void writexx(TProtocol oprot) throws TException {
+    if (getBodyHash() == null) {
+      throw new TProtocolException("Invalid null field: bodyHash");
+    }
+    TStruct struct = new TStruct("Data");
+    oprot.writeStructBegin(struct);
+    TField field = new TField("bodyHash", TType.STRING, (short) 1);
+    oprot.writeFieldBegin(field);
+    oprot.writeBinary(getBodyHash());
+    oprot.writeFieldEnd();
+    field = new TField("size", TType.I32, (short) 2);
+    oprot.writeFieldBegin(field);
+    int size = getSize();
+    oprot.writeI32(size);
+    oprot.writeFieldEnd();
+    field = new TField("body", TType.STRING, (short) 3);
+    oprot.writeFieldBegin(field);
+    oprot.writeI32(size);
+    try {
+      byte buffer[] = new byte[4096];
+      FileInputStream in = new FileInputStream(mBodyFile);
+      int len;
+      while ((len = in.read(buffer)) >= 0) {
+        if (mbStop) {
+          throw new FileDataException("Output canceled");
+        }
+        if (len == buffer.length) {
+          oprot.writeBinary(buffer);
+        } else {
+          ByteArrayOutputStream dest = new ByteArrayOutputStream();
+          dest.write(buffer, 0, len);
+          oprot.writeBinary(dest.toByteArray());
+        }
+      }
+      in.close();
+    } catch (Exception e) {
+      throw new FileDataException(e);
+    }
+    oprot.writeFieldEnd();
+    oprot.writeFieldStop();
+    oprot.writeStructEnd();
+  }
+}

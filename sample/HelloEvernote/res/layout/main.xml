@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+<Button
+     android:layout_height="wrap_content"
+     android:layout_width="wrap_content"
+     android:text="@string/btnlbl_new_note"
+     android:onClick="newNote" />
+
+<Button
+     android:layout_height="wrap_content"
+     android:layout_width="wrap_content"
+     android:text="@string/btnlbl_new_note_with_content"
+     android:onClick="newNoteWithContent" />
+
+<Button
+     android:layout_height="wrap_content"
+     android:layout_width="wrap_content"
+     android:text="@string/btnlbl_new_note_with_content_and_attachment"
+     android:onClick="startNewNoteWithContentAndAttachment" />
+
+<Button
+     android:layout_height="wrap_content"
+     android:layout_width="wrap_content"
+     android:text="@string/btnlbl_create_note_using_enex"
+     android:onClick="createNoteUsingEnex" />
+
+<Button
+     android:layout_height="wrap_content"
+     android:layout_width="wrap_content"
+     android:text="@string/btnlbl_share_image"
+     android:onClick="startShareImage" />
+
+<Button
+     android:layout_height="wrap_content"
+     android:layout_width="wrap_content"
+     android:text="@string/btnlbl_view_note"
+     android:onClick="viewNote" />
+
+<Button
+     android:layout_height="wrap_content"
+     android:layout_width="wrap_content"
+     android:text="@string/btnlbl_search_notes"
+     android:onClick="doSearch" />
+
+</LinearLayout>

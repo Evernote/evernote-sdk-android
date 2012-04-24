@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string name="app_name">Evernote Intents Demo</string>
+<string name="err_activity_not_found">Unknown intent</string>
+<string name="err_create_enml_file">Unable to create new file on disk</string>
+<string name="label_share_using">Share with:</string>
+<string name="btnlbl_new_note">Create a new empty note</string>
+<string name="btnlbl_new_note_with_content">Create a new note with content</string>
+<string name="btnlbl_create_note_using_enex">Create a new note using an ENEX file</string>
+<string name="btnlbl_share_image">Share image</string>
+<string name="btnlbl_view_note">View an existing note</string>
+<string name="btnlbl_search_notes">Search existing notes</string>
+
+<string name="err_no_storage">The external storage device is not available</string>
+<string name="msg_enex_success">New note created successfully!</string>
+<string name="btnlbl_new_note_with_content_and_attachment">Create a new note with content &amp; file</string>
+</resources>
