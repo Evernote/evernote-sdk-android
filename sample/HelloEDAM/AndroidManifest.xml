@@ -18,7 +18,7 @@
           android:configChanges="orientation|keyboard">
           <intent-filter>
             <!-- Change this to be en- followed by your consumer key -->
-            <data android:scheme="en-sethhitch-web" />
+            <data android:scheme="en-your key" />
             <action android:name="android.intent.action.VIEW" />                
             <category android:name="android.intent.category.BROWSABLE"/>
             <category android:name="android.intent.category.DEFAULT" /> 
