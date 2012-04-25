@@ -173,7 +173,11 @@ public class EvernoteOAuthActivity extends Activity {
     } catch (OAuthException oax) {
       // TODO communicate this back to the caller
       Log.e(TAG, "Failed to obtain OAuth request token", oax);
-    }    
+      finish();
+    } catch (Exception ex) {
+      Log.e(TAG, "Failed to obtain OAuth request token", ex);
+      finish();
+    }
   }
 
   /**
@@ -200,7 +204,9 @@ public class EvernoteOAuthActivity extends Activity {
           accessToken = 
             (EvernoteAuthToken)service.getAccessToken(reqToken, verifier);
         } catch (OAuthException oax) {
-          Log.e(TAG, "Error retrieving OAuth access token", oax);
+          Log.e(TAG, "Failed to obtain OAuth access token", oax);
+        } catch (Exception ex) {
+          Log.e(TAG, "Failed to obtain OAuth access token", ex);
         }
       }
     } else {
