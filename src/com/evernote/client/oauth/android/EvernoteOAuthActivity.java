@@ -26,14 +26,13 @@
 package com.evernote.client.oauth.android;
 
 import org.scribe.builder.ServiceBuilder;
+import org.scribe.builder.api.EvernoteApi;
 import org.scribe.exceptions.OAuthException;
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
-import com.evernote.client.oauth.EvernoteApi;
 import com.evernote.client.oauth.EvernoteAuthToken;
-import com.evernote.client.oauth.EvernoteSandboxApi;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -140,10 +139,11 @@ public class EvernoteOAuthActivity extends Activity {
     return "en-" + consumerKey;
   }
 
+  @SuppressWarnings("unchecked")
   private OAuthService createService() {
     Class apiClass = EvernoteApi.class;
-    if (evernoteHost.equals(EvernoteSandboxApi.evernoteHost)) {
-      apiClass = EvernoteSandboxApi.class;
+    if (evernoteHost.equals("sandbox.evernote.com")) {
+      apiClass = EvernoteApi.Sandbox.class;
     }
     return new ServiceBuilder()
       .provider(apiClass)
@@ -171,7 +171,6 @@ public class EvernoteOAuthActivity extends Activity {
       Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
       startActivity(intent);
     } catch (OAuthException oax) {
-      // TODO communicate this back to the caller
       Log.e(TAG, "Failed to obtain OAuth request token", oax);
       finish();
     } catch (Exception ex) {
@@ -190,7 +189,7 @@ public class EvernoteOAuthActivity extends Activity {
    */
   private EvernoteAuthToken completeAuth(Uri uri) {
     EvernoteAuthToken accessToken = null;
-    
+
     if (requestToken != null) {
       OAuthService service = createService();
       String verifierString = uri.getQueryParameter("oauth_verifier");
@@ -202,7 +201,7 @@ public class EvernoteOAuthActivity extends Activity {
         try {
           Token reqToken = new Token(requestToken, requestTokenSecret);
           accessToken = 
-            (EvernoteAuthToken)service.getAccessToken(reqToken, verifier);
+            new EvernoteAuthToken(service.getAccessToken(reqToken, verifier));
         } catch (OAuthException oax) {
           Log.e(TAG, "Failed to obtain OAuth access token", oax);
         } catch (Exception ex) {
