@@ -25,7 +25,6 @@
  */
 package com.evernote.client.conn.mobile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,7 +34,6 @@ import java.nio.ByteBuffer;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TField;
 import org.apache.thrift.protocol.TProtocol;
-import org.apache.thrift.protocol.TProtocolException;
 import org.apache.thrift.protocol.TStruct;
 import org.apache.thrift.protocol.TType;
 
@@ -61,12 +59,7 @@ public class FileData extends Data {
       new TField("body", TType.STRING, (short) 3);
 
   private static final long serialVersionUID = 1L;
-  private static boolean mbStop = false;
   private File mBodyFile;
-
-  public static synchronized void cancel() {
-    mbStop = true;
-  }
 
   /**
    * Create a new FileData.
@@ -75,7 +68,6 @@ public class FileData extends Data {
    * @param file The file containing the binary data.
    */
   public FileData(byte[] bodyHash, File file) {
-    mbStop = false;
     mBodyFile = file;
     setBodyHash(bodyHash);
     setSize((int) file.length());
@@ -112,49 +104,6 @@ public class FileData extends Data {
       }
       oprot.writeFieldEnd();
     }
-    oprot.writeFieldStop();
-    oprot.writeStructEnd();
-  }
-
-  public void writexx(TProtocol oprot) throws TException {
-    if (getBodyHash() == null) {
-      throw new TProtocolException("Invalid null field: bodyHash");
-    }
-    TStruct struct = new TStruct("Data");
-    oprot.writeStructBegin(struct);
-    TField field = new TField("bodyHash", TType.STRING, (short) 1);
-    oprot.writeFieldBegin(field);
-    oprot.writeBinary(getBodyHash());
-    oprot.writeFieldEnd();
-    field = new TField("size", TType.I32, (short) 2);
-    oprot.writeFieldBegin(field);
-    int size = getSize();
-    oprot.writeI32(size);
-    oprot.writeFieldEnd();
-    field = new TField("body", TType.STRING, (short) 3);
-    oprot.writeFieldBegin(field);
-    oprot.writeI32(size);
-    try {
-      byte buffer[] = new byte[4096];
-      FileInputStream in = new FileInputStream(mBodyFile);
-      int len;
-      while ((len = in.read(buffer)) >= 0) {
-        if (mbStop) {
-          throw new FileDataException("Output canceled");
-        }
-        if (len == buffer.length) {
-          oprot.writeBinary(buffer);
-        } else {
-          ByteArrayOutputStream dest = new ByteArrayOutputStream();
-          dest.write(buffer, 0, len);
-          oprot.writeBinary(dest.toByteArray());
-        }
-      }
-      in.close();
-    } catch (Exception e) {
-      throw new FileDataException(e);
-    }
-    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
