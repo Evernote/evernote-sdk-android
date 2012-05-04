@@ -105,20 +105,16 @@ import org.apache.thrift.protocol.*;
  *   </dd>
  * 
  * <dt>sharedNotebookIds</dt>
- *   <dd><i>DEPRECATED</i> and to be replaced by sharedNotebooks.
- *   If this notebook has been shared with one or more individuals, then
- *   this will contain the 'id' fields to identify those SharedNotebook
- *   entries in the NoteStore.  This field is only set by the server, and it
- *   is ignored in calls to createNotebook, updateNotebook, etc.
- *   </dd>
+ *   <dd><i>DEPRECATED</i> - replaced by sharedNotebooks.</dd>
  * 
  * <dt>sharedNotebooks</dt>
- *   <dd>The latest list of shared notebooks currently associated with the
- *   notebook, assuming you have permission to access this data.  If you are
+ *   <dd>The list of recipients to whom this notebook has been shared
+ *   (one SharedNotebook object per recipient email address). This field will
+ *   be unset if you do not have permission to access this data. If you are
  *   accessing the notebook as the owner or via a shared notebook that is
  *   modifiable, then you have access to this data and the value will be set.
- *   Note that this field is read-only.  Clients may not make changes to
- *   shared notebooks via this field.
+ *   This field is read-only. Clients may not make changes to shared notebooks
+ *   via this field.
  *   </dd>
  * 
  * </dl>
