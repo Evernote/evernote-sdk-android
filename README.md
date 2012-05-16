@@ -25,6 +25,8 @@ The sample application HelloEDAM demonstrates how to use the Evernote SDK for An
 6. Click Finish
 7. From the Package Explorer, expand the src directory and open com.evernote.android.sample.HelloEDAM.java
 8. Scroll down and fill in your Evernote API consumer key and secret.
+8. Open the sample application's AndroidManifest.xml
+8. In the EvernoteOAuthActivity intent-filter, replace "your key" with your API consumer key. For example, if your consumer key is "foobar", the value should be "en-foobar".
 9. Build and run the project
 
 Using the SDK in your app
