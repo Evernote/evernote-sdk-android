@@ -76,8 +76,6 @@ import org.apache.thrift.protocol.*;
  *  to this field from an external client.
  *  </dd>
  * 
- * </dl>
- * 
  * <dt>placeName</dt>
  * <dd>Allows the user to assign a human-readable location name associated
  * with a note. Users may assign values like 'Home' and 'Work'. Place

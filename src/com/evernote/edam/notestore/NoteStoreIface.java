@@ -58,6 +58,21 @@ public interface NoteStoreIface {
   public SyncState getSyncState(String authenticationToken) throws com.evernote.edam.error.EDAMUserException, com.evernote.edam.error.EDAMSystemException, TException;
 
   /**
+   * Asks the NoteStore to provide information about the status of the user
+   * account corresponding to the provided authentication token.
+   * This version of 'getSyncState' allows the client to upload coarse-
+   * grained usage metrics to the service.
+   * 
+   * @param clientMetrics  see the documentation of the ClientUsageMetrics
+   *   structure for an explanation of the fields that clients can pass to
+   *   the service.
+   * 
+   * @param authenticationToken
+   * @param clientMetrics
+   */
+  public SyncState getSyncStateWithMetrics(String authenticationToken, ClientUsageMetrics clientMetrics) throws com.evernote.edam.error.EDAMUserException, com.evernote.edam.error.EDAMSystemException, TException;
+
+  /**
    * Asks the NoteStore to provide the state of the account in order of
    * last modification.  This request retrieves one block of the server's
    * state so that a client can make several small requests against a large

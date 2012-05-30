@@ -104,6 +104,49 @@ public class NoteStore {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "getSyncState failed: unknown result");
     }
 
+    public SyncState getSyncStateWithMetrics(String authenticationToken, ClientUsageMetrics clientMetrics) throws com.evernote.edam.error.EDAMUserException, com.evernote.edam.error.EDAMSystemException, TException
+    {
+      send_getSyncStateWithMetrics(authenticationToken, clientMetrics);
+      return recv_getSyncStateWithMetrics();
+    }
+
+    public void send_getSyncStateWithMetrics(String authenticationToken, ClientUsageMetrics clientMetrics) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("getSyncStateWithMetrics", TMessageType.CALL, ++seqid_));
+      getSyncStateWithMetrics_args args = new getSyncStateWithMetrics_args();
+      args.setAuthenticationToken(authenticationToken);
+      args.setClientMetrics(clientMetrics);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public SyncState recv_getSyncStateWithMetrics() throws com.evernote.edam.error.EDAMUserException, com.evernote.edam.error.EDAMSystemException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "getSyncStateWithMetrics failed: out of sequence response");
+      }
+      getSyncStateWithMetrics_result result = new getSyncStateWithMetrics_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.userException != null) {
+        throw result.userException;
+      }
+      if (result.systemException != null) {
+        throw result.systemException;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "getSyncStateWithMetrics failed: unknown result");
+    }
+
     public SyncChunk getSyncChunk(String authenticationToken, int afterUSN, int maxEntries, boolean fullSyncOnly) throws com.evernote.edam.error.EDAMUserException, com.evernote.edam.error.EDAMSystemException, TException
     {
       send_getSyncChunk(authenticationToken, afterUSN, maxEntries, fullSyncOnly);
@@ -3454,6 +3497,7 @@ public class NoteStore {
     {
       iface_ = iface;
       processMap_.put("getSyncState", new getSyncState());
+      processMap_.put("getSyncStateWithMetrics", new getSyncStateWithMetrics());
       processMap_.put("getSyncChunk", new getSyncChunk());
       processMap_.put("getFilteredSyncChunk", new getFilteredSyncChunk());
       processMap_.put("getLinkedNotebookSyncState", new getLinkedNotebookSyncState());
@@ -3586,6 +3630,45 @@ public class NoteStore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("getSyncState", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class getSyncStateWithMetrics implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        getSyncStateWithMetrics_args args = new getSyncStateWithMetrics_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("getSyncStateWithMetrics", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        getSyncStateWithMetrics_result result = new getSyncStateWithMetrics_result();
+        try {
+          result.success = iface_.getSyncStateWithMetrics(args.authenticationToken, args.clientMetrics);
+        } catch (com.evernote.edam.error.EDAMUserException userException) {
+          result.userException = userException;
+        } catch (com.evernote.edam.error.EDAMSystemException systemException) {
+          result.systemException = systemException;
+        } catch (Throwable th) {
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing getSyncStateWithMetrics");
+          oprot.writeMessageBegin(new TMessage("getSyncStateWithMetrics", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("getSyncStateWithMetrics", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -7268,6 +7351,814 @@ public class NoteStore {
 
     public String toString() {
       StringBuilder sb = new StringBuilder("getSyncState_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("userException:");
+      if (this.userException == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.userException);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("systemException:");
+      if (this.systemException == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.systemException);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class getSyncStateWithMetrics_args implements TBase<getSyncStateWithMetrics_args, getSyncStateWithMetrics_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("getSyncStateWithMetrics_args");
+
+    private static final TField AUTHENTICATION_TOKEN_FIELD_DESC = new TField("authenticationToken", TType.STRING, (short)1);
+    private static final TField CLIENT_METRICS_FIELD_DESC = new TField("clientMetrics", TType.STRUCT, (short)2);
+
+    private String authenticationToken;
+    private ClientUsageMetrics clientMetrics;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      AUTHENTICATION_TOKEN((short)1, "authenticationToken"),
+      CLIENT_METRICS((short)2, "clientMetrics");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // AUTHENTICATION_TOKEN
+            return AUTHENTICATION_TOKEN;
+          case 2: // CLIENT_METRICS
+            return CLIENT_METRICS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.AUTHENTICATION_TOKEN, new FieldMetaData("authenticationToken", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.CLIENT_METRICS, new FieldMetaData("clientMetrics", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, ClientUsageMetrics.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(getSyncStateWithMetrics_args.class, metaDataMap);
+    }
+
+    public getSyncStateWithMetrics_args() {
+    }
+
+    public getSyncStateWithMetrics_args(
+      String authenticationToken,
+      ClientUsageMetrics clientMetrics)
+    {
+      this();
+      this.authenticationToken = authenticationToken;
+      this.clientMetrics = clientMetrics;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getSyncStateWithMetrics_args(getSyncStateWithMetrics_args other) {
+      if (other.isSetAuthenticationToken()) {
+        this.authenticationToken = other.authenticationToken;
+      }
+      if (other.isSetClientMetrics()) {
+        this.clientMetrics = new ClientUsageMetrics(other.clientMetrics);
+      }
+    }
+
+    public getSyncStateWithMetrics_args deepCopy() {
+      return new getSyncStateWithMetrics_args(this);
+    }
+
+    public void clear() {
+      this.authenticationToken = null;
+      this.clientMetrics = null;
+    }
+
+    public String getAuthenticationToken() {
+      return this.authenticationToken;
+    }
+
+    public void setAuthenticationToken(String authenticationToken) {
+      this.authenticationToken = authenticationToken;
+    }
+
+    public void unsetAuthenticationToken() {
+      this.authenticationToken = null;
+    }
+
+    /** Returns true if field authenticationToken is set (has been asigned a value) and false otherwise */
+    public boolean isSetAuthenticationToken() {
+      return this.authenticationToken != null;
+    }
+
+    public void setAuthenticationTokenIsSet(boolean value) {
+      if (!value) {
+        this.authenticationToken = null;
+      }
+    }
+
+    public ClientUsageMetrics getClientMetrics() {
+      return this.clientMetrics;
+    }
+
+    public void setClientMetrics(ClientUsageMetrics clientMetrics) {
+      this.clientMetrics = clientMetrics;
+    }
+
+    public void unsetClientMetrics() {
+      this.clientMetrics = null;
+    }
+
+    /** Returns true if field clientMetrics is set (has been asigned a value) and false otherwise */
+    public boolean isSetClientMetrics() {
+      return this.clientMetrics != null;
+    }
+
+    public void setClientMetricsIsSet(boolean value) {
+      if (!value) {
+        this.clientMetrics = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case AUTHENTICATION_TOKEN:
+        if (value == null) {
+          unsetAuthenticationToken();
+        } else {
+          setAuthenticationToken((String)value);
+        }
+        break;
+
+      case CLIENT_METRICS:
+        if (value == null) {
+          unsetClientMetrics();
+        } else {
+          setClientMetrics((ClientUsageMetrics)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case AUTHENTICATION_TOKEN:
+        return getAuthenticationToken();
+
+      case CLIENT_METRICS:
+        return getClientMetrics();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case AUTHENTICATION_TOKEN:
+        return isSetAuthenticationToken();
+      case CLIENT_METRICS:
+        return isSetClientMetrics();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getSyncStateWithMetrics_args)
+        return this.equals((getSyncStateWithMetrics_args)that);
+      return false;
+    }
+
+    public boolean equals(getSyncStateWithMetrics_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_authenticationToken = true && this.isSetAuthenticationToken();
+      boolean that_present_authenticationToken = true && that.isSetAuthenticationToken();
+      if (this_present_authenticationToken || that_present_authenticationToken) {
+        if (!(this_present_authenticationToken && that_present_authenticationToken))
+          return false;
+        if (!this.authenticationToken.equals(that.authenticationToken))
+          return false;
+      }
+
+      boolean this_present_clientMetrics = true && this.isSetClientMetrics();
+      boolean that_present_clientMetrics = true && that.isSetClientMetrics();
+      if (this_present_clientMetrics || that_present_clientMetrics) {
+        if (!(this_present_clientMetrics && that_present_clientMetrics))
+          return false;
+        if (!this.clientMetrics.equals(that.clientMetrics))
+          return false;
+      }
+
+      return true;
+    }
+
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getSyncStateWithMetrics_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getSyncStateWithMetrics_args typedOther = (getSyncStateWithMetrics_args)other;
+
+      lastComparison = Boolean.valueOf(isSetAuthenticationToken()).compareTo(typedOther.isSetAuthenticationToken());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetAuthenticationToken()) {        lastComparison = TBaseHelper.compareTo(this.authenticationToken, typedOther.authenticationToken);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetClientMetrics()).compareTo(typedOther.isSetClientMetrics());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetClientMetrics()) {        lastComparison = TBaseHelper.compareTo(this.clientMetrics, typedOther.clientMetrics);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // AUTHENTICATION_TOKEN
+            if (field.type == TType.STRING) {
+              this.authenticationToken = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // CLIENT_METRICS
+            if (field.type == TType.STRUCT) {
+              this.clientMetrics = new ClientUsageMetrics();
+              this.clientMetrics.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.authenticationToken != null) {
+        oprot.writeFieldBegin(AUTHENTICATION_TOKEN_FIELD_DESC);
+        oprot.writeString(this.authenticationToken);
+        oprot.writeFieldEnd();
+      }
+      if (this.clientMetrics != null) {
+        oprot.writeFieldBegin(CLIENT_METRICS_FIELD_DESC);
+        this.clientMetrics.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getSyncStateWithMetrics_args(");
+      boolean first = true;
+
+      sb.append("authenticationToken:");
+      if (this.authenticationToken == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.authenticationToken);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("clientMetrics:");
+      if (this.clientMetrics == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.clientMetrics);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class getSyncStateWithMetrics_result implements TBase<getSyncStateWithMetrics_result, getSyncStateWithMetrics_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("getSyncStateWithMetrics_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField USER_EXCEPTION_FIELD_DESC = new TField("userException", TType.STRUCT, (short)1);
+    private static final TField SYSTEM_EXCEPTION_FIELD_DESC = new TField("systemException", TType.STRUCT, (short)2);
+
+    private SyncState success;
+    private com.evernote.edam.error.EDAMUserException userException;
+    private com.evernote.edam.error.EDAMSystemException systemException;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      USER_EXCEPTION((short)1, "userException"),
+      SYSTEM_EXCEPTION((short)2, "systemException");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // USER_EXCEPTION
+            return USER_EXCEPTION;
+          case 2: // SYSTEM_EXCEPTION
+            return SYSTEM_EXCEPTION;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, SyncState.class)));
+      tmpMap.put(_Fields.USER_EXCEPTION, new FieldMetaData("userException", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.SYSTEM_EXCEPTION, new FieldMetaData("systemException", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(getSyncStateWithMetrics_result.class, metaDataMap);
+    }
+
+    public getSyncStateWithMetrics_result() {
+    }
+
+    public getSyncStateWithMetrics_result(
+      SyncState success,
+      com.evernote.edam.error.EDAMUserException userException,
+      com.evernote.edam.error.EDAMSystemException systemException)
+    {
+      this();
+      this.success = success;
+      this.userException = userException;
+      this.systemException = systemException;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getSyncStateWithMetrics_result(getSyncStateWithMetrics_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new SyncState(other.success);
+      }
+      if (other.isSetUserException()) {
+        this.userException = new com.evernote.edam.error.EDAMUserException(other.userException);
+      }
+      if (other.isSetSystemException()) {
+        this.systemException = new com.evernote.edam.error.EDAMSystemException(other.systemException);
+      }
+    }
+
+    public getSyncStateWithMetrics_result deepCopy() {
+      return new getSyncStateWithMetrics_result(this);
+    }
+
+    public void clear() {
+      this.success = null;
+      this.userException = null;
+      this.systemException = null;
+    }
+
+    public SyncState getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(SyncState success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public com.evernote.edam.error.EDAMUserException getUserException() {
+      return this.userException;
+    }
+
+    public void setUserException(com.evernote.edam.error.EDAMUserException userException) {
+      this.userException = userException;
+    }
+
+    public void unsetUserException() {
+      this.userException = null;
+    }
+
+    /** Returns true if field userException is set (has been asigned a value) and false otherwise */
+    public boolean isSetUserException() {
+      return this.userException != null;
+    }
+
+    public void setUserExceptionIsSet(boolean value) {
+      if (!value) {
+        this.userException = null;
+      }
+    }
+
+    public com.evernote.edam.error.EDAMSystemException getSystemException() {
+      return this.systemException;
+    }
+
+    public void setSystemException(com.evernote.edam.error.EDAMSystemException systemException) {
+      this.systemException = systemException;
+    }
+
+    public void unsetSystemException() {
+      this.systemException = null;
+    }
+
+    /** Returns true if field systemException is set (has been asigned a value) and false otherwise */
+    public boolean isSetSystemException() {
+      return this.systemException != null;
+    }
+
+    public void setSystemExceptionIsSet(boolean value) {
+      if (!value) {
+        this.systemException = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((SyncState)value);
+        }
+        break;
+
+      case USER_EXCEPTION:
+        if (value == null) {
+          unsetUserException();
+        } else {
+          setUserException((com.evernote.edam.error.EDAMUserException)value);
+        }
+        break;
+
+      case SYSTEM_EXCEPTION:
+        if (value == null) {
+          unsetSystemException();
+        } else {
+          setSystemException((com.evernote.edam.error.EDAMSystemException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case USER_EXCEPTION:
+        return getUserException();
+
+      case SYSTEM_EXCEPTION:
+        return getSystemException();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case USER_EXCEPTION:
+        return isSetUserException();
+      case SYSTEM_EXCEPTION:
+        return isSetSystemException();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getSyncStateWithMetrics_result)
+        return this.equals((getSyncStateWithMetrics_result)that);
+      return false;
+    }
+
+    public boolean equals(getSyncStateWithMetrics_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_userException = true && this.isSetUserException();
+      boolean that_present_userException = true && that.isSetUserException();
+      if (this_present_userException || that_present_userException) {
+        if (!(this_present_userException && that_present_userException))
+          return false;
+        if (!this.userException.equals(that.userException))
+          return false;
+      }
+
+      boolean this_present_systemException = true && this.isSetSystemException();
+      boolean that_present_systemException = true && that.isSetSystemException();
+      if (this_present_systemException || that_present_systemException) {
+        if (!(this_present_systemException && that_present_systemException))
+          return false;
+        if (!this.systemException.equals(that.systemException))
+          return false;
+      }
+
+      return true;
+    }
+
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getSyncStateWithMetrics_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getSyncStateWithMetrics_result typedOther = (getSyncStateWithMetrics_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUserException()).compareTo(typedOther.isSetUserException());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUserException()) {        lastComparison = TBaseHelper.compareTo(this.userException, typedOther.userException);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetSystemException()).compareTo(typedOther.isSetSystemException());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSystemException()) {        lastComparison = TBaseHelper.compareTo(this.systemException, typedOther.systemException);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRUCT) {
+              this.success = new SyncState();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // USER_EXCEPTION
+            if (field.type == TType.STRUCT) {
+              this.userException = new com.evernote.edam.error.EDAMUserException();
+              this.userException.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // SYSTEM_EXCEPTION
+            if (field.type == TType.STRUCT) {
+              this.systemException = new com.evernote.edam.error.EDAMSystemException();
+              this.systemException.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetUserException()) {
+        oprot.writeFieldBegin(USER_EXCEPTION_FIELD_DESC);
+        this.userException.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetSystemException()) {
+        oprot.writeFieldBegin(SYSTEM_EXCEPTION_FIELD_DESC);
+        this.systemException.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getSyncStateWithMetrics_result(");
       boolean first = true;
 
       sb.append("success:");

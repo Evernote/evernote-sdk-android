@@ -66,6 +66,14 @@ import org.apache.thrift.protocol.*;
  *    <dd>
  *    The role of the user within a sponsored group.
  *    </dd>
+ *  <dt>businessName:</dt>
+ *    <dd>
+ *    The name of the business that the user is associated with.
+ *    </dd>
+ *  <dt>businessAdmin:</dt>
+ *    <dd>
+ *    True if the user is the administrator of the business.
+ *    </dd>
  *  </dl>
  */
 public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, java.io.Serializable, Cloneable {
@@ -81,6 +89,8 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
   private static final TField CAN_PURCHASE_UPLOAD_ALLOWANCE_FIELD_DESC = new TField("canPurchaseUploadAllowance", TType.BOOL, (short)8);
   private static final TField SPONSORED_GROUP_NAME_FIELD_DESC = new TField("sponsoredGroupName", TType.STRING, (short)9);
   private static final TField SPONSORED_GROUP_ROLE_FIELD_DESC = new TField("sponsoredGroupRole", TType.I32, (short)10);
+  private static final TField BUSINESS_NAME_FIELD_DESC = new TField("businessName", TType.STRING, (short)11);
+  private static final TField BUSINESS_ADMIN_FIELD_DESC = new TField("businessAdmin", TType.BOOL, (short)12);
 
   private long currentTime;
   private boolean premium;
@@ -92,6 +102,8 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
   private boolean canPurchaseUploadAllowance;
   private String sponsoredGroupName;
   private SponsoredGroupRole sponsoredGroupRole;
+  private String businessName;
+  private boolean businessAdmin;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -108,7 +120,9 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
      * 
      * @see SponsoredGroupRole
      */
-    SPONSORED_GROUP_ROLE((short)10, "sponsoredGroupRole");
+    SPONSORED_GROUP_ROLE((short)10, "sponsoredGroupRole"),
+    BUSINESS_NAME((short)11, "businessName"),
+    BUSINESS_ADMIN((short)12, "businessAdmin");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -143,6 +157,10 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
           return SPONSORED_GROUP_NAME;
         case 10: // SPONSORED_GROUP_ROLE
           return SPONSORED_GROUP_ROLE;
+        case 11: // BUSINESS_NAME
+          return BUSINESS_NAME;
+        case 12: // BUSINESS_ADMIN
+          return BUSINESS_ADMIN;
         default:
           return null;
       }
@@ -191,7 +209,8 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
   private static final int __PREMIUMPENDING_ISSET_ID = 5;
   private static final int __PREMIUMCANCELLATIONPENDING_ISSET_ID = 6;
   private static final int __CANPURCHASEUPLOADALLOWANCE_ISSET_ID = 7;
-  private boolean[] __isset_vector = new boolean[8];
+  private static final int __BUSINESSADMIN_ISSET_ID = 8;
+  private boolean[] __isset_vector = new boolean[9];
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -216,6 +235,10 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.SPONSORED_GROUP_ROLE, new FieldMetaData("sponsoredGroupRole", TFieldRequirementType.OPTIONAL, 
         new EnumMetaData(TType.ENUM, SponsoredGroupRole.class)));
+    tmpMap.put(_Fields.BUSINESS_NAME, new FieldMetaData("businessName", TFieldRequirementType.OPTIONAL, 
+        new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.BUSINESS_ADMIN, new FieldMetaData("businessAdmin", TFieldRequirementType.OPTIONAL, 
+        new FieldValueMetaData(TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(PremiumInfo.class, metaDataMap);
   }
@@ -268,6 +291,10 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
     if (other.isSetSponsoredGroupRole()) {
       this.sponsoredGroupRole = other.sponsoredGroupRole;
     }
+    if (other.isSetBusinessName()) {
+      this.businessName = other.businessName;
+    }
+    this.businessAdmin = other.businessAdmin;
   }
 
   public PremiumInfo deepCopy() {
@@ -293,6 +320,9 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
     this.canPurchaseUploadAllowance = false;
     this.sponsoredGroupName = null;
     this.sponsoredGroupRole = null;
+    this.businessName = null;
+    setBusinessAdminIsSet(false);
+    this.businessAdmin = false;
   }
 
   public long getCurrentTime() {
@@ -525,6 +555,51 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
     }
   }
 
+  public String getBusinessName() {
+    return this.businessName;
+  }
+
+  public void setBusinessName(String businessName) {
+    this.businessName = businessName;
+  }
+
+  public void unsetBusinessName() {
+    this.businessName = null;
+  }
+
+  /** Returns true if field businessName is set (has been asigned a value) and false otherwise */
+  public boolean isSetBusinessName() {
+    return this.businessName != null;
+  }
+
+  public void setBusinessNameIsSet(boolean value) {
+    if (!value) {
+      this.businessName = null;
+    }
+  }
+
+  public boolean isBusinessAdmin() {
+    return this.businessAdmin;
+  }
+
+  public void setBusinessAdmin(boolean businessAdmin) {
+    this.businessAdmin = businessAdmin;
+    setBusinessAdminIsSet(true);
+  }
+
+  public void unsetBusinessAdmin() {
+    __isset_vector[__BUSINESSADMIN_ISSET_ID] = false;
+  }
+
+  /** Returns true if field businessAdmin is set (has been asigned a value) and false otherwise */
+  public boolean isSetBusinessAdmin() {
+    return __isset_vector[__BUSINESSADMIN_ISSET_ID];
+  }
+
+  public void setBusinessAdminIsSet(boolean value) {
+    __isset_vector[__BUSINESSADMIN_ISSET_ID] = value;
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case CURRENT_TIME:
@@ -607,6 +682,22 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
       }
       break;
 
+    case BUSINESS_NAME:
+      if (value == null) {
+        unsetBusinessName();
+      } else {
+        setBusinessName((String)value);
+      }
+      break;
+
+    case BUSINESS_ADMIN:
+      if (value == null) {
+        unsetBusinessAdmin();
+      } else {
+        setBusinessAdmin((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -642,6 +733,12 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
     case SPONSORED_GROUP_ROLE:
       return getSponsoredGroupRole();
 
+    case BUSINESS_NAME:
+      return getBusinessName();
+
+    case BUSINESS_ADMIN:
+      return new Boolean(isBusinessAdmin());
+
     }
     throw new IllegalStateException();
   }
@@ -673,6 +770,10 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
       return isSetSponsoredGroupName();
     case SPONSORED_GROUP_ROLE:
       return isSetSponsoredGroupRole();
+    case BUSINESS_NAME:
+      return isSetBusinessName();
+    case BUSINESS_ADMIN:
+      return isSetBusinessAdmin();
     }
     throw new IllegalStateException();
   }
@@ -776,6 +877,24 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
       if (!(this_present_sponsoredGroupRole && that_present_sponsoredGroupRole))
         return false;
       if (!this.sponsoredGroupRole.equals(that.sponsoredGroupRole))
+        return false;
+    }
+
+    boolean this_present_businessName = true && this.isSetBusinessName();
+    boolean that_present_businessName = true && that.isSetBusinessName();
+    if (this_present_businessName || that_present_businessName) {
+      if (!(this_present_businessName && that_present_businessName))
+        return false;
+      if (!this.businessName.equals(that.businessName))
+        return false;
+    }
+
+    boolean this_present_businessAdmin = true && this.isSetBusinessAdmin();
+    boolean that_present_businessAdmin = true && that.isSetBusinessAdmin();
+    if (this_present_businessAdmin || that_present_businessAdmin) {
+      if (!(this_present_businessAdmin && that_present_businessAdmin))
+        return false;
+      if (this.businessAdmin != that.businessAdmin)
         return false;
     }
 
@@ -884,6 +1003,24 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetBusinessName()).compareTo(typedOther.isSetBusinessName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBusinessName()) {      lastComparison = TBaseHelper.compareTo(this.businessName, typedOther.businessName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetBusinessAdmin()).compareTo(typedOther.isSetBusinessAdmin());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBusinessAdmin()) {      lastComparison = TBaseHelper.compareTo(this.businessAdmin, typedOther.businessAdmin);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -979,6 +1116,21 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 11: // BUSINESS_NAME
+          if (field.type == TType.STRING) {
+            this.businessName = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 12: // BUSINESS_ADMIN
+          if (field.type == TType.BOOL) {
+            this.businessAdmin = iprot.readBool();
+            setBusinessAdminIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -1031,6 +1183,18 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
         oprot.writeI32(this.sponsoredGroupRole.getValue());
         oprot.writeFieldEnd();
       }
+    }
+    if (this.businessName != null) {
+      if (isSetBusinessName()) {
+        oprot.writeFieldBegin(BUSINESS_NAME_FIELD_DESC);
+        oprot.writeString(this.businessName);
+        oprot.writeFieldEnd();
+      }
+    }
+    if (isSetBusinessAdmin()) {
+      oprot.writeFieldBegin(BUSINESS_ADMIN_FIELD_DESC);
+      oprot.writeBool(this.businessAdmin);
+      oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -1091,6 +1255,22 @@ public class PremiumInfo implements TBase<PremiumInfo, PremiumInfo._Fields>, jav
       } else {
         sb.append(this.sponsoredGroupRole);
       }
+      first = false;
+    }
+    if (isSetBusinessName()) {
+      if (!first) sb.append(", ");
+      sb.append("businessName:");
+      if (this.businessName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.businessName);
+      }
+      first = false;
+    }
+    if (isSetBusinessAdmin()) {
+      if (!first) sb.append(", ");
+      sb.append("businessAdmin:");
+      sb.append(this.businessAdmin);
       first = false;
     }
     sb.append(")");
