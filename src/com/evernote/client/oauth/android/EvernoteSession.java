@@ -171,4 +171,61 @@ public class EvernoteSession {
       return result;
     }
   }
+  
+  	/**
+	 * Get the ApplicationInfo object
+	 * 
+	 * @return applicationInfo object
+	 */
+	public ApplicationInfo getApplicationInfo() {
+		return applicationInfo;
+	}
+
+	/**
+	 * Set the ApplicationInfo object
+	 * 
+	 * @param applicationInfo
+	 */
+	public void setApplicationInfo(ApplicationInfo applicationInfo) {
+		this.applicationInfo = applicationInfo;
+	}
+
+	/**
+	 * Get the AuthenticationResult. Useful to recreate the session
+	 * 
+	 * @return authenticationResult object
+	 */
+	public AuthenticationResult getAuthenticationResult() {
+		return authenticationResult;
+	}
+
+	/**
+	 * Set the AuthenticationResult.
+	 * 
+	 * @param authenticationResult
+	 */
+	public void setAuthenticationResult(
+			AuthenticationResult authenticationResult) {
+		this.authenticationResult = authenticationResult;
+	}
+
+	/**
+	 * Get a temporary directory that was set by client application to store potentially 
+	 * large files sent to and retrieved from the Evernote API.
+	 * 
+	 * @return File object pointing to temporary directory
+	 */
+	public File getTempDir() {
+		return tempDir;
+	}
+
+	/**
+	 * Set the temporary directory to store potentially 
+	 * large files sent to and retrieved from the Evernote API.
+	 * 
+	 * @param File tempDir
+	 */
+	public void setTempDir(File tempDir) {
+		this.tempDir = tempDir;
+	}
 }
