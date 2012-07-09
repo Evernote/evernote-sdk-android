@@ -115,15 +115,26 @@ public class HelloEDAM extends Activity {
   public void onResume() {
     super.onResume();
 
-    // Complete the Evernote authentication process if necessary
-    if (!session.completeAuthentication()) {
-      // We only want to do this when we're resuming after authentication...
-      Toast.makeText(this, "Evernote login failed", Toast.LENGTH_LONG).show();
-    }
-    
-    updateUi();
+    final Context context = this;
+    new AsyncTask<Void, Void, Boolean>() {
+      @Override
+      protected Boolean doInBackground(Void... params) {
+        // Complete the Evernote authentication process if necessary
+        return session.completeAuthentication();
+      }
+
+      @Override
+      protected void onPostExecute(Boolean result) {
+        if (!result) {
+          // We only want to do this when we're resuming after authentication...
+          Toast.makeText(context, "Evernote login failed", Toast.LENGTH_LONG).show();
+        } else {
+          updateUi();
+        }
+      };
+    }.execute();
   }
-  
+
   /**
    * Setup the EvernoteSession used to access the Evernote API.
    */
@@ -164,13 +175,25 @@ public class HelloEDAM extends Activity {
    * Sends the user to the image gallery to choose an image to share.
    */
   public void startAuth(View view) {
-    if (session.isLoggedIn()) {
-      session.logOut();
-    } else {
-      session.authenticate(this);
-    }
-    updateUi();
-  }  
+    final Context context = this;
+    new AsyncTask<Void, Void, Void>() {
+
+      @Override
+      protected Void doInBackground(Void... params) {
+        if (session.isLoggedIn()) {
+          session.logOut();
+        } else {
+          session.authenticate(context);
+        }
+        return null;
+      }
+
+      @Override
+      protected void onPostExecute(Void result) {
+        updateUi();
+      }
+    }.execute();
+  }
   
   /**
    * Get a temporary directory that can be used by this application to store potentially

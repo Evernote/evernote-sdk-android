@@ -37,6 +37,7 @@ import com.evernote.client.oauth.EvernoteAuthToken;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -129,9 +130,20 @@ public class EvernoteOAuthActivity extends Activity {
     super.onNewIntent(intent); 
     Uri uri = intent.getData();
     if ((uri != null) && uri.getScheme().equals(getCallbackScheme())) {
-      authToken = completeAuth(uri);
+      new AsyncTask<Uri, Void, EvernoteAuthToken>(){
+        @Override
+        protected EvernoteAuthToken doInBackground(Uri... params) {
+          Uri uri = params[0];
+          return completeAuth(uri);
+        }
+        
+        @Override
+        protected void onPostExecute(EvernoteAuthToken result) {
+          authToken = result; 
+          finish();
+        }
+      }.execute(uri);
       receivedCallback = true;
-      finish();
     }
   }
 
@@ -158,25 +170,42 @@ public class EvernoteOAuthActivity extends Activity {
    * to a browser to authorize access. 
    */
   private void beginAuthentication() {
-    try {
+    new AsyncTask<Void,  Void, Token>() {
       OAuthService service = createService();
-      Log.i(TAG, "Retrieving OAuth request token...");
-      Token requestToken = service.getRequestToken();
-      this.requestToken = requestToken.getToken();
-      this.requestTokenSecret = requestToken.getSecret();
-      
-      // Open a browser to allow the user to authorize access to their account
-      Log.i(TAG, "Redirecting user for authorization...");
-      String url = service.getAuthorizationUrl(requestToken);
-      Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-      startActivity(intent);
-    } catch (OAuthException oax) {
-      Log.e(TAG, "Failed to obtain OAuth request token", oax);
-      finish();
-    } catch (Exception ex) {
-      Log.e(TAG, "Failed to obtain OAuth request token", ex);
-      finish();
-    }
+
+      @Override
+      protected Token doInBackground(Void... params) {
+        try {
+          Log.i(TAG, "Retrieving OAuth request token...");
+          Token requestToken = service.getRequestToken();
+          return requestToken;
+        } catch (OAuthException oax) {
+          Log.e(TAG, "Failed to obtain OAuth request token", oax);
+          finish();
+        } catch (Exception ex) {
+          Log.e(TAG, "Failed to obtain OAuth request token", ex);
+          finish();
+        }
+        return null;
+      }
+
+      @Override
+      protected void onPostExecute(Token requestToken) {
+        if(requestToken == null){
+          return;
+        }
+
+        EvernoteOAuthActivity self = EvernoteOAuthActivity.this;
+        self.requestToken = requestToken.getToken();
+        self.requestTokenSecret = requestToken.getSecret();
+
+        // Open a browser to allow the user to authorize access to their account
+        Log.i(TAG, "Redirecting user for authorization...");
+        String url = service.getAuthorizationUrl(requestToken);
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(intent);
+      }
+    }.execute();
   }
 
   /**
