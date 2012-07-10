@@ -20,6 +20,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -274,47 +275,63 @@ public class HelloEDAM extends Activity {
    * when the activity started.
    */
   public void saveImage(View view) {
-    if (session.isLoggedIn()) {
-      String f = this.filePath;
-      try {
-        // Hash the data in the image file. The hash is used to refernece the
-        // file in the ENML note content.
-        InputStream in = new BufferedInputStream(new FileInputStream(f)); 
-        FileData data = new FileData(EDAMUtil.hash(in), new File(f));
-        in.close();
-        
-        // Create a new Resource
-        Resource resource = new Resource();
-        resource.setData(data);
-        resource.setMime(this.mimeType);
-        
-        // Create a new Note
-        Note note = new Note();
-        note.setTitle("Android test note");
-        note.addToResources(resource);
-        
-        // Set the note's ENML content. Learn about ENML at 
-        // http://dev.evernote.com/documentation/cloud/chapters/ENML.php
-        String content = 
-          NOTE_PREFIX +
-          "<p>This note was uploaded from Android. It contains an image.</p>" +
-          "<en-media type=\"" + this.mimeType + "\" hash=\"" +
-          EDAMUtil.bytesToHex(resource.getData().getBodyHash()) + "\"/>" +
-          NOTE_SUFFIX;
-        note.setContent(content);
-        
-        // Create the note on the server. The returned Note object
-        // will contain server-generated attributes such as the note's
-        // unique ID (GUID), the Resource's GUID, and the creation and update time.
-        Note createdNote = session.createNoteStore().createNote(session.getAuthToken(), note);
+    final Context context = this;
+    final class SaveImageTask extends AsyncTask<String, Void, Note>{
+      @Override
+      protected Note doInBackground(String... params) {
+        String f = params[0];
+        try {
+          // Hash the data in the image file. The hash is used to refernece the
+          // file in the ENML note content.
+          InputStream in = new BufferedInputStream(new FileInputStream(f)); 
+          FileData data = new FileData(EDAMUtil.hash(in), new File(f));
+          in.close();
 
-        Toast.makeText(this, R.string.msg_image_saved, Toast.LENGTH_LONG).show();
-      } catch (Throwable t) {
-        // It's generally bad form to catch Throwable, but for this simple demo, 
-        // we want to trap and log all errors.
-        Toast.makeText(this, R.string.err_creating_note, Toast.LENGTH_LONG).show();
-        Log.e(TAG, getString(R.string.err_creating_note), t);
-      }  
+          // Create a new Resource
+          Resource resource = new Resource();
+          resource.setData(data);
+          resource.setMime(HelloEDAM.this.mimeType);
+
+          // Create a new Note
+          Note note = new Note();
+          note.setTitle("Android test note");
+          note.addToResources(resource);
+
+          // Set the note's ENML content. Learn about ENML at 
+          // http://dev.evernote.com/documentation/cloud/chapters/ENML.php
+          String content = 
+            NOTE_PREFIX +
+            "<p>This note was uploaded from Android. It contains an image.</p>" +
+            "<en-media type=\"" + HelloEDAM.this.mimeType + "\" hash=\"" +
+            EDAMUtil.bytesToHex(resource.getData().getBodyHash()) + "\"/>" +
+            NOTE_SUFFIX;
+          note.setContent(content);
+
+          // Create the note on the server. The returned Note object
+          // will contain server-generated attributes such as the note's
+          // unique ID (GUID), the Resource's GUID, and the creation and update time.
+          Note createdNote = session.createNoteStore().createNote(session.getAuthToken(), note);
+          return createdNote;
+        } catch (Throwable t) {
+          // It's generally bad form to catch Throwable, but for this simple demo, 
+          // we want to trap and log all errors.
+          Log.e(TAG, getString(R.string.err_creating_note), t);
+        }
+        return null;
+      }
+
+      @Override
+      protected void onPostExecute(Note createdNote) {
+        if(createdNote == null){
+          Toast.makeText(context, R.string.err_creating_note, Toast.LENGTH_LONG).show();
+          return;
+        }
+        Toast.makeText(context, R.string.msg_image_saved, Toast.LENGTH_LONG).show();
+      };
+    }
+
+    if (session.isLoggedIn()) {
+      new SaveImageTask().execute(this.filePath);
     }
   }
 }
