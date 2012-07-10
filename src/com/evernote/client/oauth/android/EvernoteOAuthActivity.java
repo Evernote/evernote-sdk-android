@@ -25,6 +25,11 @@
  */
 package com.evernote.client.oauth.android;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.EvernoteApi;
 import org.scribe.exceptions.OAuthException;
@@ -68,6 +73,8 @@ public class EvernoteOAuthActivity extends Activity {
   // Activity state variables
   static boolean startedAuthentication;
   private boolean receivedCallback = false;
+
+  private final ExecutorService networkOperations = Executors.newCachedThreadPool();
   
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -159,9 +166,16 @@ public class EvernoteOAuthActivity extends Activity {
    */
   private void beginAuthentication() {
     try {
-      OAuthService service = createService();
+      final OAuthService service = createService();
       Log.i(TAG, "Retrieving OAuth request token...");
-      Token requestToken = service.getRequestToken();
+      //Perform the networking operation on background thread.
+      Future<Token> requestTokenFuture = networkOperations.submit(new Callable<Token>() {
+        @Override
+        public Token call() throws Exception {
+          return service.getRequestToken();
+        }
+      });
+      Token requestToken = requestTokenFuture.get();
       this.requestToken = requestToken.getToken();
       this.requestTokenSecret = requestToken.getSecret();
       
@@ -191,17 +205,23 @@ public class EvernoteOAuthActivity extends Activity {
     EvernoteAuthToken accessToken = null;
 
     if (requestToken != null) {
-      OAuthService service = createService();
+      final OAuthService service = createService();
       String verifierString = uri.getQueryParameter("oauth_verifier");
       if (verifierString == null || verifierString.length() == 0) {
         Log.i(TAG, "User did not authorize access");
       } else {
-        Verifier verifier = new Verifier(verifierString);
+        final Verifier verifier = new Verifier(verifierString);
         Log.i(TAG, "Retrieving OAuth access token...");  
         try {
-          Token reqToken = new Token(requestToken, requestTokenSecret);
-          accessToken = 
-            new EvernoteAuthToken(service.getAccessToken(reqToken, verifier));
+          final Token reqToken = new Token(requestToken, requestTokenSecret);
+          //Perform the networking operation on background thread.
+          Future<Token> accessTokenFuture = networkOperations.submit(new Callable<Token>() {
+            @Override
+            public Token call() throws Exception {
+              return service.getAccessToken(reqToken, verifier);
+            }
+          });
+          accessToken = new EvernoteAuthToken(accessTokenFuture.get());
         } catch (OAuthException oax) {
           Log.e(TAG, "Failed to obtain OAuth access token", oax);
         } catch (Exception ex) {
