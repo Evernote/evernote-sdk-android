@@ -20,6 +20,6 @@ public class Constants {
 
   public static final short EDAM_VERSION_MAJOR = (short)1;
 
-  public static final short EDAM_VERSION_MINOR = (short)21;
+  public static final short EDAM_VERSION_MINOR = (short)22;
 
 }

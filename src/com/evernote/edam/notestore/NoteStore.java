@@ -3491,6 +3491,53 @@ public class NoteStore {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "authenticateToSharedNote failed: unknown result");
     }
 
+    public RelatedResult findRelated(String authenticationToken, RelatedQuery query, RelatedResultSpec resultSpec) throws com.evernote.edam.error.EDAMUserException, com.evernote.edam.error.EDAMSystemException, com.evernote.edam.error.EDAMNotFoundException, TException
+    {
+      send_findRelated(authenticationToken, query, resultSpec);
+      return recv_findRelated();
+    }
+
+    public void send_findRelated(String authenticationToken, RelatedQuery query, RelatedResultSpec resultSpec) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("findRelated", TMessageType.CALL, ++seqid_));
+      findRelated_args args = new findRelated_args();
+      args.setAuthenticationToken(authenticationToken);
+      args.setQuery(query);
+      args.setResultSpec(resultSpec);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public RelatedResult recv_findRelated() throws com.evernote.edam.error.EDAMUserException, com.evernote.edam.error.EDAMSystemException, com.evernote.edam.error.EDAMNotFoundException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "findRelated failed: out of sequence response");
+      }
+      findRelated_result result = new findRelated_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.userException != null) {
+        throw result.userException;
+      }
+      if (result.systemException != null) {
+        throw result.systemException;
+      }
+      if (result.notFoundException != null) {
+        throw result.notFoundException;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "findRelated failed: unknown result");
+    }
+
   }
   public static class Processor implements TProcessor {
     public Processor(Iface iface)
@@ -3571,6 +3618,7 @@ public class NoteStore {
       processMap_.put("shareNote", new shareNote());
       processMap_.put("stopSharingNote", new stopSharingNote());
       processMap_.put("authenticateToSharedNote", new authenticateToSharedNote());
+      processMap_.put("findRelated", new findRelated());
     }
 
     protected static interface ProcessFunction {
@@ -6657,6 +6705,47 @@ public class NoteStore {
           return;
         }
         oprot.writeMessageBegin(new TMessage("authenticateToSharedNote", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class findRelated implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        findRelated_args args = new findRelated_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("findRelated", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        findRelated_result result = new findRelated_result();
+        try {
+          result.success = iface_.findRelated(args.authenticationToken, args.query, args.resultSpec);
+        } catch (com.evernote.edam.error.EDAMUserException userException) {
+          result.userException = userException;
+        } catch (com.evernote.edam.error.EDAMSystemException systemException) {
+          result.systemException = systemException;
+        } catch (com.evernote.edam.error.EDAMNotFoundException notFoundException) {
+          result.notFoundException = notFoundException;
+        } catch (Throwable th) {
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing findRelated");
+          oprot.writeMessageBegin(new TMessage("findRelated", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("findRelated", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -12827,14 +12916,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list103 = iprot.readListBegin();
-                this.success = new ArrayList<com.evernote.edam.type.Notebook>(_list103.size);
-                for (int _i104 = 0; _i104 < _list103.size; ++_i104)
+                TList _list115 = iprot.readListBegin();
+                this.success = new ArrayList<com.evernote.edam.type.Notebook>(_list115.size);
+                for (int _i116 = 0; _i116 < _list115.size; ++_i116)
                 {
-                  com.evernote.edam.type.Notebook _elem105;
-                  _elem105 = new com.evernote.edam.type.Notebook();
-                  _elem105.read(iprot);
-                  this.success.add(_elem105);
+                  com.evernote.edam.type.Notebook _elem117;
+                  _elem117 = new com.evernote.edam.type.Notebook();
+                  _elem117.read(iprot);
+                  this.success.add(_elem117);
                 }
                 iprot.readListEnd();
               }
@@ -12874,9 +12963,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (com.evernote.edam.type.Notebook _iter106 : this.success)
+          for (com.evernote.edam.type.Notebook _iter118 : this.success)
           {
-            _iter106.write(oprot);
+            _iter118.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -17791,14 +17880,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list107 = iprot.readListBegin();
-                this.success = new ArrayList<com.evernote.edam.type.Tag>(_list107.size);
-                for (int _i108 = 0; _i108 < _list107.size; ++_i108)
+                TList _list119 = iprot.readListBegin();
+                this.success = new ArrayList<com.evernote.edam.type.Tag>(_list119.size);
+                for (int _i120 = 0; _i120 < _list119.size; ++_i120)
                 {
-                  com.evernote.edam.type.Tag _elem109;
-                  _elem109 = new com.evernote.edam.type.Tag();
-                  _elem109.read(iprot);
-                  this.success.add(_elem109);
+                  com.evernote.edam.type.Tag _elem121;
+                  _elem121 = new com.evernote.edam.type.Tag();
+                  _elem121.read(iprot);
+                  this.success.add(_elem121);
                 }
                 iprot.readListEnd();
               }
@@ -17838,9 +17927,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (com.evernote.edam.type.Tag _iter110 : this.success)
+          for (com.evernote.edam.type.Tag _iter122 : this.success)
           {
-            _iter110.write(oprot);
+            _iter122.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -18702,14 +18791,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list111 = iprot.readListBegin();
-                this.success = new ArrayList<com.evernote.edam.type.Tag>(_list111.size);
-                for (int _i112 = 0; _i112 < _list111.size; ++_i112)
+                TList _list123 = iprot.readListBegin();
+                this.success = new ArrayList<com.evernote.edam.type.Tag>(_list123.size);
+                for (int _i124 = 0; _i124 < _list123.size; ++_i124)
                 {
-                  com.evernote.edam.type.Tag _elem113;
-                  _elem113 = new com.evernote.edam.type.Tag();
-                  _elem113.read(iprot);
-                  this.success.add(_elem113);
+                  com.evernote.edam.type.Tag _elem125;
+                  _elem125 = new com.evernote.edam.type.Tag();
+                  _elem125.read(iprot);
+                  this.success.add(_elem125);
                 }
                 iprot.readListEnd();
               }
@@ -18757,9 +18846,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (com.evernote.edam.type.Tag _iter114 : this.success)
+          for (com.evernote.edam.type.Tag _iter126 : this.success)
           {
-            _iter114.write(oprot);
+            _iter126.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -23860,14 +23949,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list115 = iprot.readListBegin();
-                this.success = new ArrayList<com.evernote.edam.type.SavedSearch>(_list115.size);
-                for (int _i116 = 0; _i116 < _list115.size; ++_i116)
+                TList _list127 = iprot.readListBegin();
+                this.success = new ArrayList<com.evernote.edam.type.SavedSearch>(_list127.size);
+                for (int _i128 = 0; _i128 < _list127.size; ++_i128)
                 {
-                  com.evernote.edam.type.SavedSearch _elem117;
-                  _elem117 = new com.evernote.edam.type.SavedSearch();
-                  _elem117.read(iprot);
-                  this.success.add(_elem117);
+                  com.evernote.edam.type.SavedSearch _elem129;
+                  _elem129 = new com.evernote.edam.type.SavedSearch();
+                  _elem129.read(iprot);
+                  this.success.add(_elem129);
                 }
                 iprot.readListEnd();
               }
@@ -23907,9 +23996,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (com.evernote.edam.type.SavedSearch _iter118 : this.success)
+          for (com.evernote.edam.type.SavedSearch _iter130 : this.success)
           {
-            _iter118.write(oprot);
+            _iter130.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -40415,13 +40504,13 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list119 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list119.size);
-                for (int _i120 = 0; _i120 < _list119.size; ++_i120)
+                TList _list131 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list131.size);
+                for (int _i132 = 0; _i132 < _list131.size; ++_i132)
                 {
-                  String _elem121;
-                  _elem121 = iprot.readString();
-                  this.success.add(_elem121);
+                  String _elem133;
+                  _elem133 = iprot.readString();
+                  this.success.add(_elem133);
                 }
                 iprot.readListEnd();
               }
@@ -40469,9 +40558,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter122 : this.success)
+          for (String _iter134 : this.success)
           {
-            oprot.writeString(_iter122);
+            oprot.writeString(_iter134);
           }
           oprot.writeListEnd();
         }
@@ -44432,13 +44521,13 @@ public class NoteStore {
           case 2: // NOTE_GUIDS
             if (field.type == TType.LIST) {
               {
-                TList _list123 = iprot.readListBegin();
-                this.noteGuids = new ArrayList<String>(_list123.size);
-                for (int _i124 = 0; _i124 < _list123.size; ++_i124)
+                TList _list135 = iprot.readListBegin();
+                this.noteGuids = new ArrayList<String>(_list135.size);
+                for (int _i136 = 0; _i136 < _list135.size; ++_i136)
                 {
-                  String _elem125;
-                  _elem125 = iprot.readString();
-                  this.noteGuids.add(_elem125);
+                  String _elem137;
+                  _elem137 = iprot.readString();
+                  this.noteGuids.add(_elem137);
                 }
                 iprot.readListEnd();
               }
@@ -44468,9 +44557,9 @@ public class NoteStore {
         oprot.writeFieldBegin(NOTE_GUIDS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.noteGuids.size()));
-          for (String _iter126 : this.noteGuids)
+          for (String _iter138 : this.noteGuids)
           {
-            oprot.writeString(_iter126);
+            oprot.writeString(_iter138);
           }
           oprot.writeListEnd();
         }
@@ -47547,14 +47636,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list127 = iprot.readListBegin();
-                this.success = new ArrayList<NoteVersionId>(_list127.size);
-                for (int _i128 = 0; _i128 < _list127.size; ++_i128)
+                TList _list139 = iprot.readListBegin();
+                this.success = new ArrayList<NoteVersionId>(_list139.size);
+                for (int _i140 = 0; _i140 < _list139.size; ++_i140)
                 {
-                  NoteVersionId _elem129;
-                  _elem129 = new NoteVersionId();
-                  _elem129.read(iprot);
-                  this.success.add(_elem129);
+                  NoteVersionId _elem141;
+                  _elem141 = new NoteVersionId();
+                  _elem141.read(iprot);
+                  this.success.add(_elem141);
                 }
                 iprot.readListEnd();
               }
@@ -47602,9 +47691,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (NoteVersionId _iter130 : this.success)
+          for (NoteVersionId _iter142 : this.success)
           {
-            _iter130.write(oprot);
+            _iter142.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -61196,14 +61285,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list131 = iprot.readListBegin();
-                this.success = new ArrayList<com.evernote.edam.type.Ad>(_list131.size);
-                for (int _i132 = 0; _i132 < _list131.size; ++_i132)
+                TList _list143 = iprot.readListBegin();
+                this.success = new ArrayList<com.evernote.edam.type.Ad>(_list143.size);
+                for (int _i144 = 0; _i144 < _list143.size; ++_i144)
                 {
-                  com.evernote.edam.type.Ad _elem133;
-                  _elem133 = new com.evernote.edam.type.Ad();
-                  _elem133.read(iprot);
-                  this.success.add(_elem133);
+                  com.evernote.edam.type.Ad _elem145;
+                  _elem145 = new com.evernote.edam.type.Ad();
+                  _elem145.read(iprot);
+                  this.success.add(_elem145);
                 }
                 iprot.readListEnd();
               }
@@ -61243,9 +61332,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (com.evernote.edam.type.Ad _iter134 : this.success)
+          for (com.evernote.edam.type.Ad _iter146 : this.success)
           {
-            _iter134.write(oprot);
+            _iter146.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -64275,13 +64364,13 @@ public class NoteStore {
           case 4: // RECIPIENTS
             if (field.type == TType.LIST) {
               {
-                TList _list135 = iprot.readListBegin();
-                this.recipients = new ArrayList<String>(_list135.size);
-                for (int _i136 = 0; _i136 < _list135.size; ++_i136)
+                TList _list147 = iprot.readListBegin();
+                this.recipients = new ArrayList<String>(_list147.size);
+                for (int _i148 = 0; _i148 < _list147.size; ++_i148)
                 {
-                  String _elem137;
-                  _elem137 = iprot.readString();
-                  this.recipients.add(_elem137);
+                  String _elem149;
+                  _elem149 = iprot.readString();
+                  this.recipients.add(_elem149);
                 }
                 iprot.readListEnd();
               }
@@ -64321,9 +64410,9 @@ public class NoteStore {
         oprot.writeFieldBegin(RECIPIENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.recipients.size()));
-          for (String _iter138 : this.recipients)
+          for (String _iter150 : this.recipients)
           {
-            oprot.writeString(_iter138);
+            oprot.writeString(_iter150);
           }
           oprot.writeListEnd();
         }
@@ -65630,14 +65719,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list139 = iprot.readListBegin();
-                this.success = new ArrayList<com.evernote.edam.type.SharedNotebook>(_list139.size);
-                for (int _i140 = 0; _i140 < _list139.size; ++_i140)
+                TList _list151 = iprot.readListBegin();
+                this.success = new ArrayList<com.evernote.edam.type.SharedNotebook>(_list151.size);
+                for (int _i152 = 0; _i152 < _list151.size; ++_i152)
                 {
-                  com.evernote.edam.type.SharedNotebook _elem141;
-                  _elem141 = new com.evernote.edam.type.SharedNotebook();
-                  _elem141.read(iprot);
-                  this.success.add(_elem141);
+                  com.evernote.edam.type.SharedNotebook _elem153;
+                  _elem153 = new com.evernote.edam.type.SharedNotebook();
+                  _elem153.read(iprot);
+                  this.success.add(_elem153);
                 }
                 iprot.readListEnd();
               }
@@ -65685,9 +65774,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (com.evernote.edam.type.SharedNotebook _iter142 : this.success)
+          for (com.evernote.edam.type.SharedNotebook _iter154 : this.success)
           {
-            _iter142.write(oprot);
+            _iter154.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -66074,13 +66163,13 @@ public class NoteStore {
           case 2: // SHARED_NOTEBOOK_IDS
             if (field.type == TType.LIST) {
               {
-                TList _list143 = iprot.readListBegin();
-                this.sharedNotebookIds = new ArrayList<Long>(_list143.size);
-                for (int _i144 = 0; _i144 < _list143.size; ++_i144)
+                TList _list155 = iprot.readListBegin();
+                this.sharedNotebookIds = new ArrayList<Long>(_list155.size);
+                for (int _i156 = 0; _i156 < _list155.size; ++_i156)
                 {
-                  long _elem145;
-                  _elem145 = iprot.readI64();
-                  this.sharedNotebookIds.add(_elem145);
+                  long _elem157;
+                  _elem157 = iprot.readI64();
+                  this.sharedNotebookIds.add(_elem157);
                 }
                 iprot.readListEnd();
               }
@@ -66110,9 +66199,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SHARED_NOTEBOOK_IDS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.I64, this.sharedNotebookIds.size()));
-          for (long _iter146 : this.sharedNotebookIds)
+          for (long _iter158 : this.sharedNotebookIds)
           {
-            oprot.writeI64(_iter146);
+            oprot.writeI64(_iter158);
           }
           oprot.writeListEnd();
         }
@@ -69191,14 +69280,14 @@ public class NoteStore {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list147 = iprot.readListBegin();
-                this.success = new ArrayList<com.evernote.edam.type.LinkedNotebook>(_list147.size);
-                for (int _i148 = 0; _i148 < _list147.size; ++_i148)
+                TList _list159 = iprot.readListBegin();
+                this.success = new ArrayList<com.evernote.edam.type.LinkedNotebook>(_list159.size);
+                for (int _i160 = 0; _i160 < _list159.size; ++_i160)
                 {
-                  com.evernote.edam.type.LinkedNotebook _elem149;
-                  _elem149 = new com.evernote.edam.type.LinkedNotebook();
-                  _elem149.read(iprot);
-                  this.success.add(_elem149);
+                  com.evernote.edam.type.LinkedNotebook _elem161;
+                  _elem161 = new com.evernote.edam.type.LinkedNotebook();
+                  _elem161.read(iprot);
+                  this.success.add(_elem161);
                 }
                 iprot.readListEnd();
               }
@@ -69246,9 +69335,9 @@ public class NoteStore {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (com.evernote.edam.type.LinkedNotebook _iter150 : this.success)
+          for (com.evernote.edam.type.LinkedNotebook _iter162 : this.success)
           {
-            _iter150.write(oprot);
+            _iter162.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -75298,6 +75387,989 @@ public class NoteStore {
         sb.append("null");
       } else {
         sb.append(this.systemException);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class findRelated_args implements TBase<findRelated_args, findRelated_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("findRelated_args");
+
+    private static final TField AUTHENTICATION_TOKEN_FIELD_DESC = new TField("authenticationToken", TType.STRING, (short)1);
+    private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)2);
+    private static final TField RESULT_SPEC_FIELD_DESC = new TField("resultSpec", TType.STRUCT, (short)3);
+
+    private String authenticationToken;
+    private RelatedQuery query;
+    private RelatedResultSpec resultSpec;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      AUTHENTICATION_TOKEN((short)1, "authenticationToken"),
+      QUERY((short)2, "query"),
+      RESULT_SPEC((short)3, "resultSpec");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // AUTHENTICATION_TOKEN
+            return AUTHENTICATION_TOKEN;
+          case 2: // QUERY
+            return QUERY;
+          case 3: // RESULT_SPEC
+            return RESULT_SPEC;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.AUTHENTICATION_TOKEN, new FieldMetaData("authenticationToken", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, RelatedQuery.class)));
+      tmpMap.put(_Fields.RESULT_SPEC, new FieldMetaData("resultSpec", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, RelatedResultSpec.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(findRelated_args.class, metaDataMap);
+    }
+
+    public findRelated_args() {
+    }
+
+    public findRelated_args(
+      String authenticationToken,
+      RelatedQuery query,
+      RelatedResultSpec resultSpec)
+    {
+      this();
+      this.authenticationToken = authenticationToken;
+      this.query = query;
+      this.resultSpec = resultSpec;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public findRelated_args(findRelated_args other) {
+      if (other.isSetAuthenticationToken()) {
+        this.authenticationToken = other.authenticationToken;
+      }
+      if (other.isSetQuery()) {
+        this.query = new RelatedQuery(other.query);
+      }
+      if (other.isSetResultSpec()) {
+        this.resultSpec = new RelatedResultSpec(other.resultSpec);
+      }
+    }
+
+    public findRelated_args deepCopy() {
+      return new findRelated_args(this);
+    }
+
+    public void clear() {
+      this.authenticationToken = null;
+      this.query = null;
+      this.resultSpec = null;
+    }
+
+    public String getAuthenticationToken() {
+      return this.authenticationToken;
+    }
+
+    public void setAuthenticationToken(String authenticationToken) {
+      this.authenticationToken = authenticationToken;
+    }
+
+    public void unsetAuthenticationToken() {
+      this.authenticationToken = null;
+    }
+
+    /** Returns true if field authenticationToken is set (has been asigned a value) and false otherwise */
+    public boolean isSetAuthenticationToken() {
+      return this.authenticationToken != null;
+    }
+
+    public void setAuthenticationTokenIsSet(boolean value) {
+      if (!value) {
+        this.authenticationToken = null;
+      }
+    }
+
+    public RelatedQuery getQuery() {
+      return this.query;
+    }
+
+    public void setQuery(RelatedQuery query) {
+      this.query = query;
+    }
+
+    public void unsetQuery() {
+      this.query = null;
+    }
+
+    /** Returns true if field query is set (has been asigned a value) and false otherwise */
+    public boolean isSetQuery() {
+      return this.query != null;
+    }
+
+    public void setQueryIsSet(boolean value) {
+      if (!value) {
+        this.query = null;
+      }
+    }
+
+    public RelatedResultSpec getResultSpec() {
+      return this.resultSpec;
+    }
+
+    public void setResultSpec(RelatedResultSpec resultSpec) {
+      this.resultSpec = resultSpec;
+    }
+
+    public void unsetResultSpec() {
+      this.resultSpec = null;
+    }
+
+    /** Returns true if field resultSpec is set (has been asigned a value) and false otherwise */
+    public boolean isSetResultSpec() {
+      return this.resultSpec != null;
+    }
+
+    public void setResultSpecIsSet(boolean value) {
+      if (!value) {
+        this.resultSpec = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case AUTHENTICATION_TOKEN:
+        if (value == null) {
+          unsetAuthenticationToken();
+        } else {
+          setAuthenticationToken((String)value);
+        }
+        break;
+
+      case QUERY:
+        if (value == null) {
+          unsetQuery();
+        } else {
+          setQuery((RelatedQuery)value);
+        }
+        break;
+
+      case RESULT_SPEC:
+        if (value == null) {
+          unsetResultSpec();
+        } else {
+          setResultSpec((RelatedResultSpec)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case AUTHENTICATION_TOKEN:
+        return getAuthenticationToken();
+
+      case QUERY:
+        return getQuery();
+
+      case RESULT_SPEC:
+        return getResultSpec();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case AUTHENTICATION_TOKEN:
+        return isSetAuthenticationToken();
+      case QUERY:
+        return isSetQuery();
+      case RESULT_SPEC:
+        return isSetResultSpec();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof findRelated_args)
+        return this.equals((findRelated_args)that);
+      return false;
+    }
+
+    public boolean equals(findRelated_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_authenticationToken = true && this.isSetAuthenticationToken();
+      boolean that_present_authenticationToken = true && that.isSetAuthenticationToken();
+      if (this_present_authenticationToken || that_present_authenticationToken) {
+        if (!(this_present_authenticationToken && that_present_authenticationToken))
+          return false;
+        if (!this.authenticationToken.equals(that.authenticationToken))
+          return false;
+      }
+
+      boolean this_present_query = true && this.isSetQuery();
+      boolean that_present_query = true && that.isSetQuery();
+      if (this_present_query || that_present_query) {
+        if (!(this_present_query && that_present_query))
+          return false;
+        if (!this.query.equals(that.query))
+          return false;
+      }
+
+      boolean this_present_resultSpec = true && this.isSetResultSpec();
+      boolean that_present_resultSpec = true && that.isSetResultSpec();
+      if (this_present_resultSpec || that_present_resultSpec) {
+        if (!(this_present_resultSpec && that_present_resultSpec))
+          return false;
+        if (!this.resultSpec.equals(that.resultSpec))
+          return false;
+      }
+
+      return true;
+    }
+
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(findRelated_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      findRelated_args typedOther = (findRelated_args)other;
+
+      lastComparison = Boolean.valueOf(isSetAuthenticationToken()).compareTo(typedOther.isSetAuthenticationToken());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetAuthenticationToken()) {        lastComparison = TBaseHelper.compareTo(this.authenticationToken, typedOther.authenticationToken);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetQuery()) {        lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetResultSpec()).compareTo(typedOther.isSetResultSpec());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetResultSpec()) {        lastComparison = TBaseHelper.compareTo(this.resultSpec, typedOther.resultSpec);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // AUTHENTICATION_TOKEN
+            if (field.type == TType.STRING) {
+              this.authenticationToken = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // QUERY
+            if (field.type == TType.STRUCT) {
+              this.query = new RelatedQuery();
+              this.query.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // RESULT_SPEC
+            if (field.type == TType.STRUCT) {
+              this.resultSpec = new RelatedResultSpec();
+              this.resultSpec.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.authenticationToken != null) {
+        oprot.writeFieldBegin(AUTHENTICATION_TOKEN_FIELD_DESC);
+        oprot.writeString(this.authenticationToken);
+        oprot.writeFieldEnd();
+      }
+      if (this.query != null) {
+        oprot.writeFieldBegin(QUERY_FIELD_DESC);
+        this.query.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      if (this.resultSpec != null) {
+        oprot.writeFieldBegin(RESULT_SPEC_FIELD_DESC);
+        this.resultSpec.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    public String toString() {
+      StringBuilder sb = new StringBuilder("findRelated_args(");
+      boolean first = true;
+
+      sb.append("authenticationToken:");
+      if (this.authenticationToken == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.authenticationToken);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("query:");
+      if (this.query == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.query);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("resultSpec:");
+      if (this.resultSpec == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.resultSpec);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class findRelated_result implements TBase<findRelated_result, findRelated_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("findRelated_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField USER_EXCEPTION_FIELD_DESC = new TField("userException", TType.STRUCT, (short)1);
+    private static final TField SYSTEM_EXCEPTION_FIELD_DESC = new TField("systemException", TType.STRUCT, (short)2);
+    private static final TField NOT_FOUND_EXCEPTION_FIELD_DESC = new TField("notFoundException", TType.STRUCT, (short)3);
+
+    private RelatedResult success;
+    private com.evernote.edam.error.EDAMUserException userException;
+    private com.evernote.edam.error.EDAMSystemException systemException;
+    private com.evernote.edam.error.EDAMNotFoundException notFoundException;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      USER_EXCEPTION((short)1, "userException"),
+      SYSTEM_EXCEPTION((short)2, "systemException"),
+      NOT_FOUND_EXCEPTION((short)3, "notFoundException");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // USER_EXCEPTION
+            return USER_EXCEPTION;
+          case 2: // SYSTEM_EXCEPTION
+            return SYSTEM_EXCEPTION;
+          case 3: // NOT_FOUND_EXCEPTION
+            return NOT_FOUND_EXCEPTION;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, RelatedResult.class)));
+      tmpMap.put(_Fields.USER_EXCEPTION, new FieldMetaData("userException", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.SYSTEM_EXCEPTION, new FieldMetaData("systemException", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.NOT_FOUND_EXCEPTION, new FieldMetaData("notFoundException", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(findRelated_result.class, metaDataMap);
+    }
+
+    public findRelated_result() {
+    }
+
+    public findRelated_result(
+      RelatedResult success,
+      com.evernote.edam.error.EDAMUserException userException,
+      com.evernote.edam.error.EDAMSystemException systemException,
+      com.evernote.edam.error.EDAMNotFoundException notFoundException)
+    {
+      this();
+      this.success = success;
+      this.userException = userException;
+      this.systemException = systemException;
+      this.notFoundException = notFoundException;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public findRelated_result(findRelated_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new RelatedResult(other.success);
+      }
+      if (other.isSetUserException()) {
+        this.userException = new com.evernote.edam.error.EDAMUserException(other.userException);
+      }
+      if (other.isSetSystemException()) {
+        this.systemException = new com.evernote.edam.error.EDAMSystemException(other.systemException);
+      }
+      if (other.isSetNotFoundException()) {
+        this.notFoundException = new com.evernote.edam.error.EDAMNotFoundException(other.notFoundException);
+      }
+    }
+
+    public findRelated_result deepCopy() {
+      return new findRelated_result(this);
+    }
+
+    public void clear() {
+      this.success = null;
+      this.userException = null;
+      this.systemException = null;
+      this.notFoundException = null;
+    }
+
+    public RelatedResult getSuccess() {
+      return this.success;
+    }
+
+    public void setSuccess(RelatedResult success) {
+      this.success = success;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public com.evernote.edam.error.EDAMUserException getUserException() {
+      return this.userException;
+    }
+
+    public void setUserException(com.evernote.edam.error.EDAMUserException userException) {
+      this.userException = userException;
+    }
+
+    public void unsetUserException() {
+      this.userException = null;
+    }
+
+    /** Returns true if field userException is set (has been asigned a value) and false otherwise */
+    public boolean isSetUserException() {
+      return this.userException != null;
+    }
+
+    public void setUserExceptionIsSet(boolean value) {
+      if (!value) {
+        this.userException = null;
+      }
+    }
+
+    public com.evernote.edam.error.EDAMSystemException getSystemException() {
+      return this.systemException;
+    }
+
+    public void setSystemException(com.evernote.edam.error.EDAMSystemException systemException) {
+      this.systemException = systemException;
+    }
+
+    public void unsetSystemException() {
+      this.systemException = null;
+    }
+
+    /** Returns true if field systemException is set (has been asigned a value) and false otherwise */
+    public boolean isSetSystemException() {
+      return this.systemException != null;
+    }
+
+    public void setSystemExceptionIsSet(boolean value) {
+      if (!value) {
+        this.systemException = null;
+      }
+    }
+
+    public com.evernote.edam.error.EDAMNotFoundException getNotFoundException() {
+      return this.notFoundException;
+    }
+
+    public void setNotFoundException(com.evernote.edam.error.EDAMNotFoundException notFoundException) {
+      this.notFoundException = notFoundException;
+    }
+
+    public void unsetNotFoundException() {
+      this.notFoundException = null;
+    }
+
+    /** Returns true if field notFoundException is set (has been asigned a value) and false otherwise */
+    public boolean isSetNotFoundException() {
+      return this.notFoundException != null;
+    }
+
+    public void setNotFoundExceptionIsSet(boolean value) {
+      if (!value) {
+        this.notFoundException = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((RelatedResult)value);
+        }
+        break;
+
+      case USER_EXCEPTION:
+        if (value == null) {
+          unsetUserException();
+        } else {
+          setUserException((com.evernote.edam.error.EDAMUserException)value);
+        }
+        break;
+
+      case SYSTEM_EXCEPTION:
+        if (value == null) {
+          unsetSystemException();
+        } else {
+          setSystemException((com.evernote.edam.error.EDAMSystemException)value);
+        }
+        break;
+
+      case NOT_FOUND_EXCEPTION:
+        if (value == null) {
+          unsetNotFoundException();
+        } else {
+          setNotFoundException((com.evernote.edam.error.EDAMNotFoundException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case USER_EXCEPTION:
+        return getUserException();
+
+      case SYSTEM_EXCEPTION:
+        return getSystemException();
+
+      case NOT_FOUND_EXCEPTION:
+        return getNotFoundException();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case USER_EXCEPTION:
+        return isSetUserException();
+      case SYSTEM_EXCEPTION:
+        return isSetSystemException();
+      case NOT_FOUND_EXCEPTION:
+        return isSetNotFoundException();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof findRelated_result)
+        return this.equals((findRelated_result)that);
+      return false;
+    }
+
+    public boolean equals(findRelated_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_userException = true && this.isSetUserException();
+      boolean that_present_userException = true && that.isSetUserException();
+      if (this_present_userException || that_present_userException) {
+        if (!(this_present_userException && that_present_userException))
+          return false;
+        if (!this.userException.equals(that.userException))
+          return false;
+      }
+
+      boolean this_present_systemException = true && this.isSetSystemException();
+      boolean that_present_systemException = true && that.isSetSystemException();
+      if (this_present_systemException || that_present_systemException) {
+        if (!(this_present_systemException && that_present_systemException))
+          return false;
+        if (!this.systemException.equals(that.systemException))
+          return false;
+      }
+
+      boolean this_present_notFoundException = true && this.isSetNotFoundException();
+      boolean that_present_notFoundException = true && that.isSetNotFoundException();
+      if (this_present_notFoundException || that_present_notFoundException) {
+        if (!(this_present_notFoundException && that_present_notFoundException))
+          return false;
+        if (!this.notFoundException.equals(that.notFoundException))
+          return false;
+      }
+
+      return true;
+    }
+
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(findRelated_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      findRelated_result typedOther = (findRelated_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUserException()).compareTo(typedOther.isSetUserException());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUserException()) {        lastComparison = TBaseHelper.compareTo(this.userException, typedOther.userException);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetSystemException()).compareTo(typedOther.isSetSystemException());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSystemException()) {        lastComparison = TBaseHelper.compareTo(this.systemException, typedOther.systemException);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNotFoundException()).compareTo(typedOther.isSetNotFoundException());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNotFoundException()) {        lastComparison = TBaseHelper.compareTo(this.notFoundException, typedOther.notFoundException);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRUCT) {
+              this.success = new RelatedResult();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // USER_EXCEPTION
+            if (field.type == TType.STRUCT) {
+              this.userException = new com.evernote.edam.error.EDAMUserException();
+              this.userException.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // SYSTEM_EXCEPTION
+            if (field.type == TType.STRUCT) {
+              this.systemException = new com.evernote.edam.error.EDAMSystemException();
+              this.systemException.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // NOT_FOUND_EXCEPTION
+            if (field.type == TType.STRUCT) {
+              this.notFoundException = new com.evernote.edam.error.EDAMNotFoundException();
+              this.notFoundException.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetUserException()) {
+        oprot.writeFieldBegin(USER_EXCEPTION_FIELD_DESC);
+        this.userException.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetSystemException()) {
+        oprot.writeFieldBegin(SYSTEM_EXCEPTION_FIELD_DESC);
+        this.systemException.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetNotFoundException()) {
+        oprot.writeFieldBegin(NOT_FOUND_EXCEPTION_FIELD_DESC);
+        this.notFoundException.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    public String toString() {
+      StringBuilder sb = new StringBuilder("findRelated_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("userException:");
+      if (this.userException == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.userException);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("systemException:");
+      if (this.systemException == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.systemException);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("notFoundException:");
+      if (this.notFoundException == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.notFoundException);
       }
       first = false;
       sb.append(")");

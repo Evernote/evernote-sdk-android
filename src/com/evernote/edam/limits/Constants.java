@@ -246,4 +246,16 @@ public class Constants {
 
   public static final String EDAM_CONTENT_CLASS_FOOD_MEAL = "evernote.food.meal";
 
+  public static final String EDAM_CONTENT_CLASS_SKITCH = "evernote.skitch";
+
+  public static final int EDAM_RELATED_PLAINTEXT_LEN_MIN = 1;
+
+  public static final int EDAM_RELATED_PLAINTEXT_LEN_MAX = 131072;
+
+  public static final int EDAM_RELATED_MAX_NOTES = 25;
+
+  public static final int EDAM_RELATED_MAX_NOTEBOOKS = 1;
+
+  public static final int EDAM_RELATED_MAX_TAGS = 25;
+
 }

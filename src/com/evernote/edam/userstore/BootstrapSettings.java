@@ -94,6 +94,7 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
   private static final TField ENABLE_SINGLE_NOTE_SHARING_FIELD_DESC = new TField("enableSingleNoteSharing", TType.BOOL, (short)9);
   private static final TField ENABLE_SPONSORED_ACCOUNTS_FIELD_DESC = new TField("enableSponsoredAccounts", TType.BOOL, (short)10);
   private static final TField ENABLE_TWITTER_SHARING_FIELD_DESC = new TField("enableTwitterSharing", TType.BOOL, (short)11);
+  private static final TField ENABLE_LINKED_IN_SHARING_FIELD_DESC = new TField("enableLinkedInSharing", TType.BOOL, (short)12);
 
   private String serviceHost;
   private String marketingUrl;
@@ -106,6 +107,7 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
   private boolean enableSingleNoteSharing;
   private boolean enableSponsoredAccounts;
   private boolean enableTwitterSharing;
+  private boolean enableLinkedInSharing;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -119,7 +121,8 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
     ENABLE_SHARED_NOTEBOOKS((short)8, "enableSharedNotebooks"),
     ENABLE_SINGLE_NOTE_SHARING((short)9, "enableSingleNoteSharing"),
     ENABLE_SPONSORED_ACCOUNTS((short)10, "enableSponsoredAccounts"),
-    ENABLE_TWITTER_SHARING((short)11, "enableTwitterSharing");
+    ENABLE_TWITTER_SHARING((short)11, "enableTwitterSharing"),
+    ENABLE_LINKED_IN_SHARING((short)12, "enableLinkedInSharing");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -156,6 +159,8 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
           return ENABLE_SPONSORED_ACCOUNTS;
         case 11: // ENABLE_TWITTER_SHARING
           return ENABLE_TWITTER_SHARING;
+        case 12: // ENABLE_LINKED_IN_SHARING
+          return ENABLE_LINKED_IN_SHARING;
         default:
           return null;
       }
@@ -203,7 +208,8 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
   private static final int __ENABLESINGLENOTESHARING_ISSET_ID = 4;
   private static final int __ENABLESPONSOREDACCOUNTS_ISSET_ID = 5;
   private static final int __ENABLETWITTERSHARING_ISSET_ID = 6;
-  private boolean[] __isset_vector = new boolean[7];
+  private static final int __ENABLELINKEDINSHARING_ISSET_ID = 7;
+  private boolean[] __isset_vector = new boolean[8];
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -229,6 +235,8 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
     tmpMap.put(_Fields.ENABLE_SPONSORED_ACCOUNTS, new FieldMetaData("enableSponsoredAccounts", TFieldRequirementType.OPTIONAL, 
         new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.ENABLE_TWITTER_SHARING, new FieldMetaData("enableTwitterSharing", TFieldRequirementType.OPTIONAL, 
+        new FieldValueMetaData(TType.BOOL)));
+    tmpMap.put(_Fields.ENABLE_LINKED_IN_SHARING, new FieldMetaData("enableLinkedInSharing", TFieldRequirementType.OPTIONAL, 
         new FieldValueMetaData(TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(BootstrapSettings.class, metaDataMap);
@@ -274,6 +282,7 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
     this.enableSingleNoteSharing = other.enableSingleNoteSharing;
     this.enableSponsoredAccounts = other.enableSponsoredAccounts;
     this.enableTwitterSharing = other.enableTwitterSharing;
+    this.enableLinkedInSharing = other.enableLinkedInSharing;
   }
 
   public BootstrapSettings deepCopy() {
@@ -299,6 +308,8 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
     this.enableSponsoredAccounts = false;
     setEnableTwitterSharingIsSet(false);
     this.enableTwitterSharing = false;
+    setEnableLinkedInSharingIsSet(false);
+    this.enableLinkedInSharing = false;
   }
 
   public String getServiceHost() {
@@ -547,6 +558,28 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
     __isset_vector[__ENABLETWITTERSHARING_ISSET_ID] = value;
   }
 
+  public boolean isEnableLinkedInSharing() {
+    return this.enableLinkedInSharing;
+  }
+
+  public void setEnableLinkedInSharing(boolean enableLinkedInSharing) {
+    this.enableLinkedInSharing = enableLinkedInSharing;
+    setEnableLinkedInSharingIsSet(true);
+  }
+
+  public void unsetEnableLinkedInSharing() {
+    __isset_vector[__ENABLELINKEDINSHARING_ISSET_ID] = false;
+  }
+
+  /** Returns true if field enableLinkedInSharing is set (has been asigned a value) and false otherwise */
+  public boolean isSetEnableLinkedInSharing() {
+    return __isset_vector[__ENABLELINKEDINSHARING_ISSET_ID];
+  }
+
+  public void setEnableLinkedInSharingIsSet(boolean value) {
+    __isset_vector[__ENABLELINKEDINSHARING_ISSET_ID] = value;
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SERVICE_HOST:
@@ -637,6 +670,14 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
       }
       break;
 
+    case ENABLE_LINKED_IN_SHARING:
+      if (value == null) {
+        unsetEnableLinkedInSharing();
+      } else {
+        setEnableLinkedInSharing((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -675,6 +716,9 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
     case ENABLE_TWITTER_SHARING:
       return new Boolean(isEnableTwitterSharing());
 
+    case ENABLE_LINKED_IN_SHARING:
+      return new Boolean(isEnableLinkedInSharing());
+
     }
     throw new IllegalStateException();
   }
@@ -708,6 +752,8 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
       return isSetEnableSponsoredAccounts();
     case ENABLE_TWITTER_SHARING:
       return isSetEnableTwitterSharing();
+    case ENABLE_LINKED_IN_SHARING:
+      return isSetEnableLinkedInSharing();
     }
     throw new IllegalStateException();
   }
@@ -820,6 +866,15 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
       if (!(this_present_enableTwitterSharing && that_present_enableTwitterSharing))
         return false;
       if (this.enableTwitterSharing != that.enableTwitterSharing)
+        return false;
+    }
+
+    boolean this_present_enableLinkedInSharing = true && this.isSetEnableLinkedInSharing();
+    boolean that_present_enableLinkedInSharing = true && that.isSetEnableLinkedInSharing();
+    if (this_present_enableLinkedInSharing || that_present_enableLinkedInSharing) {
+      if (!(this_present_enableLinkedInSharing && that_present_enableLinkedInSharing))
+        return false;
+      if (this.enableLinkedInSharing != that.enableLinkedInSharing)
         return false;
     }
 
@@ -937,6 +992,15 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetEnableLinkedInSharing()).compareTo(typedOther.isSetEnableLinkedInSharing());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetEnableLinkedInSharing()) {      lastComparison = TBaseHelper.compareTo(this.enableLinkedInSharing, typedOther.enableLinkedInSharing);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1038,6 +1102,14 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 12: // ENABLE_LINKED_IN_SHARING
+          if (field.type == TType.BOOL) {
+            this.enableLinkedInSharing = iprot.readBool();
+            setEnableLinkedInSharingIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -1104,6 +1176,11 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
     if (isSetEnableTwitterSharing()) {
       oprot.writeFieldBegin(ENABLE_TWITTER_SHARING_FIELD_DESC);
       oprot.writeBool(this.enableTwitterSharing);
+      oprot.writeFieldEnd();
+    }
+    if (isSetEnableLinkedInSharing()) {
+      oprot.writeFieldBegin(ENABLE_LINKED_IN_SHARING_FIELD_DESC);
+      oprot.writeBool(this.enableLinkedInSharing);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -1185,6 +1262,12 @@ public class BootstrapSettings implements TBase<BootstrapSettings, BootstrapSett
       if (!first) sb.append(", ");
       sb.append("enableTwitterSharing:");
       sb.append(this.enableTwitterSharing);
+      first = false;
+    }
+    if (isSetEnableLinkedInSharing()) {
+      if (!first) sb.append(", ");
+      sb.append("enableLinkedInSharing:");
+      sb.append(this.enableLinkedInSharing);
       first = false;
     }
     sb.append(")");

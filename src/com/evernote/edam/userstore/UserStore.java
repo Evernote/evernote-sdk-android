@@ -821,7 +821,7 @@ public class UserStore {
     public checkVersion_args() {
       this.edamVersionMajor = (short)1;
 
-      this.edamVersionMinor = (short)21;
+      this.edamVersionMinor = (short)22;
 
     }
 
@@ -858,7 +858,7 @@ public class UserStore {
       this.clientName = null;
       this.edamVersionMajor = (short)1;
 
-      this.edamVersionMinor = (short)21;
+      this.edamVersionMinor = (short)22;
 
     }
 
