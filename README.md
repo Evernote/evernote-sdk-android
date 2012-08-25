@@ -1,5 +1,7 @@
-Evernote SDK for Android version 1.21
+Evernote SDK for Android 
 =============================================
+
+Evernote API version 1.22
 
 Overview
 --------
