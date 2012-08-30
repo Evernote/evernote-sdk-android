@@ -12,12 +12,12 @@ import com.evernote.edam.util.EDAMUtil;
 import com.evernote.client.conn.mobile.FileData;
 
 import com.evernote.client.conn.ApplicationInfo;
-import com.evernote.client.oauth.android.AuthenticationResult;
 import com.evernote.client.oauth.android.EvernoteSession;
 import com.evernote.android.sample.R;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -45,8 +45,8 @@ public class HelloEDAM extends Activity {
   
   // Your Evernote API key. See http://dev.evernote.com/documentation/cloud/
   // Please obfuscate your code to help keep these values secret.
-  private static final String CONSUMER_KEY = "";
-  private static final String CONSUMER_SECRET = "";
+  private static final String CONSUMER_KEY = "sethhitch-web";
+  private static final String CONSUMER_SECRET = "1ca0956605acc4f2";
 
   /***************************************************************************
    * Change these values as needed to use this code in your own application. *
@@ -116,12 +116,23 @@ public class HelloEDAM extends Activity {
     super.onResume();
 
     // Complete the Evernote authentication process if necessary
-    if (!session.completeAuthentication()) {
+    if (!session.completeAuthentication(getPreferencesForAuthData())) {
       // We only want to do this when we're resuming after authentication...
       Toast.makeText(this, "Evernote login failed", Toast.LENGTH_LONG).show();
     }
     
     updateUi();
+  }
+
+  /**
+   * Evernote authentication data will be stored to this
+   * SharedPreferences if we are resuming as a result of a successful OAuth
+   * authorization. You may wish to pass a different SharedPreferences
+   * so that Evernote settings are stored along with other settings
+   * persisted by your application.
+   */
+  private SharedPreferences getPreferencesForAuthData() {
+    return getPreferences(MODE_PRIVATE);
   }
   
   /**
@@ -132,14 +143,8 @@ public class HelloEDAM extends Activity {
       new ApplicationInfo(CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, 
           APP_NAME, APP_VERSION);
 
-    // TODO Retreived the cached Evernote AuthenticationResult if it exists
-//    if (hasCachedEvernoteCredentials) {
-//      AuthenticationResult result = new AuthenticationResult(authToken, noteStoreUrl, webApiUrlPrefix, userId);
-//      session = new EvernoteSession(info, result, getTempDir());
-//    } else {
-      session = new EvernoteSession(info, getTempDir());
-//    }
-
+    // Retrieve persisted authentication information
+    session = new EvernoteSession(info, getPreferencesForAuthData(), getTempDir());
     updateUi();
   }
   
@@ -159,13 +164,13 @@ public class HelloEDAM extends Activity {
   }
   
   /**
-   * Called when the user taps the "Select Image" button.
-   * 
-   * Sends the user to the image gallery to choose an image to share.
+   * Called when the user taps the "Log in to Evernote" button.
+   * Initiates the Evernote OAuth process, or logs out if the user is already
+   * logged in.
    */
   public void startAuth(View view) {
     if (session.isLoggedIn()) {
-      session.logOut();
+      session.logOut(getPreferencesForAuthData());
     } else {
       session.authenticate(this);
     }
