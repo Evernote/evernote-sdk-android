@@ -1,4 +1,4 @@
-Evernote SDK for Android version 0.2
+Evernote SDK for Android version 0.2.1
 =============================================
 
 Evernote API version 1.22

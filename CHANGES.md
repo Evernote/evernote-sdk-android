@@ -1,3 +1,8 @@
+= 0.2.1 / 2012-09-08
+
+* Set targetSdkVersion to 9
+* Add known issues to README
+
 = 0.2 / 2012-09-07
 
 * Persist authentication token and related settings in EvernoteSession so that the
