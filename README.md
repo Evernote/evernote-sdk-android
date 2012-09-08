@@ -15,6 +15,10 @@ In order to use the code in this SDK, you need to obtain an API key from http://
 
 In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action 
 
+Known Issues
+------------
+The current version of the SDK performs OAuth network requests on the main thread, resulting in a NetworkOnMainThreadException when the targetSDK is set to 11 or higher.
+
 Getting Started - HelloEDAM
 ---------------------------
 The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. To run the sample project:
