@@ -1,3 +1,7 @@
+= 0.2.2 / 2012-09-19
+
+* Adds support for the Evernote China API (Yinxiang Biji)
+
 = 0.2.1 / 2012-09-08
 
 * Set targetSdkVersion to 9
