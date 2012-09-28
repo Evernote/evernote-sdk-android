@@ -33,6 +33,7 @@ import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
 import com.evernote.client.oauth.EvernoteAuthToken;
+import com.evernote.client.oauth.YinxiangApi;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -115,6 +116,7 @@ public class EvernoteOAuthActivity extends Activity {
     }
 
     if (!startedAuthentication) {
+      receivedCallback = false;
       beginAuthentication();
       startedAuthentication = true;
     } else if (!receivedCallback) {
@@ -135,6 +137,11 @@ public class EvernoteOAuthActivity extends Activity {
     }
   }
 
+  public static void reset() {
+    authToken = null;
+    startedAuthentication = false;
+  }
+  
   private String getCallbackScheme() {
     return "en-" + consumerKey;
   }
@@ -144,6 +151,8 @@ public class EvernoteOAuthActivity extends Activity {
     Class apiClass = EvernoteApi.class;
     if (evernoteHost.equals("sandbox.evernote.com")) {
       apiClass = EvernoteApi.Sandbox.class;
+    } else if (evernoteHost.equals("app.yinxiang.com")) {
+      apiClass = YinxiangApi.class;
     }
     return new ServiceBuilder()
       .provider(apiClass)
@@ -161,13 +170,13 @@ public class EvernoteOAuthActivity extends Activity {
     try {
       OAuthService service = createService();
       Log.i(TAG, "Retrieving OAuth request token...");
-      Token requestToken = service.getRequestToken();
-      this.requestToken = requestToken.getToken();
-      this.requestTokenSecret = requestToken.getSecret();
+      Token reqToken = service.getRequestToken();
+      this.requestToken = reqToken.getToken();
+      this.requestTokenSecret = reqToken.getSecret();
       
       // Open a browser to allow the user to authorize access to their account
       Log.i(TAG, "Redirecting user for authorization...");
-      String url = service.getAuthorizationUrl(requestToken);
+      String url = service.getAuthorizationUrl(reqToken);
       Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
       startActivity(intent);
     } catch (OAuthException oax) {

@@ -73,6 +73,7 @@ public class FileData extends Data {
     setSize((int) file.length());
   }
 
+  @Override
   public void write(TProtocol oprot) throws TException {
     validate();
     oprot.writeStructBegin(STRUCT_DESC);

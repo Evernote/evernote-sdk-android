@@ -1,3 +1,8 @@
+= 0.2.3 / 2012-09-28
+
+* Include YinxiangApi.java in src.
+* Remove use of String.isEmpty() to maintain compatibility with older SDK versions.
+
 = 0.2.2 / 2012-09-19
 
 * Adds support for the Evernote China API (Yinxiang Biji)

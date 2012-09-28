@@ -33,6 +33,8 @@ import org.apache.thrift.transport.TTransportException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
@@ -61,6 +63,12 @@ import com.evernote.edam.notestore.NoteStore;
  */
 public class EvernoteSession {
 
+  // Keys for values persisted in our shared preferences 
+  private static final String KEY_AUTHTOKEN = "evernote.authToken";
+  private static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
+  private static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
+  private static final String KEY_USERID = "evernote.userId";
+
   private ApplicationInfo applicationInfo;
   private AuthenticationResult authenticationResult;
   private File tempDir;
@@ -86,7 +94,36 @@ public class EvernoteSession {
     this(applicationInfo, tempDir);
     this.authenticationResult = sessionInfo; 
   }
-  
+
+  /**
+   * Create a new Evernote session, using saved information 
+   * from a previous successful authentication if available. 
+   */
+  public EvernoteSession(ApplicationInfo applicationInfo, 
+      SharedPreferences sessionInfo, File tempDir) {
+    this(applicationInfo, tempDir);
+    this.authenticationResult = getAuthenticationResult(sessionInfo); 
+  }
+
+  /**
+   * Restore an AuthenticationResult from shared preferences.
+   * @return The restored AuthenticationResult, or null if the preferences
+   * did not contain the required information.
+   */
+  private AuthenticationResult getAuthenticationResult(SharedPreferences prefs) {
+    String authToken = prefs.getString(KEY_AUTHTOKEN, "");
+    String notestoreUrl = prefs.getString(KEY_NOTESTOREURL, "");
+    String webApiUrlPrefix = prefs.getString(KEY_WEBAPIURLPREFIX, "");
+    int userId = prefs.getInt(KEY_USERID, -1);
+
+    if (authToken.length() > 0 && notestoreUrl.length() > 0 && 
+        webApiUrlPrefix.length() > 0 && (userId > 0)) {
+      return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, userId);
+    } else {
+      return null;
+    }
+  }
+
   /**
    * Check whether the session has valid authentication information
    * that will allow successful API calls to be made.
@@ -98,8 +135,16 @@ public class EvernoteSession {
   /**
    * Clear all stored authentication information.
    */
-  public void logOut() {
+  public void logOut(SharedPreferences prefs) {
     authenticationResult = null;
+    
+    // Removed cached authentication information
+    Editor editor = prefs.edit();
+    editor.remove(KEY_AUTHTOKEN);
+    editor.remove(KEY_NOTESTOREURL);
+    editor.remove(KEY_WEBAPIURLPREFIX);
+    editor.remove(KEY_USERID);
+    editor.apply();
   }
 
   /**
@@ -115,6 +160,14 @@ public class EvernoteSession {
     } else {
       return null;
     }
+  }
+  
+  /**
+   * Get the authentication information returned by a successful
+   * OAuth authentication to the Evernote web service.
+   */
+  public AuthenticationResult getAuthenticationResult() {
+    return authenticationResult;
   }
   
   /**
@@ -158,17 +211,31 @@ public class EvernoteSession {
    * access to their Evernote account and the Evernote service redirects
    * the user back to the application.
    */
-  public boolean completeAuthentication() {
+  public boolean completeAuthentication(SharedPreferences prefs) {
+    boolean result = false;
+    
     if (EvernoteOAuthActivity.authToken != null) {
       EvernoteAuthToken token = EvernoteOAuthActivity.authToken;
       authenticationResult = 
         new AuthenticationResult(token.getToken(), token.getNoteStoreUrl(), 
             token.getWebApiUrlPrefix(), token.getUserId());
-      return true;
+      
+      // Persist the authentication results so that the user does not
+      // have to authenticate again until their token expires or is revoked.
+      Editor editor = prefs.edit();
+      editor.putString(KEY_AUTHTOKEN, token.getToken());
+      editor.putString(KEY_NOTESTOREURL, token.getNoteStoreUrl());
+      editor.putString(KEY_WEBAPIURLPREFIX, token.getWebApiUrlPrefix());
+      editor.putInt(KEY_USERID, token.getUserId());
+      editor.apply();
+      
+      result = true;
     } else {
       // If there's a pending authentication and we have no auth token, we failed
-      boolean result = !EvernoteOAuthActivity.startedAuthentication;
-      return result;
+      result = !EvernoteOAuthActivity.startedAuthentication;
     }
+    
+    EvernoteOAuthActivity.reset();
+    return result;
   }
 }
