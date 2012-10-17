@@ -31,7 +31,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Build;
-import android.test.AndroidTestCase;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
@@ -50,7 +49,7 @@ import java.io.File;
  * {@link #EvernoteSession(ApplicationInfo, File)}, then call 
  * {@link #authenticate(Context)}, which will start an asynchronous
  * authentication Activity. When your calling Activity resumes,
- * call {@link #completeAuthentication()} to see whether authentication
+ * call {@link #completeAuthentication(SharedPreferences)} to see whether authentication
  * was successful.
  * 
  * If you already have cached Evernote authentication credentials as a result
@@ -75,7 +74,7 @@ public class EvernoteSession {
 
   /**
    * Create a new EvernoteSession that is not initially authenticated.
-   * To authenticate, call {@link #authenticate()}.
+   * To authenticate, call {@link #authenticate(Context)}.
    * 
    * @param applicationInfo The information required to authenticate.
    * @param tempDir A directory in which temporary files can be created.
