@@ -14,20 +14,6 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-    <repositories>
-        <repository>
-            <id>evernote-repository</id>
-            <url>https://rev.evernote.com/maven2</url>
-        </repository>
-        <repository>
-            <id>evernote-snapshot-repository</id>
-            <url>https://rev.evernote.com/maven2-snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-	
 	<dependencies>
 		<dependency>
 			<groupId>com.google.android</groupId>
@@ -51,6 +37,15 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-android</artifactId>
             <version>1.6.1-RC1</version>
+        </dependency>
+
+        <!-- TODO: move this to maven location-->
+        <dependency>
+            <groupId>org.apache</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/libs/libthrift.jar</systemPath>
         </dependency>
 	</dependencies>
 

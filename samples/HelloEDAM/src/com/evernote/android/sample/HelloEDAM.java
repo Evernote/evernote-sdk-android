@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.FileData;
 import com.evernote.client.oauth.android.EvernoteSession;
-import com.evernote.client.util.EDAMUtil;
+import com.evernote.edam.util.EDAMUtil;
 import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Resource;
 
