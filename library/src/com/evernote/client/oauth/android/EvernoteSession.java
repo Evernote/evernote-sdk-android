@@ -25,21 +25,21 @@
  */
 package com.evernote.client.oauth.android;
 
-import java.io.File;
-
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.transport.TTransportException;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-
+import android.os.Build;
+import android.test.AndroidTestCase;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.transport.TTransportException;
+
+import java.io.File;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
@@ -144,7 +144,13 @@ public class EvernoteSession {
     editor.remove(KEY_NOTESTOREURL);
     editor.remove(KEY_WEBAPIURLPREFIX);
     editor.remove(KEY_USERID);
-    editor.apply();
+
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+      editor.apply();
+    } else {
+      editor.commit();
+    }
+
   }
 
   /**
@@ -227,7 +233,12 @@ public class EvernoteSession {
       editor.putString(KEY_NOTESTOREURL, token.getNoteStoreUrl());
       editor.putString(KEY_WEBAPIURLPREFIX, token.getWebApiUrlPrefix());
       editor.putInt(KEY_USERID, token.getUserId());
-      editor.apply();
+
+      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+        editor.apply();
+      } else {
+        editor.commit();
+      }
       
       result = true;
     } else {
