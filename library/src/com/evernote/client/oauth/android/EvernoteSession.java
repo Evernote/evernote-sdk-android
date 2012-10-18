@@ -34,6 +34,7 @@ import android.os.Build;
 import android.text.TextUtils;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
+import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TTransportException;
@@ -67,41 +68,32 @@ public class EvernoteSession {
   protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
   protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
   protected static final String KEY_USERID = "evernote.userId";
+  public static final int REQUEST_CODE_OAUTH = 101;
+
+  protected static final String PREFERENCE_NAME = "evernote.preferences";
 
   private ApplicationInfo mApplicationInfo;
   private AuthenticationResult mAuthenticationResult;
-  private File mTempDir;
+  private File mDataDirectory;
 
-  /**
-   * Create a new EvernoteSession that is not initially authenticated.
-   * To authenticate, call {@link #authenticate(Context)}.
-   * 
-   * @param applicationInfo The information required to authenticate.
-   * @param tempDir A directory in which temporary files can be created.
-   */
-  public EvernoteSession(ApplicationInfo applicationInfo, File tempDir) {
+  private static EvernoteSession sInstance = null;
+  public static EvernoteSession getInstance(Context ctx, ApplicationInfo appInfo) {
+    if(sInstance == null) {
+      sInstance = new EvernoteSession(ctx, appInfo);
+    }
+    return sInstance;
+  }
+
+  protected static EvernoteSession getInstance() {
+    return sInstance;
+  }
+
+
+  private EvernoteSession(Context ctx, ApplicationInfo applicationInfo) {
     this.mApplicationInfo = applicationInfo;
-    this.mTempDir = tempDir;
-  }
-  
-  /**
-   * Create a new Evernote session using saved information 
-   * from a previous successful authentication. 
-   */
-  public EvernoteSession(ApplicationInfo applicationInfo, 
-      AuthenticationResult sessionInfo, File tempDir) {
-    this(applicationInfo, tempDir);
-    this.mAuthenticationResult = sessionInfo;
-  }
-
-  /**
-   * Create a new Evernote session, using saved information 
-   * from a previous successful authentication if available. 
-   */
-  public EvernoteSession(ApplicationInfo applicationInfo, 
-      SharedPreferences sessionInfo, File tempDir) {
-    this(applicationInfo, tempDir);
-    this.mAuthenticationResult = getAuthenticationResult(sessionInfo);
+    SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
+    this.mAuthenticationResult = getAuthenticationResult(pref);
+    mDataDirectory = ctx.getExternalFilesDir(null);
   }
 
   /**
@@ -122,7 +114,6 @@ public class EvernoteSession {
       return null;
     }
     return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, userId);
-
   }
 
   /**
@@ -136,11 +127,11 @@ public class EvernoteSession {
   /**
    * Clear all stored authentication information.
    */
-  public void logOut(SharedPreferences prefs) {
+  public void logOut(Context ctx) {
     mAuthenticationResult = null;
     
     // Removed cached authentication information
-    Editor editor = prefs.edit();
+    Editor editor = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE).edit();
     editor.remove(KEY_AUTHTOKEN);
     editor.remove(KEY_NOTESTOREURL);
     editor.remove(KEY_WEBAPIURLPREFIX);
@@ -176,6 +167,14 @@ public class EvernoteSession {
   public AuthenticationResult getmAuthenticationResult() {
     return mAuthenticationResult;
   }
+
+  public File getDataDirectory() {
+    return mDataDirectory;
+  }
+
+  public void setDataDirectory(File fileDir) {
+    mDataDirectory = fileDir;
+  }
   
   /**
    * Get a new NoteStore Client. The returned client can be used for any
@@ -191,7 +190,7 @@ public class EvernoteSession {
     }   
     TEvernoteHttpClient transport = 
       new TEvernoteHttpClient(mAuthenticationResult.getNoteStoreUrl(),
-          mApplicationInfo.getUserAgent(), mTempDir);
+          mApplicationInfo.getUserAgent(), mDataDirectory);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
     return new NoteStore.Client(protocol, protocol);  
   }
@@ -201,15 +200,39 @@ public class EvernoteSession {
    * from the Evernote service and redirects the user to the web browser
    * to authorize access to their Evernote account.
    */
-  public void authenticate(Context context) {
+  public void authenticate(Context ctx) {
     // Create an activity that will be used for authentication
-    Intent intent = new Intent(context, EvernoteOAuthActivity.class);
+    Intent intent = new Intent(ctx, EvernoteOAuthActivity.class);
     intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, mApplicationInfo.getEvernoteHost());
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mApplicationInfo.getConsumerKey());
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mApplicationInfo.getConsumerSecret());
-    if (!(context instanceof Activity)) {
+
+    if(ctx instanceof Activity) {
+      //If this is being called from an activity, an activity can register for the result code
+      ((Activity)ctx).startActivityForResult(intent, REQUEST_CODE_OAUTH);
+    } else {
+      //If this is being called from a service, the refresh will be handled manually
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+      ctx.startActivity(intent);
     }
-    context.startActivity(intent);
+  }
+
+  protected void persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken) {
+    SharedPreferences prefs = ctx.
+        getSharedPreferences(EvernoteSession.PREFERENCE_NAME, Context.MODE_PRIVATE);
+
+    SharedPreferences.Editor editor = prefs.edit();
+
+    editor.putString(EvernoteSession.KEY_AUTHTOKEN, authToken.getToken());
+    editor.putString(EvernoteSession.KEY_NOTESTOREURL, authToken.getNoteStoreUrl());
+    editor.putString(EvernoteSession.KEY_WEBAPIURLPREFIX, authToken.getWebApiUrlPrefix());
+    editor.putInt(EvernoteSession.KEY_USERID, authToken.getUserId());
+
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+      editor.apply();
+    } else {
+      editor.commit();
+    }
+    mAuthenticationResult = getAuthenticationResult(prefs);
   }
 }

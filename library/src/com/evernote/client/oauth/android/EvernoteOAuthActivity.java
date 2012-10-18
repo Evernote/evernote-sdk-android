@@ -27,11 +27,9 @@ package com.evernote.client.oauth.android;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -77,7 +75,7 @@ public class EvernoteOAuthActivity extends Activity {
    */
   private static final Object mLock = new Object();
 
-  //Views
+  //Webview
   private WebView mWebView;
   private WebViewClient mWebViewClient = new WebViewClient() {
     @Override
@@ -194,25 +192,14 @@ public class EvernoteOAuthActivity extends Activity {
     @Override
     protected void onPostExecute(EvernoteAuthToken authToken) {
 
-      if(authToken == null) {
+      if(authToken == null || EvernoteSession.getInstance() == null) {
         exit(false);
         return;
       }
 
-      SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-      SharedPreferences.Editor editor = prefs.edit();
-
-      editor.putString(EvernoteSession.KEY_AUTHTOKEN, authToken.getToken());
-      editor.putString(EvernoteSession.KEY_NOTESTOREURL, authToken.getNoteStoreUrl());
-      editor.putString(EvernoteSession.KEY_WEBAPIURLPREFIX, authToken.getWebApiUrlPrefix());
-      editor.putInt(EvernoteSession.KEY_USERID, authToken.getUserId());
-
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-        editor.apply();
-      } else {
-        editor.commit();
-      }
+      EvernoteSession.getInstance().persistAuthenticationToken(getApplicationContext(), authToken);
       exit(true);
+
     }
   };
 
@@ -244,18 +231,6 @@ public class EvernoteOAuthActivity extends Activity {
     mWebView.setWebChromeClient(mWebChromeClient);
   }
 
-
-  @Override
-  protected void onSaveInstanceState(Bundle outState) {
-    outState.putString(EXTRA_EVERNOTE_HOST, mEvernoteHost);
-    outState.putString(EXTRA_CONSUMER_KEY, mConsumerKey);
-    outState.putString(EXTRA_CONSUMER_SECRET, mConsumerSecret);
-    outState.putString(EXTRA_REQUEST_TOKEN, mRequestToken);
-    outState.putString(EXTRA_REQUEST_TOKEN_SECRET, mRequestTokenSecret);
-
-    super.onSaveInstanceState(outState);
-  }
-
   @Override
   protected void onResume() {
     super.onResume();
@@ -270,6 +245,18 @@ public class EvernoteOAuthActivity extends Activity {
     if (mBeginAuthentication.getStatus() == AsyncTask.Status.PENDING) {
       mBeginAuthentication.execute();
     }
+  }
+
+
+  @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    outState.putString(EXTRA_EVERNOTE_HOST, mEvernoteHost);
+    outState.putString(EXTRA_CONSUMER_KEY, mConsumerKey);
+    outState.putString(EXTRA_CONSUMER_SECRET, mConsumerSecret);
+    outState.putString(EXTRA_REQUEST_TOKEN, mRequestToken);
+    outState.putString(EXTRA_REQUEST_TOKEN_SECRET, mRequestTokenSecret);
+
+    super.onSaveInstanceState(outState);
   }
 
   private String getCallbackScheme() {
@@ -311,9 +298,9 @@ public class EvernoteOAuthActivity extends Activity {
       @Override
       public void run() {
         Toast.makeText(mActivity, success ? R.string.evernote_login_successfull : R.string.evernote_login_failed, Toast.LENGTH_LONG).show();
+        setResult(success ? RESULT_OK : RESULT_CANCELED);
         finish();
       }
     });
   }
-
 }

@@ -2,11 +2,9 @@ package com.evernote.android.sample;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -50,10 +48,6 @@ public class HelloEDAM extends Activity {
 
   // Name of this application, for logging
   private static final String TAG = "HelloEDAM";
-  
-  // A directory on disk where your application stores temporary data
-  private static final String APP_DATA_PATH = 
-    "/Android/data/com.evernote.android.sample/temp/";
 
   // Change to "www.evernote.com" to use the Evernote production service 
   // instead of the sandbox
@@ -80,7 +74,7 @@ public class HelloEDAM extends Activity {
   private static final String NOTE_SUFFIX = "</en-note>";
 
   // Used to interact with the Evernote web service
-  private EvernoteSession session;
+  private EvernoteSession mEvernoteSession;
   
   // UI elements that we update
   private Button btnAuth;
@@ -110,21 +104,9 @@ public class HelloEDAM extends Activity {
   @Override
   public void onResume() {
     super.onResume();
-
     updateUi();
   }
 
-  /**
-   * Evernote authentication data will be stored to this
-   * SharedPreferences if we are resuming as a result of a successful OAuth
-   * authorization. You may wish to pass a different SharedPreferences
-   * so that Evernote settings are stored along with other settings
-   * persisted by your application.
-   */
-  private SharedPreferences getPreferencesForAuthData() {
-    return getPreferences(MODE_PRIVATE);
-  }
-  
   /**
    * Setup the EvernoteSession used to access the Evernote API.
    */
@@ -134,7 +116,7 @@ public class HelloEDAM extends Activity {
           APP_NAME, APP_VERSION);
 
     // Retrieve persisted authentication information
-    session = new EvernoteSession(info, getPreferencesForAuthData(), getTempDir());
+    mEvernoteSession = EvernoteSession.getInstance(this, info);
     updateUi();
   }
   
@@ -142,7 +124,7 @@ public class HelloEDAM extends Activity {
    * Update the UI based on Evernote authentication state.
    */
   private void updateUi() {
-    if (session.isLoggedIn()) {
+    if (mEvernoteSession.isLoggedIn()) {
       btnAuth.setText(R.string.label_log_out);
       btnSave.setEnabled(true);
       btnSelect.setEnabled(true);
@@ -159,20 +141,12 @@ public class HelloEDAM extends Activity {
    * logged in.
    */
   public void startAuth(View view) {
-    if (session.isLoggedIn()) {
-      session.logOut(getPreferencesForAuthData());
+    if (mEvernoteSession.isLoggedIn()) {
+      mEvernoteSession.logOut(getApplicationContext());
     } else {
-      session.authenticate(this);
+      mEvernoteSession.authenticate(HelloEDAM.this);
     }
     updateUi();
-  }  
-  
-  /**
-   * Get a temporary directory that can be used by this application to store potentially
-   * large files sent to and retrieved from the Evernote API.
-   */
-  private File getTempDir() {
-    return new File(Environment.getExternalStorageDirectory(), APP_DATA_PATH);
   }
 
   /***************************************************************************
@@ -180,17 +154,6 @@ public class HelloEDAM extends Activity {
    * Evernote API once authnetication is complete. You don't need any of it  *
    * in your application.                                                    *
    ***************************************************************************/
-  
-  /**
-   * Called when the user taps the "Select Image" button.
-   * 
-   * Sends the user to the image gallery to choose an image to share.
-   */
-  public void startSelectImage(View view) {
-    Intent intent = new Intent(Intent.ACTION_PICK, 
-                               MediaStore.Images.Media.INTERNAL_CONTENT_URI);
-    startActivityForResult(intent, SELECT_IMAGE);
-  }
 
   /**
    * Called when the control returns from an activity that we launched.
@@ -198,11 +161,17 @@ public class HelloEDAM extends Activity {
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == SELECT_IMAGE) {
-      // Callback from our 'startSelectImage' action
-      if (resultCode == Activity.RESULT_OK) {
-        endSelectImage(data);
-      } 
+    switch(requestCode) {
+      case EvernoteSession.REQUEST_CODE_OAUTH:
+        if(resultCode == Activity.RESULT_OK) {
+          updateUi();
+        }
+        break;
+      case SELECT_IMAGE:
+        if (resultCode == Activity.RESULT_OK) {
+          endSelectImage(data);
+        }
+        break;
     }
   }
 
@@ -227,10 +196,21 @@ public class HelloEDAM extends Activity {
     this.fileName = cursor.getString(cursor.getColumnIndex(queryColumns[2]));
     cursor.close();
 
-    if (session.isLoggedIn()) {
+    if (mEvernoteSession.isLoggedIn()) {
       this.msgArea.setText(this.fileName);
       this.btnSave.setEnabled(true);
     }
+  }
+
+  /**
+   * Called when the user taps the "Select Image" button.
+   *
+   * Sends the user to the image gallery to choose an image to share.
+   */
+  public void startSelectImage(View view) {
+    Intent intent = new Intent(Intent.ACTION_PICK,
+        MediaStore.Images.Media.INTERNAL_CONTENT_URI);
+    startActivityForResult(intent, SELECT_IMAGE);
   }
 
   /**
@@ -246,7 +226,7 @@ public class HelloEDAM extends Activity {
    * when the activity started.
    */
   public void saveImage(View view) {
-    if (session.isLoggedIn()) {
+    if (mEvernoteSession.isLoggedIn()) {
       String f = this.filePath;
       try {
         // Hash the data in the image file. The hash is used to refernece the
@@ -278,7 +258,7 @@ public class HelloEDAM extends Activity {
         // Create the note on the server. The returned Note object
         // will contain server-generated attributes such as the note's
         // unique ID (GUID), the Resource's GUID, and the creation and update time.
-        Note createdNote = session.createNoteStore().createNote(session.getAuthToken(), note);
+        Note createdNote = mEvernoteSession.createNoteStore().createNote(mEvernoteSession.getAuthToken(), note);
 
         Toast.makeText(this, R.string.msg_image_saved, Toast.LENGTH_LONG).show();
       } catch (Throwable t) {

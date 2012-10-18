@@ -18,7 +18,6 @@
 
         <activity
                 android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity"
-                android:launchMode="singleTask"
                 android:configChanges="orientation|keyboard">
         </activity>
     </application>
