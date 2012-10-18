@@ -281,7 +281,7 @@ public class EvernoteOAuthActivity extends Activity {
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        Toast.makeText(mActivity, success ? R.string.evernote_login_successfull : R.string.evernote_login_failed, Toast.LENGTH_LONG).show();
+        Toast.makeText(mActivity, success ? R.string.evernote_login_successful : R.string.evernote_login_failed, Toast.LENGTH_LONG).show();
         setResult(success ? RESULT_OK : RESULT_CANCELED);
         finish();
       }

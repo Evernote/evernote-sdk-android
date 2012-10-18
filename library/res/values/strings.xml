@@ -2,5 +2,8 @@
 <resources>
     <string name="evernote">Evernote</string>
     <string name="evernote_login_failed">Evernote Login Failed</string>
-    <string name="evernote_login_successfull">Evernote login successfull</string>
+    <string name="evernote_login_successful">Evernote login successful</string>
+    <string name="err_protocol_version">Incomatible EDAM client protocol version</string>
+    <string name="err_authentication">Error authenticating to Evernote</string>
+    <string name="err_api_setup">Error intializing Evernote API</string>
 </resources>
