@@ -63,6 +63,8 @@ import java.io.File;
  */
 public class EvernoteSession {
 
+  //TODO: Revise docs
+
   // Keys for values persisted in our shared preferences 
   protected static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
   protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
@@ -78,6 +80,7 @@ public class EvernoteSession {
 
   private static EvernoteSession sInstance = null;
 
+  //TODO: revise need for appInfo in singleton
   /**
    * Use to acquire a singleton instance of the EvernoteSession for authentication
    * @param ctx

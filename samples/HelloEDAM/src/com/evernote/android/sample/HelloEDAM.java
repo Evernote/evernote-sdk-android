@@ -117,7 +117,6 @@ public class HelloEDAM extends Activity {
 
     // Retrieve persisted authentication information
     mEvernoteSession = EvernoteSession.getInstance(this, info);
-    updateUi();
   }
   
   /**
@@ -162,11 +161,13 @@ public class HelloEDAM extends Activity {
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     switch(requestCode) {
+      //Update UI when oauth activity returns result
       case EvernoteSession.REQUEST_CODE_OAUTH:
         if(resultCode == Activity.RESULT_OK) {
           updateUi();
         }
         break;
+      //Grab image data when picker returns result
       case SELECT_IMAGE:
         if (resultCode == Activity.RESULT_OK) {
           endSelectImage(data);
@@ -182,6 +183,11 @@ public class HelloEDAM extends Activity {
    * @param data The data returned from the activity.
    */
   private void endSelectImage(Intent data) {
+    //TODO: thread this
+    //TODO: null check cursor
+    //TODO:size check cursor
+    //TODO: column name
+
     // The callback from the gallery contains a pointer into a table.
     // Look up the appropriate record and pull out the information that we need,
     // in this case, the path to the file on disk, the file name and the MIME type. 
@@ -226,6 +232,9 @@ public class HelloEDAM extends Activity {
    * when the activity started.
    */
   public void saveImage(View view) {
+    //TODO: thread this
+    //TODO: Abstract header/footer info
+    //TODO: Clean up error catching
     if (mEvernoteSession.isLoggedIn()) {
       String f = this.filePath;
       try {

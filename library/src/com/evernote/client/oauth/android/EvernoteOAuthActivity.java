@@ -51,6 +51,8 @@ import org.scribe.oauth.OAuthService;
  * Third parties should not need to use this class directly.
  */
 public class EvernoteOAuthActivity extends Activity {
+  //TODO: Add progress
+  //TODO: Revise docs
 
   private static final String TAG = "EvernoteOAuthActivity";
 
