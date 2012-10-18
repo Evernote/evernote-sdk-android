@@ -77,6 +77,13 @@ public class EvernoteSession {
   private File mDataDirectory;
 
   private static EvernoteSession sInstance = null;
+
+  /**
+   * Use to acquire a singleton instance of the EvernoteSession for authentication
+   * @param ctx
+   * @param appInfo
+   * @return
+   */
   public static EvernoteSession getInstance(Context ctx, ApplicationInfo appInfo) {
     if(sInstance == null) {
       sInstance = new EvernoteSession(ctx, appInfo);
@@ -84,11 +91,20 @@ public class EvernoteSession {
     return sInstance;
   }
 
+  /**
+   * Used internally to get active instance for setting token results
+   * @return
+   */
   protected static EvernoteSession getInstance() {
     return sInstance;
   }
 
 
+  /**
+   * Private constructor, not to be called from outside
+   * @param ctx Application context or activity
+   * @param applicationInfo ApplicationInfo storing the app information
+   */
   private EvernoteSession(Context ctx, ApplicationInfo applicationInfo) {
     this.mApplicationInfo = applicationInfo;
     SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
@@ -142,7 +158,6 @@ public class EvernoteSession {
     } else {
       editor.commit();
     }
-
   }
 
   /**
@@ -168,10 +183,18 @@ public class EvernoteSession {
     return mAuthenticationResult;
   }
 
+  /**
+   * Retrieves the File directory used to store the Evernote content
+   * @return File Directory
+   */
   public File getDataDirectory() {
     return mDataDirectory;
   }
 
+  /**
+   * Sets the file directory to store Evernote content
+   * @param fileDir
+   */
   public void setDataDirectory(File fileDir) {
     mDataDirectory = fileDir;
   }
@@ -217,7 +240,15 @@ public class EvernoteSession {
     }
   }
 
-  protected void persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken) {
+  /**
+   * Called upon completion of the oauth process to save the token into the SharedPreferences
+   * @param ctx Application Context or activity
+   * @param authToken Oauth EvernoteAuthToken
+   */
+  protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken) {
+    if(ctx == null || authToken == null) {
+      return false;
+    }
     SharedPreferences prefs = ctx.
         getSharedPreferences(EvernoteSession.PREFERENCE_NAME, Context.MODE_PRIVATE);
 
@@ -233,6 +264,12 @@ public class EvernoteSession {
     } else {
       editor.commit();
     }
-    mAuthenticationResult = getAuthenticationResult(prefs);
+    mAuthenticationResult =
+        new AuthenticationResult(
+            authToken.getToken(),
+            authToken.getNoteStoreUrl(),
+            authToken.getWebApiUrlPrefix(),
+            authToken.getUserId());
+    return true;
   }
 }

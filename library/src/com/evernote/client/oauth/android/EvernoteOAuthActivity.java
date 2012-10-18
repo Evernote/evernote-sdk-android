@@ -27,7 +27,6 @@ package com.evernote.client.oauth.android;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -61,7 +60,6 @@ public class EvernoteOAuthActivity extends Activity {
   static final String EXTRA_REQUEST_TOKEN = "REQUEST_TOKEN";
   static final String EXTRA_REQUEST_TOKEN_SECRET = "REQUEST_TOKEN_SECRET";
 
-
   private String mEvernoteHost = null;
   private String mConsumerKey = null;
   private String mConsumerSecret = null;
@@ -70,28 +68,13 @@ public class EvernoteOAuthActivity extends Activity {
 
   private Activity mActivity;
 
-  /**
-   * Protect member variables in threads
-   */
-  private static final Object mLock = new Object();
-
   //Webview
   private WebView mWebView;
+
+  /**
+   * Overrides the callback URL and authenticate
+   */
   private WebViewClient mWebViewClient = new WebViewClient() {
-    @Override
-    public void onPageStarted(WebView view, String url, Bitmap favicon) {
-      super.onPageStarted(view, url, favicon);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    public void onPageFinished(WebView view, String url) {
-      super.onPageFinished(view, url);
-    }
-
-    @Override
-    public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-      super.onReceivedError(view, errorCode, description, failingUrl);    //To change body of overridden methods use File | Settings | File Templates.
-    }
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -104,6 +87,9 @@ public class EvernoteOAuthActivity extends Activity {
     }
   };
 
+  /**
+   * Allows for showing progress
+   */
   private WebChromeClient mWebChromeClient = new WebChromeClient() {
     @Override
     public void onProgressChanged(WebView view, int newProgress) {
@@ -186,20 +172,18 @@ public class EvernoteOAuthActivity extends Activity {
     }
 
     /**
-     * Save the token and exit
+     * Save the Auth token and exit
      */
 
     @Override
     protected void onPostExecute(EvernoteAuthToken authToken) {
 
-      if(authToken == null || EvernoteSession.getInstance() == null) {
+      if(EvernoteSession.getInstance() == null) {
         exit(false);
         return;
       }
 
-      EvernoteSession.getInstance().persistAuthenticationToken(getApplicationContext(), authToken);
-      exit(true);
-
+      exit(EvernoteSession.getInstance().persistAuthenticationToken(getApplicationContext(), authToken));
     }
   };
 
@@ -247,7 +231,6 @@ public class EvernoteOAuthActivity extends Activity {
     }
   }
 
-
   @Override
   protected void onSaveInstanceState(Bundle outState) {
     outState.putString(EXTRA_EVERNOTE_HOST, mEvernoteHost);
@@ -259,6 +242,11 @@ public class EvernoteOAuthActivity extends Activity {
     super.onSaveInstanceState(outState);
   }
 
+
+  /**
+   * Used to identify URL to intercept
+   * @return
+   */
   private String getCallbackScheme() {
     return "en-" + mConsumerKey;
   }
@@ -268,13 +256,6 @@ public class EvernoteOAuthActivity extends Activity {
     OAuthService builder = null;
     Class apiClass = EvernoteApi.class;
 
-    String consumerKey;
-    String consumerSecret;
-    synchronized (mLock) {
-      consumerKey = mConsumerKey;
-      consumerSecret = mConsumerSecret;
-    }
-
     if (mEvernoteHost.equals("sandbox.evernote.com")) {
       apiClass = EvernoteApi.Sandbox.class;
     } else if (mEvernoteHost.equals("app.yinxiang.com")) {
@@ -282,8 +263,8 @@ public class EvernoteOAuthActivity extends Activity {
     }
     builder = new ServiceBuilder()
         .provider(apiClass)
-        .apiKey(consumerKey)
-        .apiSecret(consumerSecret)
+        .apiKey(mConsumerKey)
+        .apiSecret(mConsumerSecret)
         .callback(getCallbackScheme() + "://callback")
         .build();
 
@@ -291,7 +272,8 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * Exits and toasts an error logging in
+   * Exit the activity and toast message
+   * @param success if successfully completed oauth
    */
   private void exit(final boolean success) {
     runOnUiThread(new Runnable() {
