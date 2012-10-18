@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="evernote">Evernote</string>
+    <string name="evernote_login_failed">Evernote Login Failed</string>
+    <string name="evernote_login_successfull">Evernote login successfull</string>
+</resources>

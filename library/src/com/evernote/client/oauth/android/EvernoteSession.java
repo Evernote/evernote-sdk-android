@@ -31,9 +31,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Build;
+import android.text.TextUtils;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
-import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TTransportException;
@@ -63,14 +63,14 @@ import java.io.File;
 public class EvernoteSession {
 
   // Keys for values persisted in our shared preferences 
-  private static final String KEY_AUTHTOKEN = "evernote.authToken";
-  private static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
-  private static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
-  private static final String KEY_USERID = "evernote.userId";
+  protected static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
+  protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
+  protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
+  protected static final String KEY_USERID = "evernote.userId";
 
-  private ApplicationInfo applicationInfo;
-  private AuthenticationResult authenticationResult;
-  private File tempDir;
+  private ApplicationInfo mApplicationInfo;
+  private AuthenticationResult mAuthenticationResult;
+  private File mTempDir;
 
   /**
    * Create a new EvernoteSession that is not initially authenticated.
@@ -80,8 +80,8 @@ public class EvernoteSession {
    * @param tempDir A directory in which temporary files can be created.
    */
   public EvernoteSession(ApplicationInfo applicationInfo, File tempDir) {
-    this.applicationInfo = applicationInfo;
-    this.tempDir = tempDir;
+    this.mApplicationInfo = applicationInfo;
+    this.mTempDir = tempDir;
   }
   
   /**
@@ -91,7 +91,7 @@ public class EvernoteSession {
   public EvernoteSession(ApplicationInfo applicationInfo, 
       AuthenticationResult sessionInfo, File tempDir) {
     this(applicationInfo, tempDir);
-    this.authenticationResult = sessionInfo; 
+    this.mAuthenticationResult = sessionInfo;
   }
 
   /**
@@ -101,7 +101,7 @@ public class EvernoteSession {
   public EvernoteSession(ApplicationInfo applicationInfo, 
       SharedPreferences sessionInfo, File tempDir) {
     this(applicationInfo, tempDir);
-    this.authenticationResult = getAuthenticationResult(sessionInfo); 
+    this.mAuthenticationResult = getAuthenticationResult(sessionInfo);
   }
 
   /**
@@ -110,17 +110,19 @@ public class EvernoteSession {
    * did not contain the required information.
    */
   private AuthenticationResult getAuthenticationResult(SharedPreferences prefs) {
-    String authToken = prefs.getString(KEY_AUTHTOKEN, "");
-    String notestoreUrl = prefs.getString(KEY_NOTESTOREURL, "");
-    String webApiUrlPrefix = prefs.getString(KEY_WEBAPIURLPREFIX, "");
+    String authToken = prefs.getString(KEY_AUTHTOKEN, null);
+    String notestoreUrl = prefs.getString(KEY_NOTESTOREURL, null);
+    String webApiUrlPrefix = prefs.getString(KEY_WEBAPIURLPREFIX, null);
     int userId = prefs.getInt(KEY_USERID, -1);
 
-    if (authToken.length() > 0 && notestoreUrl.length() > 0 && 
-        webApiUrlPrefix.length() > 0 && (userId > 0)) {
-      return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, userId);
-    } else {
+    if (TextUtils.isEmpty(authToken) ||
+        TextUtils.isEmpty(notestoreUrl) ||
+        TextUtils.isEmpty(webApiUrlPrefix) ||
+        userId == -1) {
       return null;
     }
+    return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, userId);
+
   }
 
   /**
@@ -128,14 +130,14 @@ public class EvernoteSession {
    * that will allow successful API calls to be made.
    */
   public boolean isLoggedIn() {
-    return authenticationResult != null;
+    return mAuthenticationResult != null;
   }
 
   /**
    * Clear all stored authentication information.
    */
   public void logOut(SharedPreferences prefs) {
-    authenticationResult = null;
+    mAuthenticationResult = null;
     
     // Removed cached authentication information
     Editor editor = prefs.edit();
@@ -160,8 +162,8 @@ public class EvernoteSession {
    * is false.
    */
   public String getAuthToken() {
-    if (authenticationResult != null) {
-      return authenticationResult.getAuthToken();
+    if (mAuthenticationResult != null) {
+      return mAuthenticationResult.getAuthToken();
     } else {
       return null;
     }
@@ -171,8 +173,8 @@ public class EvernoteSession {
    * Get the authentication information returned by a successful
    * OAuth authentication to the Evernote web service.
    */
-  public AuthenticationResult getAuthenticationResult() {
-    return authenticationResult;
+  public AuthenticationResult getmAuthenticationResult() {
+    return mAuthenticationResult;
   }
   
   /**
@@ -188,8 +190,8 @@ public class EvernoteSession {
       throw new IllegalStateException();
     }   
     TEvernoteHttpClient transport = 
-      new TEvernoteHttpClient(authenticationResult.getNoteStoreUrl(), 
-          applicationInfo.getUserAgent(), tempDir);
+      new TEvernoteHttpClient(mAuthenticationResult.getNoteStoreUrl(),
+          mApplicationInfo.getUserAgent(), mTempDir);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
     return new NoteStore.Client(protocol, protocol);  
   }
@@ -202,50 +204,12 @@ public class EvernoteSession {
   public void authenticate(Context context) {
     // Create an activity that will be used for authentication
     Intent intent = new Intent(context, EvernoteOAuthActivity.class);
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, applicationInfo.getEvernoteHost());
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, applicationInfo.getConsumerKey());
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, applicationInfo.getConsumerSecret());
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, mApplicationInfo.getEvernoteHost());
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mApplicationInfo.getConsumerKey());
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mApplicationInfo.getConsumerSecret());
     if (!(context instanceof Activity)) {
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     }
     context.startActivity(intent);
-  }
-  
-  /**
-   * Complete the OAuth authentication process after the user authorizes
-   * access to their Evernote account and the Evernote service redirects
-   * the user back to the application.
-   */
-  public boolean completeAuthentication(SharedPreferences prefs) {
-    boolean result = false;
-    
-    if (EvernoteOAuthActivity.authToken != null) {
-      EvernoteAuthToken token = EvernoteOAuthActivity.authToken;
-      authenticationResult = 
-        new AuthenticationResult(token.getToken(), token.getNoteStoreUrl(), 
-            token.getWebApiUrlPrefix(), token.getUserId());
-      
-      // Persist the authentication results so that the user does not
-      // have to authenticate again until their token expires or is revoked.
-      Editor editor = prefs.edit();
-      editor.putString(KEY_AUTHTOKEN, token.getToken());
-      editor.putString(KEY_NOTESTOREURL, token.getNoteStoreUrl());
-      editor.putString(KEY_WEBAPIURLPREFIX, token.getWebApiUrlPrefix());
-      editor.putInt(KEY_USERID, token.getUserId());
-
-      if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-        editor.apply();
-      } else {
-        editor.commit();
-      }
-      
-      result = true;
-    } else {
-      // If there's a pending authentication and we have no auth token, we failed
-      result = !EvernoteOAuthActivity.startedAuthentication;
-    }
-    
-    EvernoteOAuthActivity.reset();
-    return result;
   }
 }

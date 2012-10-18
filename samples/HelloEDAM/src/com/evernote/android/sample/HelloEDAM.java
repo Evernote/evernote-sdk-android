@@ -16,10 +16,9 @@ import android.widget.Toast;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.FileData;
 import com.evernote.client.oauth.android.EvernoteSession;
-import com.evernote.edam.util.EDAMUtil;
 import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Resource;
-
+import com.evernote.edam.util.EDAMUtil;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -42,8 +41,8 @@ public class HelloEDAM extends Activity {
   
   // Your Evernote API key. See http://dev.evernote.com/documentation/cloud/
   // Please obfuscate your code to help keep these values secret.
-  private static final String CONSUMER_KEY = "Your Consumer Key";
-  private static final String CONSUMER_SECRET = "Your Consumer Secret";
+  private static final String CONSUMER_KEY = "frostbite7217-7708";
+  private static final String CONSUMER_SECRET = "44fc68c4d16dca1f";
 
   /***************************************************************************
    * Change these values as needed to use this code in your own application. *
@@ -112,12 +111,6 @@ public class HelloEDAM extends Activity {
   public void onResume() {
     super.onResume();
 
-    // Complete the Evernote authentication process if necessary
-    if (!session.completeAuthentication(getPreferencesForAuthData())) {
-      // We only want to do this when we're resuming after authentication...
-      Toast.makeText(this, "Evernote login failed", Toast.LENGTH_LONG).show();
-    }
-    
     updateUi();
   }
 
