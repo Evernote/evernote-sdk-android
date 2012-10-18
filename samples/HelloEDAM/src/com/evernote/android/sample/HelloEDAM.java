@@ -1,15 +1,20 @@
 package com.evernote.android.sample;
 
 import android.app.Activity;
+import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.Toast;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.FileData;
@@ -77,15 +82,20 @@ public class HelloEDAM extends Activity {
   private EvernoteSession mEvernoteSession;
   
   // UI elements that we update
-  private Button btnAuth;
-  private Button btnSave;
-  private Button btnSelect;
-  private TextView msgArea;
+  private Button mBtnAuth;
+  private Button mBtnSave;
+  private Button mBtnSelect;
+  private ImageView mImageView;
   
   // The path to and MIME type of the currently selected image from the gallery
-  private String filePath;
-  private String mimeType;
-  private String fileName;
+  private class ImageData {
+    public Bitmap imageBitmap;
+    public String filePath;
+    public String mimeType;
+    public String fileName;
+  }
+
+  private ImageData mImageData;
 
   /** Called when the activity is first created. */
   @Override
@@ -93,10 +103,15 @@ public class HelloEDAM extends Activity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
 
-    msgArea = (TextView)findViewById(R.id.message);
-    btnAuth = (Button) findViewById(R.id.auth_button);
-    btnSelect = (Button) findViewById(R.id.select_button);
-    btnSave = (Button) findViewById(R.id.save_button);
+    mBtnAuth = (Button) findViewById(R.id.auth_button);
+    mBtnSelect = (Button) findViewById(R.id.select_button);
+    mBtnSave = (Button) findViewById(R.id.save_button);
+    mImageView = (ImageView) findViewById(R.id.image);
+
+    if(getLastNonConfigurationInstance() != null) {
+      mImageData = (ImageData) getLastNonConfigurationInstance();
+      mImageView.setImageBitmap(mImageData.imageBitmap);
+    }
 
     setupSession();
   }
@@ -105,6 +120,11 @@ public class HelloEDAM extends Activity {
   public void onResume() {
     super.onResume();
     updateUi();
+  }
+
+  @Override
+  public Object onRetainNonConfigurationInstance() {
+    return mImageData;
   }
 
   /**
@@ -124,13 +144,17 @@ public class HelloEDAM extends Activity {
    */
   private void updateUi() {
     if (mEvernoteSession.isLoggedIn()) {
-      btnAuth.setText(R.string.label_log_out);
-      btnSave.setEnabled(true);
-      btnSelect.setEnabled(true);
+      mBtnAuth.setText(R.string.label_log_out);
+      if(mImageData != null && !TextUtils.isEmpty(mImageData.filePath)) {
+        mBtnSave.setEnabled(true);
+      } else {
+        mBtnSave.setEnabled(false);
+      }
+      mBtnSelect.setEnabled(true);
     } else {
-      btnAuth.setText(R.string.label_log_in);
-      btnSave.setEnabled(false);
-      btnSelect.setEnabled(false);
+      mBtnAuth.setText(R.string.label_log_in);
+      mBtnSave.setEnabled(false);
+      mBtnSelect.setEnabled(false);
     }
   }
   
@@ -170,41 +194,9 @@ public class HelloEDAM extends Activity {
       //Grab image data when picker returns result
       case SELECT_IMAGE:
         if (resultCode == Activity.RESULT_OK) {
-          endSelectImage(data);
+          new ImageSelector().execute(data);
         }
         break;
-    }
-  }
-
-  /**
-   * Called when control returns from the image gallery picker.
-   * Loads the image that the user selected.
-   * 
-   * @param data The data returned from the activity.
-   */
-  private void endSelectImage(Intent data) {
-    //TODO: thread this
-    //TODO: null check cursor
-    //TODO:size check cursor
-    //TODO: column name
-
-    // The callback from the gallery contains a pointer into a table.
-    // Look up the appropriate record and pull out the information that we need,
-    // in this case, the path to the file on disk, the file name and the MIME type. 
-    Uri selectedImage = data.getData();
-    String[] queryColumns = { MediaStore.Images.Media.DATA, 
-                              MediaStore.Images.Media.MIME_TYPE, 
-                              MediaStore.Images.Media.DISPLAY_NAME };
-    Cursor cursor = getContentResolver().query(selectedImage, queryColumns, null, null, null);
-    cursor.moveToFirst();
-    this.filePath = cursor.getString(cursor.getColumnIndex(queryColumns[0]));
-    this.mimeType = cursor.getString(cursor.getColumnIndex(queryColumns[1]));
-    this.fileName = cursor.getString(cursor.getColumnIndex(queryColumns[2]));
-    cursor.close();
-
-    if (mEvernoteSession.isLoggedIn()) {
-      this.msgArea.setText(this.fileName);
-      this.btnSave.setEnabled(true);
     }
   }
 
@@ -235,8 +227,8 @@ public class HelloEDAM extends Activity {
     //TODO: thread this
     //TODO: Abstract header/footer info
     //TODO: Clean up error catching
-    if (mEvernoteSession.isLoggedIn()) {
-      String f = this.filePath;
+    if (mEvernoteSession.isLoggedIn() && mImageData != null && mImageData.filePath != null) {
+      String f = mImageData.filePath;
       try {
         // Hash the data in the image file. The hash is used to refernece the
         // file in the ENML note content.
@@ -247,7 +239,7 @@ public class HelloEDAM extends Activity {
         // Create a new Resource
         Resource resource = new Resource();
         resource.setData(data);
-        resource.setMime(this.mimeType);
+        resource.setMime(mImageData.mimeType);
         
         // Create a new Note
         Note note = new Note();
@@ -259,7 +251,7 @@ public class HelloEDAM extends Activity {
         String content = 
           NOTE_PREFIX +
           "<p>This note was uploaded from Android. It contains an image.</p>" +
-          "<en-media type=\"" + this.mimeType + "\" hash=\"" +
+          "<en-media type=\"" + mImageData.mimeType + "\" hash=\"" +
           EDAMUtil.bytesToHex(resource.getData().getBodyHash()) + "\"/>" +
           NOTE_SUFFIX;
         note.setContent(content);
@@ -278,4 +270,95 @@ public class HelloEDAM extends Activity {
       }  
     }
   }
+
+  /**
+   * Called when control returns from the image gallery picker.
+   * Loads the image that the user selected.
+
+   */
+  private class ImageSelector extends AsyncTask<Intent, Void, ImageData> {
+
+    @Override
+    protected void onPreExecute() {
+      super.onPreExecute();
+    }
+
+    /**
+     * The callback from the gallery contains a pointer into a table.
+     * Look up the appropriate record and pull out the information that we need,
+     * in this case, the path to the file on disk, the file name and the MIME type.
+     * @param intents
+     * @return
+     */
+    @Override
+    protected ImageData doInBackground(Intent... intents) {
+      if(intents == null || intents.length == 0) {
+        return null;
+      }
+
+      Uri selectedImage = intents[0].getData();
+      String[] queryColumns = {
+          MediaStore.Images.Media._ID,
+          MediaStore.Images.Media.DATA,
+          MediaStore.Images.Media.MIME_TYPE,
+          MediaStore.Images.Media.DISPLAY_NAME };
+
+      Cursor cursor = null;
+      ImageData image = null;
+      try {
+        cursor = getContentResolver().query(selectedImage, queryColumns, null, null, null);
+        if(cursor.moveToFirst()) {
+          image = new ImageData();
+          long imageId= cursor.getLong(cursor.getColumnIndex(queryColumns[0]));
+
+          image.filePath = cursor.getString(cursor.getColumnIndex(queryColumns[1]));
+          image.mimeType = cursor.getString(cursor.getColumnIndex(queryColumns[2]));
+          image.fileName = cursor.getString(cursor.getColumnIndex(queryColumns[3]));
+
+          Uri imageUri = ContentUris.withAppendedId(
+              MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageId);
+          Bitmap tempBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+
+          Point size = new Point();
+          getWindowManager().getDefaultDisplay().getSize(size);
+          int dimen = size.x < size.y ? size.x : size.y;
+
+          image.imageBitmap = Bitmap.createScaledBitmap(tempBitmap, dimen, dimen, true);
+          tempBitmap.recycle();
+
+        }
+      }catch (Exception e) {
+        Log.e(TAG, "Error retrieving image");
+      }finally {
+        if (cursor != null) {
+          cursor.close();
+        }
+      }
+      return image;
+    }
+
+    /**
+     * Sets the image to the background and enables saving it to evernote
+     * @param image
+     */
+    @Override
+    protected void onPostExecute(ImageData image) {
+      if(image == null) {
+        Toast.makeText(getApplicationContext(), R.string.err_image_selected, Toast.LENGTH_SHORT).show();
+        return;
+      }
+
+      if(image.imageBitmap != null) {
+        mImageView.setImageBitmap(image.imageBitmap);
+      }
+
+      if (mEvernoteSession.isLoggedIn()) {
+        mBtnSave.setEnabled(true);
+      }
+
+      mImageData = image;
+    }
+  }
+
+
 }

@@ -4,9 +4,10 @@
     <string name="err_creating_note">Error creating new Evernote note</string>
     <string name="msg_image_saved">Image saved to Evernote</string>
     <string name="label_app_title">Evernote EDAM Android Demo</string>
-    <string name="label_select_button">Select Image...</string>
+    <string name="label_select_button">Select Image</string>
     <string name="label_message">No image selected</string>
     <string name="label_save_button">Save to Evernote</string>
+    <string name="err_image_selected">Select Image</string>
     <string name="err_retrieving_resource">Error retrieving resource</string>
     <string name="msg_retrieved_resource">Retrieved resource from server</string>
     <string name="label_log_in">Sign in to Evernote</string>
