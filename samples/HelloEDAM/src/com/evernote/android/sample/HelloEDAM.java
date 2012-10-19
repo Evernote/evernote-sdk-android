@@ -1,6 +1,8 @@
 package com.evernote.android.sample;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
@@ -86,6 +88,7 @@ public class HelloEDAM extends Activity {
   private Button mBtnSave;
   private Button mBtnSelect;
   private ImageView mImageView;
+  private final int DIALOG_PROGRESS = 101;
   
   // The path to and MIME type of the currently selected image from the gallery
   private class ImageData {
@@ -127,6 +130,26 @@ public class HelloEDAM extends Activity {
     return mImageData;
   }
 
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch(id) {
+      case DIALOG_PROGRESS:
+        return new ProgressDialog(HelloEDAM.this);
+    }
+
+    return super.onCreateDialog(id);
+  }
+
+  @Override
+  protected void onPrepareDialog(int id, Dialog dialog) {
+    switch(id) {
+      case DIALOG_PROGRESS:
+        ((ProgressDialog)dialog).setIndeterminate(true);
+        dialog.setCancelable(false);
+        ((ProgressDialog) dialog).setMessage(getString(R.string.loading));
+    }
+  }
+
   /**
    * Setup the EvernoteSession used to access the Evernote API.
    */
@@ -136,7 +159,7 @@ public class HelloEDAM extends Activity {
           APP_NAME, APP_VERSION);
 
     // Retrieve persisted authentication information
-    mEvernoteSession = EvernoteSession.getInstance(this, info);
+    mEvernoteSession = EvernoteSession.init(this, info);
   }
   
   /**
@@ -224,50 +247,76 @@ public class HelloEDAM extends Activity {
    * when the activity started.
    */
   public void saveImage(View view) {
-    //TODO: thread this
-    //TODO: Abstract header/footer info
-    //TODO: Clean up error catching
     if (mEvernoteSession.isLoggedIn() && mImageData != null && mImageData.filePath != null) {
-      String f = mImageData.filePath;
+      new EvernoteNoteCreator().execute(mImageData);
+    }
+  }
+
+  private class EvernoteNoteCreator extends AsyncTask<ImageData, Void, Note> {
+    @Override
+    protected void onPreExecute() {
+      showDialog(DIALOG_PROGRESS);
+    }
+
+    @Override
+    protected Note doInBackground(ImageData... imageDatas) {
+      if(imageDatas == null || imageDatas.length == 0) {
+        return null;
+      }
+      ImageData imageData = imageDatas[0];
+
+
+      Note createdNote = null;
+      String f = imageData.filePath;
       try {
-        // Hash the data in the image file. The hash is used to refernece the
+        // Hash the data in the image file. The hash is used to reference the
         // file in the ENML note content.
         InputStream in = new BufferedInputStream(new FileInputStream(f));
         FileData data = new FileData(EDAMUtil.hash(in), new File(f));
         in.close();
-        
+
         // Create a new Resource
         Resource resource = new Resource();
         resource.setData(data);
-        resource.setMime(mImageData.mimeType);
-        
+        resource.setMime(imageData.mimeType);
+
         // Create a new Note
         Note note = new Note();
         note.setTitle("Android test note");
         note.addToResources(resource);
-        
-        // Set the note's ENML content. Learn about ENML at 
+
+        // Set the note's ENML content. Learn about ENML at
         // http://dev.evernote.com/documentation/cloud/chapters/ENML.php
-        String content = 
-          NOTE_PREFIX +
-          "<p>This note was uploaded from Android. It contains an image.</p>" +
-          "<en-media type=\"" + mImageData.mimeType + "\" hash=\"" +
-          EDAMUtil.bytesToHex(resource.getData().getBodyHash()) + "\"/>" +
-          NOTE_SUFFIX;
+        String content =
+            NOTE_PREFIX +
+                "<p>This note was uploaded from Android. It contains an image.</p>" +
+                "<en-media type=\"" + imageData.mimeType + "\" hash=\"" +
+                EDAMUtil.bytesToHex(resource.getData().getBodyHash()) + "\"/>" +
+                NOTE_SUFFIX;
+
         note.setContent(content);
-        
+
         // Create the note on the server. The returned Note object
         // will contain server-generated attributes such as the note's
         // unique ID (GUID), the Resource's GUID, and the creation and update time.
-        Note createdNote = mEvernoteSession.createNoteStore().createNote(mEvernoteSession.getAuthToken(), note);
+        createdNote = mEvernoteSession.createNoteStore().createNote(mEvernoteSession.getAuthToken(), note);
+      } catch(Exception e) {
+        Log.e(TAG, getString(R.string.err_creating_note), e);
+      }
 
-        Toast.makeText(this, R.string.msg_image_saved, Toast.LENGTH_LONG).show();
-      } catch (Throwable t) {
-        // It's generally bad form to catch Throwable, but for this simple demo, 
-        // we want to trap and log all errors.
-        Toast.makeText(this, R.string.err_creating_note, Toast.LENGTH_LONG).show();
-        Log.e(TAG, getString(R.string.err_creating_note), t);
-      }  
+      return createdNote;
+    }
+
+    @Override
+    protected void onPostExecute(Note note) {
+      removeDialog(DIALOG_PROGRESS);
+
+      if(note == null) {
+        Toast.makeText(getApplicationContext(), R.string.err_creating_note, Toast.LENGTH_LONG).show();
+        return;
+      }
+
+      Toast.makeText(getApplicationContext(), R.string.msg_image_saved, Toast.LENGTH_LONG).show();
     }
   }
 
@@ -280,7 +329,7 @@ public class HelloEDAM extends Activity {
 
     @Override
     protected void onPreExecute() {
-      super.onPreExecute();
+      showDialog(DIALOG_PROGRESS);
     }
 
     /**
@@ -343,6 +392,8 @@ public class HelloEDAM extends Activity {
      */
     @Override
     protected void onPostExecute(ImageData image) {
+      removeDialog(DIALOG_PROGRESS);
+
       if(image == null) {
         Toast.makeText(getApplicationContext(), R.string.err_image_selected, Toast.LENGTH_SHORT).show();
         return;

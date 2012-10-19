@@ -26,6 +26,8 @@
 package com.evernote.client.oauth.android;
 
 import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -51,9 +53,6 @@ import org.scribe.oauth.OAuthService;
  * Third parties should not need to use this class directly.
  */
 public class EvernoteOAuthActivity extends Activity {
-  //TODO: Add progress
-  //TODO: Revise docs
-
   private static final String TAG = "EvernoteOAuthActivity";
 
   static final String EXTRA_EVERNOTE_HOST = "EVERNOTE_HOST";
@@ -68,10 +67,16 @@ public class EvernoteOAuthActivity extends Activity {
   private String mRequestToken = null;
   private String mRequestTokenSecret = null;
 
+  private final int DIALOG_PROGRESS = 101;
+
   private Activity mActivity;
 
   //Webview
   private WebView mWebView;
+
+  //AsyncTasks
+  private AsyncTask mBeginAuthSyncTask = null;
+  private AsyncTask mCompleteAuthSyncTask = null;
 
   /**
    * Overrides the callback URL and authenticate
@@ -82,7 +87,9 @@ public class EvernoteOAuthActivity extends Activity {
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
       Uri uri = Uri.parse(url);
       if (uri.getScheme().equals(getCallbackScheme())) {
-        mCompleteAuthentication.execute(uri);
+        if(mCompleteAuthSyncTask == null) {
+          mCompleteAuthSyncTask = new CompleteAuthAsyncTask().execute(uri);
+        }
         return true;
       }
       return super.shouldOverrideUrlLoading(view, url);
@@ -100,94 +107,6 @@ public class EvernoteOAuthActivity extends Activity {
     }
   };
 
-  /**
-   * Get a request token from the Evernote web service and send the user
-   * to a browser to authorize access.
-   */
-  private AsyncTask<Void, Void, String> mBeginAuthentication = new AsyncTask<Void, Void, String>() {
-
-    @Override
-    protected String doInBackground(Void... params) {
-      String url = null;
-      try {
-        OAuthService service = createService();
-        Log.i(TAG, "Retrieving OAuth request token...");
-        Token reqToken = service.getRequestToken();
-        mRequestToken = reqToken.getToken();
-        mRequestTokenSecret = reqToken.getSecret();
-
-        Log.i(TAG, "Redirecting user for authorization...");
-        url = service.getAuthorizationUrl(reqToken);
-      } catch (Exception ex) {
-        Log.e(TAG, "Failed to obtain OAuth request token", ex);
-      }
-      return url;
-    }
-
-    /**
-     * Open a webview to allow the user to authorize access to their account
-     * @param url
-     */
-    @Override
-    protected void onPostExecute(String url) {
-      if (!TextUtils.isEmpty(url)) {
-        mWebView.loadUrl(url);
-      } else {
-        exit(false);
-      }
-    }
-  };
-
-  /**
-   * Async Task to complete the oauth process.
-   */
-  private AsyncTask<Uri, Void, EvernoteAuthToken> mCompleteAuthentication = new AsyncTask<Uri, Void, EvernoteAuthToken>() {
-
-    @Override
-    protected EvernoteAuthToken doInBackground(Uri... uris) {
-      EvernoteAuthToken authToken = null;
-      if(uris == null || uris.length == 0) {
-        return null;
-      }
-      Uri uri = uris[0];
-
-      if (!TextUtils.isEmpty(mRequestToken)) {
-        OAuthService service = createService();
-        String verifierString = uri.getQueryParameter("oauth_verifier");
-        if (TextUtils.isEmpty(verifierString)) {
-          Log.i(TAG, "User did not authorize access");
-        } else {
-          Verifier verifier = new Verifier(verifierString);
-          Log.i(TAG, "Retrieving OAuth access token...");
-          try {
-            Token reqToken = new Token(mRequestToken, mRequestTokenSecret);
-            authToken = new EvernoteAuthToken(service.getAccessToken(reqToken, verifier));
-          } catch (Exception ex) {
-            Log.e(TAG, "Failed to obtain OAuth access token", ex);
-          }
-        }
-      } else {
-        Log.d(TAG, "Unable to retrieve OAuth access token, no request token");
-      }
-
-      return authToken;
-    }
-
-    /**
-     * Save the Auth token and exit
-     */
-
-    @Override
-    protected void onPostExecute(EvernoteAuthToken authToken) {
-
-      if(EvernoteSession.getInstance() == null) {
-        exit(false);
-        return;
-      }
-
-      exit(EvernoteSession.getInstance().persistAuthenticationToken(getApplicationContext(), authToken));
-    }
-  };
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -196,7 +115,7 @@ public class EvernoteOAuthActivity extends Activity {
     //Show web loading progress
     getWindow().requestFeature(Window.FEATURE_PROGRESS);
 
-    setContentView(R.layout.webview);
+    setContentView(R.layout.esdk__webview);
     mActivity = this;
 
     if (savedInstanceState != null) {
@@ -212,7 +131,7 @@ public class EvernoteOAuthActivity extends Activity {
       mConsumerSecret = intent.getStringExtra(EXTRA_CONSUMER_SECRET);
     }
 
-    mWebView = (WebView) findViewById(R.id.webview);
+    mWebView = (WebView) findViewById(R.id.esdk__webview);
     mWebView.setWebViewClient(mWebViewClient);
     mWebView.setWebChromeClient(mWebChromeClient);
   }
@@ -228,8 +147,8 @@ public class EvernoteOAuthActivity extends Activity {
       return;
     }
 
-    if (mBeginAuthentication.getStatus() == AsyncTask.Status.PENDING) {
-      mBeginAuthentication.execute();
+    if(mBeginAuthSyncTask == null) {
+      mBeginAuthSyncTask = new BeginAuthAsyncTask().execute();
     }
   }
 
@@ -244,6 +163,24 @@ public class EvernoteOAuthActivity extends Activity {
     super.onSaveInstanceState(outState);
   }
 
+  @Override
+  protected Dialog onCreateDialog(int id) {
+    switch(id) {
+      case DIALOG_PROGRESS:
+        return new ProgressDialog(EvernoteOAuthActivity.this);
+    }
+    return super.onCreateDialog(id);
+  }
+
+  @Override
+  protected void onPrepareDialog(int id, Dialog dialog) {
+    switch(id) {
+      case DIALOG_PROGRESS:
+        ((ProgressDialog)dialog).setIndeterminate(true);
+        dialog.setCancelable(false);
+        ((ProgressDialog) dialog).setMessage(getString(R.string.esdk__loading));
+    }
+  }
 
   /**
    * Used to identify URL to intercept
@@ -281,10 +218,111 @@ public class EvernoteOAuthActivity extends Activity {
     runOnUiThread(new Runnable() {
       @Override
       public void run() {
-        Toast.makeText(mActivity, success ? R.string.evernote_login_successful : R.string.evernote_login_failed, Toast.LENGTH_LONG).show();
+        Toast.makeText(mActivity, success ? R.string.esdk__evernote_login_successful : R.string.esdk__evernote_login_failed, Toast.LENGTH_LONG).show();
         setResult(success ? RESULT_OK : RESULT_CANCELED);
         finish();
       }
     });
   }
+
+  /**
+   * Get a request token from the Evernote web service and send the user
+   * to a browser to authorize access.
+   */
+  private class BeginAuthAsyncTask extends AsyncTask<Void, Void, String> {
+
+    @Override
+    protected void onPreExecute() {
+      showDialog(DIALOG_PROGRESS);
+    }
+
+    @Override
+    protected String doInBackground(Void... params) {
+      String url = null;
+      try {
+        OAuthService service = createService();
+        Log.i(TAG, "Retrieving OAuth request token...");
+        Token reqToken = service.getRequestToken();
+        mRequestToken = reqToken.getToken();
+        mRequestTokenSecret = reqToken.getSecret();
+
+        Log.i(TAG, "Redirecting user for authorization...");
+        url = service.getAuthorizationUrl(reqToken);
+      } catch (Exception ex) {
+        Log.e(TAG, "Failed to obtain OAuth request token", ex);
+      }
+      return url;
+    }
+
+    /**
+     * Open a webview to allow the user to authorize access to their account
+     * @param url
+     */
+    @Override
+    protected void onPostExecute(String url) {
+      removeDialog(DIALOG_PROGRESS);
+      if (!TextUtils.isEmpty(url)) {
+        mWebView.loadUrl(url);
+      } else {
+        exit(false);
+      }
+    }
+  }
+
+  /**
+   * Async Task to complete the oauth process.
+   */
+  private class CompleteAuthAsyncTask extends AsyncTask<Uri, Void, EvernoteAuthToken> {
+
+    @Override
+    protected void onPreExecute() {
+      showDialog(DIALOG_PROGRESS);
+    }
+
+    @Override
+    protected EvernoteAuthToken doInBackground(Uri... uris) {
+      EvernoteAuthToken authToken = null;
+      if(uris == null || uris.length == 0) {
+        return null;
+      }
+      Uri uri = uris[0];
+
+      if (!TextUtils.isEmpty(mRequestToken)) {
+        OAuthService service = createService();
+        String verifierString = uri.getQueryParameter("oauth_verifier");
+        if (TextUtils.isEmpty(verifierString)) {
+          Log.i(TAG, "User did not authorize access");
+        } else {
+          Verifier verifier = new Verifier(verifierString);
+          Log.i(TAG, "Retrieving OAuth access token...");
+          try {
+            Token reqToken = new Token(mRequestToken, mRequestTokenSecret);
+            authToken = new EvernoteAuthToken(service.getAccessToken(reqToken, verifier));
+          } catch (Exception ex) {
+            Log.e(TAG, "Failed to obtain OAuth access token", ex);
+          }
+        }
+      } else {
+        Log.d(TAG, "Unable to retrieve OAuth access token, no request token");
+      }
+
+      return authToken;
+    }
+
+    /**
+     * Save the Auth token and exit
+     */
+
+    @Override
+    protected void onPostExecute(EvernoteAuthToken authToken) {
+      removeDialog(DIALOG_PROGRESS);
+      if(EvernoteSession.getInstance() == null) {
+        exit(false);
+        return;
+      }
+
+      exit(EvernoteSession.getInstance().persistAuthenticationToken(getApplicationContext(), authToken));
+    }
+  }
+
 }

@@ -32,6 +32,8 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.os.Build;
 import android.text.TextUtils;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
@@ -87,7 +89,7 @@ public class EvernoteSession {
    * @param appInfo
    * @return
    */
-  public static EvernoteSession getInstance(Context ctx, ApplicationInfo appInfo) {
+  public static EvernoteSession init(Context ctx, ApplicationInfo appInfo) {
     if(sInstance == null) {
       sInstance = new EvernoteSession(ctx, appInfo);
     }
@@ -95,10 +97,10 @@ public class EvernoteSession {
   }
 
   /**
-   * Used internally to get active instance for setting token results
+   * Used to access the instantiated instance without an application object
    * @return
    */
-  protected static EvernoteSession getInstance() {
+  public static EvernoteSession getInstance() {
     return sInstance;
   }
 
@@ -112,7 +114,7 @@ public class EvernoteSession {
     this.mApplicationInfo = applicationInfo;
     SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
     this.mAuthenticationResult = getAuthenticationResult(pref);
-    mDataDirectory = ctx.getExternalFilesDir(null);
+    mDataDirectory = ctx.getFilesDir();
   }
 
   /**
@@ -161,6 +163,10 @@ public class EvernoteSession {
     } else {
       editor.commit();
     }
+
+    CookieSyncManager.createInstance(ctx);
+    CookieManager cookieManager = CookieManager.getInstance();
+    cookieManager.removeAllCookie();
   }
 
   /**

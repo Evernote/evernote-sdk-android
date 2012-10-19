@@ -12,4 +12,5 @@
     <string name="msg_retrieved_resource">Retrieved resource from server</string>
     <string name="label_log_in">Sign in to Evernote</string>
     <string name="label_log_out">Log out of Evernote</string>
+    <string name="loading">Loading...</string>
 </resources>
