@@ -46,8 +46,8 @@ public class HelloEDAM extends Activity {
   
   // Your Evernote API key. See http://dev.evernote.com/documentation/cloud/
   // Please obfuscate your code to help keep these values secret.
-  private static final String CONSUMER_KEY = "frostbite7217-7708";
-  private static final String CONSUMER_SECRET = "44fc68c4d16dca1f";
+  private static final String CONSUMER_KEY = "Your Consumer Key here";
+  private static final String CONSUMER_SECRET = "Your Consumer Secret here";
 
   /***************************************************************************
    * Change these values as needed to use this code in your own application. *
@@ -136,7 +136,6 @@ public class HelloEDAM extends Activity {
       case DIALOG_PROGRESS:
         return new ProgressDialog(HelloEDAM.this);
     }
-
     return super.onCreateDialog(id);
   }
 
