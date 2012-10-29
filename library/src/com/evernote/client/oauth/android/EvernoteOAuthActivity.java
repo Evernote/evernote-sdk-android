@@ -42,6 +42,7 @@ import android.widget.Toast;
 import com.evernote.androidsdk.R;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.client.oauth.YinxiangApi;
+import com.evernote.edam.userstore.Constants;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.EvernoteApi;
 import org.scribe.model.Token;
@@ -240,7 +241,19 @@ public class EvernoteOAuthActivity extends Activity {
     protected String doInBackground(Void... params) {
       String url = null;
       try {
+
+        //TODO: create user store and check version
+
         OAuthService service = createService();
+
+        EvernoteSession session = EvernoteSession.getInstance();
+        if(session != null) {
+          if(!session.createUserStore().checkVersion(
+              session.getUserAgentString(), Constants.EDAM_VERSION_MAJOR, Constants.EDAM_VERSION_MINOR)) {
+            return null;
+          }
+        }
+
         Log.i(TAG, "Retrieving OAuth request token...");
         Token reqToken = service.getRequestToken();
         mRequestToken = reqToken.getToken();

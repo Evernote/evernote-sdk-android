@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -18,7 +19,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
-import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.FileData;
 import com.evernote.client.oauth.android.EvernoteSession;
 import com.evernote.edam.type.Note;
@@ -59,9 +59,6 @@ public class HelloEDAM extends Activity {
   // Change to "www.evernote.com" to use the Evernote production service 
   // instead of the sandbox
   private static final String EVERNOTE_HOST = "sandbox.evernote.com";
-  
-  private static final String APP_NAME = "Evernote Android Sample";  
-  private static final String APP_VERSION = "1.0";
 
   /***************************************************************************
    * The following values are simply part of the demo application.           *
@@ -153,12 +150,9 @@ public class HelloEDAM extends Activity {
    * Setup the EvernoteSession used to access the Evernote API.
    */
   private void setupSession() {
-    ApplicationInfo info = 
-      new ApplicationInfo(CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, 
-          APP_NAME, APP_VERSION);
 
     // Retrieve persisted authentication information
-    mEvernoteSession = EvernoteSession.init(this, info);
+    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST);
   }
   
   /**
@@ -367,9 +361,22 @@ public class HelloEDAM extends Activity {
               MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageId);
           Bitmap tempBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
 
-          Point size = new Point();
-          getWindowManager().getDefaultDisplay().getSize(size);
-          int dimen = size.x < size.y ? size.x : size.y;
+          int dimen = 0;
+          int x = 0;
+          int y = 0;
+
+          if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+            Point size = new Point();
+            getWindowManager().getDefaultDisplay().getSize(size);
+
+            x = size.x;
+            y = size.y;
+          } else {
+            x = getWindowManager().getDefaultDisplay().getWidth();
+            y = getWindowManager().getDefaultDisplay().getHeight();
+          }
+
+          dimen = x < y ? x : y;
 
           image.imageBitmap = Bitmap.createScaledBitmap(tempBitmap, dimen, dimen, true);
           tempBitmap.recycle();

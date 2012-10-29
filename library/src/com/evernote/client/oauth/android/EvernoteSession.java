@@ -30,38 +30,27 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
+import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
-import com.evernote.client.conn.ApplicationInfo;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
+import com.evernote.edam.userstore.UserStore;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TTransportException;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
  * to the service via OAuth and obtain a NoteStore.Client object used to make
  * authenticated API calls.
  * 
- * To authenticate to Evernote, create an instance of this class using
- * {@link #EvernoteSession(ApplicationInfo, File)}, then call 
- * {@link #authenticate(Context)}, which will start an asynchronous
- * authentication Activity. When your calling Activity resumes,
- * call {@link #completeAuthentication(SharedPreferences)} to see whether authentication
- * was successful.
- * 
- * If you already have cached Evernote authentication credentials as a result
- * of a previously successful authentication, create an instance of this class
- * using @link {@link #EvernoteSession(ApplicationInfo, AuthenticationResult, File)}.
- * 
- * Once you have an authenticated instance of this class, call 
- * {@link #createNoteStore()} to obtain a NoteStore.Client object, which can be used
- * to make Evernote API calls.
  */
 public class EvernoteSession {
 
@@ -72,11 +61,15 @@ public class EvernoteSession {
   protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
   protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
   protected static final String KEY_USERID = "evernote.userId";
-  public static final int REQUEST_CODE_OAUTH = 101;
+  public static final int REQUEST_CODE_OAUTH = 1010101;
 
   protected static final String PREFERENCE_NAME = "evernote.preferences";
 
-  private ApplicationInfo mApplicationInfo;
+  private String mConsumerKey;
+  private String mConsumerSecret;
+  private String mConsumerHost;
+  private String mUserAgentString;
+
   private AuthenticationResult mAuthenticationResult;
   private File mDataDirectory;
 
@@ -86,12 +79,11 @@ public class EvernoteSession {
   /**
    * Use to acquire a singleton instance of the EvernoteSession for authentication
    * @param ctx
-   * @param appInfo
    * @return
    */
-  public static EvernoteSession init(Context ctx, ApplicationInfo appInfo) {
+  public static EvernoteSession init(Context ctx, String consumerKey, String consumerSecret, String consumerHost) {
     if(sInstance == null) {
-      sInstance = new EvernoteSession(ctx, appInfo);
+      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, consumerHost);
     }
     return sInstance;
   }
@@ -107,11 +99,17 @@ public class EvernoteSession {
 
   /**
    * Private constructor, not to be called from outside
-   * @param ctx Application context or activity
-   * @param applicationInfo ApplicationInfo storing the app information
+   * @param ctx
+   * @param consumerKey
+   * @param consumerSecret
+   * @param consumerHost
    */
-  private EvernoteSession(Context ctx, ApplicationInfo applicationInfo) {
-    this.mApplicationInfo = applicationInfo;
+  private EvernoteSession(Context ctx, String consumerKey, String consumerSecret, String consumerHost) {
+    mConsumerKey = consumerKey;
+    mConsumerSecret = consumerSecret;
+    mConsumerHost = consumerHost;
+    setUserAgentString(ctx);
+
     SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
     this.mAuthenticationResult = getAuthenticationResult(pref);
     mDataDirectory = ctx.getFilesDir();
@@ -222,9 +220,55 @@ public class EvernoteSession {
     }   
     TEvernoteHttpClient transport = 
       new TEvernoteHttpClient(mAuthenticationResult.getNoteStoreUrl(),
-          mApplicationInfo.getUserAgent(), mDataDirectory);
+          mUserAgentString, mDataDirectory);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
     return new NoteStore.Client(protocol, protocol);  
+  }
+
+  public UserStore.Client createUserStore()  throws TTransportException {
+    String url = "";
+    if (!mConsumerHost.startsWith("http")) {
+      url = mConsumerHost.contains(":") ? "http://" : "https://";
+    }
+    url += mConsumerHost + "/edam/user";
+
+    TEvernoteHttpClient transport =
+        new TEvernoteHttpClient(url, mUserAgentString, mDataDirectory);
+
+    TBinaryProtocol protocol = new TBinaryProtocol(transport);
+    return new UserStore.Client(protocol, protocol);
+
+  }
+
+  private void setUserAgentString(Context ctx) {
+    // com.evernote.sample Android/216817 (en); Android/4.0.3; Xoom/15;"
+
+    String packageName = null;
+    int packageVersion = 0;
+    try {
+      packageName= ctx.getPackageName();
+      packageVersion = ctx.getPackageManager().getPackageInfo(packageName, 0).versionCode;
+
+    } catch (PackageManager.NameNotFoundException e) {
+      Log.e("tag", e.getMessage());
+    }
+
+    String userAgent = packageName+ " Android/" +packageVersion;
+
+    Locale locale = java.util.Locale.getDefault();
+    if (locale == null) {
+      userAgent += " ("+Locale.US+");";
+    } else {
+      userAgent += " (" + locale.toString()+ "); ";
+    }
+    userAgent += "Android/"+android.os.Build.VERSION.RELEASE+"; ";
+    userAgent +=
+        android.os.Build.MODEL + "/" + android.os.Build.VERSION.SDK + ";";
+    mUserAgentString = userAgent;
+  }
+
+  public String getUserAgentString() {
+    return mUserAgentString;
   }
 
   /**
@@ -235,9 +279,9 @@ public class EvernoteSession {
   public void authenticate(Context ctx) {
     // Create an activity that will be used for authentication
     Intent intent = new Intent(ctx, EvernoteOAuthActivity.class);
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, mApplicationInfo.getEvernoteHost());
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mApplicationInfo.getConsumerKey());
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mApplicationInfo.getConsumerSecret());
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, mConsumerHost);
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mConsumerKey);
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mConsumerSecret);
 
     if(ctx instanceof Activity) {
       //If this is being called from an activity, an activity can register for the result code
