@@ -14,6 +14,17 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+    <repositories>
+
+        <repository>
+            <id>evernote-m2-snapshots</id>
+            <url>https://github.com/evernote/evernote-m2/raw/master/snapshots</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.google.android</groupId>
@@ -27,13 +38,10 @@
 			<version>1.3.1</version>
 		</dependency>
 
-        <!-- TODO: move this to a maven repo location (central)-->
         <dependency>
-            <groupId>org.apache</groupId>
-            <artifactId>libthrift</artifactId>
+            <groupId>com.evernote</groupId>
+            <artifactId>en-thrift</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/libthrift.jar</systemPath>
         </dependency>
 	</dependencies>
 
