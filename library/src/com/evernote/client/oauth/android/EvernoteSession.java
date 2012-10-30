@@ -302,6 +302,7 @@ public class EvernoteSession {
     if(ctx == null || authToken == null) {
       return false;
     }
+    ctx.getExternalCacheDir();
     SharedPreferences prefs = ctx.
         getSharedPreferences(EvernoteSession.PREFERENCE_NAME, Context.MODE_PRIVATE);
 
