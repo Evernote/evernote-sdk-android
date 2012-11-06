@@ -25,6 +25,7 @@
  */
 package com.evernote.client.oauth.android;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -176,6 +177,7 @@ public class EvernoteSession {
   /**
    * Clear all stored authentication information.
    */
+  @TargetApi(9)
   public void logOut(Context ctx) {
     mAuthenticationResult = null;
     
@@ -186,8 +188,8 @@ public class EvernoteSession {
     editor.remove(KEY_WEBAPIURLPREFIX);
     editor.remove(KEY_USERID);
 
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-      // TODO reports an error "requires API level 9, current min is 5"
       editor.apply();
     } else {
       editor.commit();
@@ -292,10 +294,9 @@ public class EvernoteSession {
     } else {
       userAgent += " (" + locale.toString()+ "); ";
     }
-    userAgent += "Android/"+android.os.Build.VERSION.RELEASE+"; ";
+    userAgent += "Android/"+Build.VERSION.RELEASE+"; ";
     userAgent +=
-        android.os.Build.MODEL + "/" + android.os.Build.VERSION.SDK + ";";
-    // TODO VERSION.SDK reports an warning, deprecated
+        Build.MODEL + "/" + Build.VERSION.SDK_INT + ";";
     mUserAgentString = userAgent;
   }
 
@@ -338,6 +339,7 @@ public class EvernoteSession {
    * @param authToken The authentication information returned at the end of a 
    * successful OAuth authentication.
    */
+  @TargetApi(9)
   protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken) {
     if (ctx == null || authToken == null) {
       return false;
@@ -353,7 +355,6 @@ public class EvernoteSession {
     editor.putInt(EvernoteSession.KEY_USERID, authToken.getUserId());
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-      // TODO reports an error "requires API level 9, current min is 5"
       editor.apply();
     } else {
       editor.commit();

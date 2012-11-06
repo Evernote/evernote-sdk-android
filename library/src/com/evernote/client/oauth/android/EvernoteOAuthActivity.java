@@ -255,9 +255,6 @@ public class EvernoteOAuthActivity extends Activity {
     protected String doInBackground(Void... params) {
       String url = null;
       try {
-
-        //TODO: create user store and check version
-
         OAuthService service = createService();
 
         EvernoteSession session = EvernoteSession.getSession();
