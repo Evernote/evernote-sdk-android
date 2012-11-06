@@ -169,7 +169,7 @@ public class HelloEDAM extends Activity {
   private void setupSession() {
 
     // Retrieve persisted authentication information
-    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST);
+    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
   }
   
   /**

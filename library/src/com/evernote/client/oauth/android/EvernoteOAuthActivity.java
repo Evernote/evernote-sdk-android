@@ -260,7 +260,7 @@ public class EvernoteOAuthActivity extends Activity {
 
         OAuthService service = createService();
 
-        EvernoteSession session = EvernoteSession.getInstance();
+        EvernoteSession session = EvernoteSession.getSession();
         if (session != null) {
           if (!session.createUserStore().checkVersion(
               session.getUserAgentString(), 
@@ -351,12 +351,12 @@ public class EvernoteOAuthActivity extends Activity {
     protected void onPostExecute(EvernoteAuthToken authToken) {
       // TODO deprecated
       removeDialog(DIALOG_PROGRESS);
-      if (EvernoteSession.getInstance() == null) {
+      if (EvernoteSession.getSession() == null) {
         exit(false);
         return;
       }
 
-      exit(EvernoteSession.getInstance().persistAuthenticationToken(
+      exit(EvernoteSession.getSession().persistAuthenticationToken(
     		  getApplicationContext(), authToken));
     }
   }

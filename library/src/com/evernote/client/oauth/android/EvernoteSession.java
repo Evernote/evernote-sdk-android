@@ -99,15 +99,20 @@ public class EvernoteSession {
    * @param consumerKey The consumer key portion of your application's API key.
    * @param consumerSecret The consumer secret portion of your application's API key.
    * @param evernoteHost The hostname for the Evernote service instance that you wish
+   * @param dataDir the data directory to store evernote files
    * to use. Development and testing is typically performed against {@link #HOST_SANDBOX}.
    * The production Evernote service is {@link #HOST_PRODUCTION}. The production Yinxiang Biji
    * (Evernote China) service is {@link #HOST_CHINA}.
    * 
    * @return The EvernoteSession singleton instance.
    */
-  public static EvernoteSession init(Context ctx, String consumerKey, String consumerSecret, String evernoteHost) {
+  public static EvernoteSession init(Context ctx,
+                                     String consumerKey,
+                                     String consumerSecret,
+                                     String evernoteHost,
+                                     File dataDir) {
     if (sInstance == null) {
-      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteHost);
+      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteHost, dataDir);
     }
     return sInstance;
   }
@@ -116,16 +121,16 @@ public class EvernoteSession {
    * Used to access the initialized EvernoteSession singleton instance.
    * 
    * @return The previously initialized EvernoteSession instance, 
-   * or null if {@link #init(Context, String, String, String)} has not been called yet.
+   * or null if {@link #init(Context, String, String, String, File)} has not been called yet.
    */
-  public static EvernoteSession getInstance() {
+  public static EvernoteSession getSession() {
     return sInstance;
   }
 
   /**
    * Private constructor.
    */
-  private EvernoteSession(Context ctx, String consumerKey, String consumerSecret, String evernoteHost) {
+  private EvernoteSession(Context ctx, String consumerKey, String consumerSecret, String evernoteHost, File dataDir) {
     mConsumerKey = consumerKey;
     mConsumerSecret = consumerSecret;
     mEvernoteHost = evernoteHost;
@@ -133,7 +138,11 @@ public class EvernoteSession {
 
     SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
     this.mAuthenticationResult = getAuthenticationResult(pref);
-    mDataDirectory = ctx.getFilesDir();
+    if(dataDir != null) {
+      mDataDirectory = dataDir;
+    } else {
+      mDataDirectory = ctx.getFilesDir();
+    }
   }
 
   /**
@@ -212,22 +221,6 @@ public class EvernoteSession {
     return mAuthenticationResult;
   }
 
-  /**
-   * Get the directory in which the SDK should create any
-   * temporary files that it needs.
-   */
-  public File getDataDirectory() {
-    return mDataDirectory;
-  }
-
-  /**
-   * Set the directory in which the SDK should create any
-   * temporary files that it needs.
-   */
-  public void setDataDirectory(File fileDir) {
-    mDataDirectory = fileDir;
-  }
-  
   /**
    * Create a new NoteStore client. Each call to this method will return 
    * a new NoteStore.Client instance. The returned client can be used for any
