@@ -27,9 +27,7 @@ package com.evernote.client.oauth.android;
 
 /**
  * A container class for the results of a successful OAuth authorization with
- * Evernote.
- * 
- * TODO should this implement Parcelable to simplify storage?
+ * the Evernote service.
  */
 public class AuthenticationResult {
 
@@ -46,25 +44,39 @@ public class AuthenticationResult {
    * @param webApiUrlPrefix The URL of misc. Evernote web APIs for the authenticated user.
    * @param userId The numeric ID of the Evernote user.
    */
-  public AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, int userId) {
+  public AuthenticationResult(String authToken, String noteStoreUrl, 
+		  String webApiUrlPrefix, int userId) {
     this.authToken = authToken;
     this.noteStoreUrl = noteStoreUrl;
     this.webApiUrlPrefix = webApiUrlPrefix;
     this.userId = userId;
   }
 
+  /**
+   * Get the authentication token that will be used to make authenticated API requests.
+   */
   public String getAuthToken() {
     return authToken;
   }
 
+  /**
+   * Get the URL that will be used to access the NoteStore service.
+   */
   public String getNoteStoreUrl() {
     return noteStoreUrl;
   }
 
+  /**
+   * Get the URL prefix that can be used to access non-Thrift API endpoints.
+   */
   public String getWebApiUrlPrefix() {
     return webApiUrlPrefix;
   }
 
+  /**
+   * Get the numeric user ID of the user who authorized access to their
+   * Evernote account.
+   */
   public int getUserId() {
     return userId;
   }

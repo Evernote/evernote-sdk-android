@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Evernote Corporation
+ * Copyright 2012 Evernote Corporation.
  * All rights reserved. 
  * 
  * Redistribution and use in source and binary forms, with or without modification, 
@@ -48,14 +48,29 @@ import java.util.Locale;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
- * to the service via OAuth and obtain a NoteStore.Client object used to make
- * authenticated API calls.
+ * to the service via OAuth and obtain NoteStore.Client objects, which are used 
+ * to make authenticated API calls.
  * 
+ * To use EvernoteSession:
+ * <pre>
+ *   // Get set up and authenticated
+ *   EvernoteSession session = EvernoteSession.init(...);
+ *   session.authenticate(...);
+ *   
+ *   TODO trap that auth is complete
+ *   
+ *   // Later, make the API calls that you need
+ *   NoteStore.client noteStore = session.createNoteStore();
+ *   Notebook notebook = noteStore.getDefaultNotebook(session.getAuthToken()); 
+ * </pre>
  */
 public class EvernoteSession {
 
-  //TODO: Revise docs
-
+  // Standard hostnames
+  public static final String HOST_SANDBOX = "sandbox.evernote.com";
+  public static final String HOST_PRODUCTION = "www.evernote.com";
+  public static final String HOST_CHINA = "app.yinxiang.com";
+	
   // Keys for values persisted in our shared preferences 
   protected static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
   protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
@@ -67,7 +82,7 @@ public class EvernoteSession {
 
   private String mConsumerKey;
   private String mConsumerSecret;
-  private String mConsumerHost;
+  private String mEvernoteHost;
   private String mUserAgentString;
 
   private AuthenticationResult mAuthenticationResult;
@@ -75,40 +90,46 @@ public class EvernoteSession {
 
   private static EvernoteSession sInstance = null;
 
-  //TODO: revise need for appInfo in singleton
   /**
-   * Use to acquire a singleton instance of the EvernoteSession for authentication
+   * Use to acquire a singleton instance of the EvernoteSession for authentication.
+   * If the singleton has already been initialized, the existing instance will
+   * be returned (and the parameters passed to this method will be ignored).
+   * 
    * @param ctx
-   * @return
+   * @param consumerKey The consumer key portion of your application's API key.
+   * @param consumerSecret The consumer secret portion of your application's API key.
+   * @param evernoteHost The hostname for the Evernote service instance that you wish
+   * to use. Development and testing is typically performed against {@link #HOST_SANDBOX}.
+   * The production Evernote service is {@link #HOST_PRODUCTION}. The production Yinxiang Biji
+   * (Evernote China) service is {@link #HOST_CHINA}.
+   * 
+   * @return The EvernoteSession singleton instance.
    */
-  public static EvernoteSession init(Context ctx, String consumerKey, String consumerSecret, String consumerHost) {
-    if(sInstance == null) {
-      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, consumerHost);
+  public static EvernoteSession init(Context ctx, String consumerKey, String consumerSecret, String evernoteHost) {
+    if (sInstance == null) {
+      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteHost);
     }
     return sInstance;
   }
 
   /**
-   * Used to access the instantiated instance without an application object
-   * @return
+   * Used to access the initialized EvernoteSession singleton instance.
+   * 
+   * @return The previously initialized EvernoteSession instance, 
+   * or null if {@link #init(Context, String, String, String)} has not been called yet.
    */
   public static EvernoteSession getInstance() {
     return sInstance;
   }
 
-
   /**
-   * Private constructor, not to be called from outside
-   * @param ctx
-   * @param consumerKey
-   * @param consumerSecret
-   * @param consumerHost
+   * Private constructor.
    */
-  private EvernoteSession(Context ctx, String consumerKey, String consumerSecret, String consumerHost) {
+  private EvernoteSession(Context ctx, String consumerKey, String consumerSecret, String evernoteHost) {
     mConsumerKey = consumerKey;
     mConsumerSecret = consumerSecret;
-    mConsumerHost = consumerHost;
-    setUserAgentString(ctx);
+    mEvernoteHost = evernoteHost;
+    initUserAgentString(ctx);
 
     SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
     this.mAuthenticationResult = getAuthenticationResult(pref);
@@ -156,7 +177,8 @@ public class EvernoteSession {
     editor.remove(KEY_WEBAPIURLPREFIX);
     editor.remove(KEY_USERID);
 
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+      // TODO reports an error "requires API level 9, current min is 5"
       editor.apply();
     } else {
       editor.commit();
@@ -171,7 +193,7 @@ public class EvernoteSession {
    * Get the authentication token that is used to make API calls
    * though a NoteStore.Client.
    *  
-   * @return an authentication token, or null if {@link #isLoggedIn()}
+   * @return the authentication token, or null if {@link #isLoggedIn()}
    * is false.
    */
   public String getAuthToken() {
@@ -191,24 +213,25 @@ public class EvernoteSession {
   }
 
   /**
-   * Retrieves the File directory used to store the Evernote content
-   * @return File Directory
+   * Get the directory in which the SDK should create any
+   * temporary files that it needs.
    */
   public File getDataDirectory() {
     return mDataDirectory;
   }
 
   /**
-   * Sets the file directory to store Evernote content
-   * @param fileDir
+   * Set the directory in which the SDK should create any
+   * temporary files that it needs.
    */
   public void setDataDirectory(File fileDir) {
     mDataDirectory = fileDir;
   }
   
   /**
-   * Get a new NoteStore Client. The returned client can be used for any
-   * number of API calls, but is NOT thread safe.
+   * Create a new NoteStore client. Each call to this method will return 
+   * a new NoteStore.Client instance. The returned client can be used for any
+   * number of API calls, but is NOT thread safe.  
    * 
    * @throws IllegalStateException if @link #isLoggedIn() is false.
    * @throws TTransportException if an error occurs setting up the
@@ -225,12 +248,21 @@ public class EvernoteSession {
     return new NoteStore.Client(protocol, protocol);  
   }
 
+  /**
+   * Create a new UserStore client. Each call to this method will return 
+   * a new UserStore.Client instance. The returned client can be used for any
+   * number of API calls, but is NOT thread safe.  
+   * 
+   * @throws IllegalStateException if @link #isLoggedIn() is false.
+   * @throws TTransportException if an error occurs setting up the
+   * connection to the Evernote service.
+   */
   public UserStore.Client createUserStore()  throws TTransportException {
     String url = "";
-    if (!mConsumerHost.startsWith("http")) {
-      url = mConsumerHost.contains(":") ? "http://" : "https://";
+    if (!mEvernoteHost.startsWith("http")) {
+      url = mEvernoteHost.contains(":") ? "http://" : "https://";
     }
-    url += mConsumerHost + "/edam/user";
+    url += mEvernoteHost + "/edam/user";
 
     TEvernoteHttpClient transport =
         new TEvernoteHttpClient(url, mUserAgentString, mDataDirectory);
@@ -240,7 +272,13 @@ public class EvernoteSession {
 
   }
 
-  private void setUserAgentString(Context ctx) {
+  /**
+   * Construct a user-agent string based on the running application and
+   * the device and operating system information. This information is
+   * included in HTTP requests made to the Evernote service and assists
+   * in measuring traffic and diagnosing problems.
+   */
+  private void initUserAgentString(Context ctx) {
     // com.evernote.sample Android/216817 (en); Android/4.0.3; Xoom/15;"
 
     String packageName = null;
@@ -264,26 +302,31 @@ public class EvernoteSession {
     userAgent += "Android/"+android.os.Build.VERSION.RELEASE+"; ";
     userAgent +=
         android.os.Build.MODEL + "/" + android.os.Build.VERSION.SDK + ";";
+    // TODO VERSION.SDK reports an warning, deprecated
     mUserAgentString = userAgent;
   }
 
+  /**
+   * Get the user-agent header value that will be included in all
+   * HTTP requests made to the Evernote service. 
+   */
   public String getUserAgentString() {
     return mUserAgentString;
   }
 
   /**
-   * Start the OAuth authentication process. Obtains an OAuth request token
-   * from the Evernote service and redirects the user to the web browser
-   * to authorize access to their Evernote account.
+   * Start the OAuth authentication process.
+   * 
+   * TODO do we need to do anything special here if you're already logged in?
    */
   public void authenticate(Context ctx) {
     // Create an activity that will be used for authentication
     Intent intent = new Intent(ctx, EvernoteOAuthActivity.class);
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, mConsumerHost);
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, mEvernoteHost);
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mConsumerKey);
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mConsumerSecret);
 
-    if(ctx instanceof Activity) {
+    if (ctx instanceof Activity) {
       //If this is being called from an activity, an activity can register for the result code
       ((Activity)ctx).startActivityForResult(intent, REQUEST_CODE_OAUTH);
     } else {
@@ -294,14 +337,19 @@ public class EvernoteSession {
   }
 
   /**
-   * Called upon completion of the oauth process to save the token into the SharedPreferences
+   * Called upon completion of the OAuth process to save resulting authentication
+   * information into the application's SharedPreferences, allowing it to be reused
+   * later.
+   * 
    * @param ctx Application Context or activity
-   * @param authToken Oauth EvernoteAuthToken
+   * @param authToken The authentication information returned at the end of a 
+   * successful OAuth authentication.
    */
   protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken) {
-    if(ctx == null || authToken == null) {
+    if (ctx == null || authToken == null) {
       return false;
     }
+    // TODO reports an error "requires API level 8, current min is 5"
     ctx.getExternalCacheDir();
     SharedPreferences prefs = ctx.
         getSharedPreferences(EvernoteSession.PREFERENCE_NAME, Context.MODE_PRIVATE);
@@ -313,7 +361,8 @@ public class EvernoteSession {
     editor.putString(EvernoteSession.KEY_WEBAPIURLPREFIX, authToken.getWebApiUrlPrefix());
     editor.putInt(EvernoteSession.KEY_USERID, authToken.getUserId());
 
-    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+      // TODO reports an error "requires API level 9, current min is 5"
       editor.apply();
     } else {
       editor.commit();

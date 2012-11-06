@@ -52,6 +52,8 @@ import org.scribe.oauth.OAuthService;
 /**
  * An Android Activity for authenticating to Evernote using OAuth.
  * Third parties should not need to use this class directly.
+ * 
+ * TODO document how to localize strings used in the activity.
  */
 public class EvernoteOAuthActivity extends Activity {
   private static final String TAG = "EvernoteOAuthActivity";
@@ -72,10 +74,8 @@ public class EvernoteOAuthActivity extends Activity {
 
   private Activity mActivity;
 
-  //Webview
   private WebView mWebView;
 
-  //AsyncTasks
   private AsyncTask mBeginAuthSyncTask = null;
   private AsyncTask mCompleteAuthSyncTask = null;
 
@@ -88,7 +88,7 @@ public class EvernoteOAuthActivity extends Activity {
     public boolean shouldOverrideUrlLoading(WebView view, String url) {
       Uri uri = Uri.parse(url);
       if (uri.getScheme().equals(getCallbackScheme())) {
-        if(mCompleteAuthSyncTask == null) {
+        if (mCompleteAuthSyncTask == null) {
           mCompleteAuthSyncTask = new CompleteAuthAsyncTask().execute(uri);
         }
         return true;
@@ -148,7 +148,7 @@ public class EvernoteOAuthActivity extends Activity {
       return;
     }
 
-    if(mBeginAuthSyncTask == null) {
+    if (mBeginAuthSyncTask == null) {
       mBeginAuthSyncTask = new BeginAuthAsyncTask().execute();
     }
   }
@@ -166,10 +166,11 @@ public class EvernoteOAuthActivity extends Activity {
 
   @Override
   protected Dialog onCreateDialog(int id) {
-    switch(id) {
+    switch (id) {
       case DIALOG_PROGRESS:
         return new ProgressDialog(EvernoteOAuthActivity.this);
     }
+    // TODO onCreateDialog(int) is deprecated
     return super.onCreateDialog(id);
   }
 
@@ -184,22 +185,34 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * Used to identify URL to intercept
-   * @return
+   * Specifies a URL scheme that uniquely identifies callbacks
+   * to this application after a user authorizes access to their
+   * Evernote account in our WebView.
    */
   private String getCallbackScheme() {
-    return "en-" + mConsumerKey;
+    return "en-oauth";
   }
 
+  /**
+   * Create a Scribe OAuthService object that can be used to 
+   * perform OAuth authentication with the appropriate Evernote
+   * service.
+   */
   @SuppressWarnings("unchecked")
   private OAuthService createService() {
     OAuthService builder = null;
-    Class apiClass = EvernoteApi.class;
+    @SuppressWarnings("rawtypes")
+	Class apiClass = null;
 
-    if (mEvernoteHost.equals("sandbox.evernote.com")) {
+    if (mEvernoteHost.equals(EvernoteSession.HOST_SANDBOX)) {
       apiClass = EvernoteApi.Sandbox.class;
-    } else if (mEvernoteHost.equals("app.yinxiang.com")) {
+    } else if (mEvernoteHost.equals(EvernoteSession.HOST_PRODUCTION)) {
+      apiClass = EvernoteApi.class;
+    } else if (mEvernoteHost.equals(EvernoteSession.HOST_CHINA)) {
       apiClass = YinxiangApi.class;
+    } else {
+      throw new IllegalArgumentException("Unsupported Evernote host: " + 
+                                         mEvernoteHost);
     }
     builder = new ServiceBuilder()
         .provider(apiClass)
@@ -212,8 +225,8 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * Exit the activity and toast message
-   * @param success if successfully completed oauth
+   * Exit the activity and display a toast message.
+   * @param success Whether the OAuth process completed successfully.
    */
   private void exit(final boolean success) {
     runOnUiThread(new Runnable() {
@@ -227,13 +240,14 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * Get a request token from the Evernote web service and send the user
-   * to a browser to authorize access.
+   * Get a request token from the Evernote service and send the user
+   * to our WebView to authorize access.
    */
   private class BeginAuthAsyncTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPreExecute() {
+      // TODO deprecated
       showDialog(DIALOG_PROGRESS);
     }
 
@@ -247,9 +261,13 @@ public class EvernoteOAuthActivity extends Activity {
         OAuthService service = createService();
 
         EvernoteSession session = EvernoteSession.getInstance();
-        if(session != null) {
-          if(!session.createUserStore().checkVersion(
-              session.getUserAgentString(), Constants.EDAM_VERSION_MAJOR, Constants.EDAM_VERSION_MINOR)) {
+        if (session != null) {
+          if (!session.createUserStore().checkVersion(
+              session.getUserAgentString(), 
+              Constants.EDAM_VERSION_MAJOR, 
+              Constants.EDAM_VERSION_MINOR)) {
+        	Log.e(TAG, "Evernote API version " + Constants.EDAM_VERSION_MAJOR + "." + 
+              Constants.EDAM_VERSION_MINOR + " is no longer supported!");
             return null;
           }
         }
@@ -268,11 +286,12 @@ public class EvernoteOAuthActivity extends Activity {
     }
 
     /**
-     * Open a webview to allow the user to authorize access to their account
-     * @param url
+     * Open a WebView to allow the user to authorize access to their account.
+     * @param url The URL of the OAuth authorization web page.
      */
     @Override
     protected void onPostExecute(String url) {
+      // TODO deprecated
       removeDialog(DIALOG_PROGRESS);
       if (!TextUtils.isEmpty(url)) {
         mWebView.loadUrl(url);
@@ -283,19 +302,20 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * Async Task to complete the oauth process.
+   * An AsyncTask to complete the OAuth process after successful user authorization.
    */
   private class CompleteAuthAsyncTask extends AsyncTask<Uri, Void, EvernoteAuthToken> {
 
     @Override
     protected void onPreExecute() {
+      // TODO deprecated
       showDialog(DIALOG_PROGRESS);
     }
 
     @Override
     protected EvernoteAuthToken doInBackground(Uri... uris) {
       EvernoteAuthToken authToken = null;
-      if(uris == null || uris.length == 0) {
+      if (uris == null || uris.length == 0) {
         return null;
       }
       Uri uri = uris[0];
@@ -323,18 +343,21 @@ public class EvernoteOAuthActivity extends Activity {
     }
 
     /**
-     * Save the Auth token and exit
+     * Save the authentication information resulting from a successful
+     * OAuth authorization and complete the activity.
      */
 
     @Override
     protected void onPostExecute(EvernoteAuthToken authToken) {
+      // TODO deprecated
       removeDialog(DIALOG_PROGRESS);
-      if(EvernoteSession.getInstance() == null) {
+      if (EvernoteSession.getInstance() == null) {
         exit(false);
         return;
       }
 
-      exit(EvernoteSession.getInstance().persistAuthenticationToken(getApplicationContext(), authToken));
+      exit(EvernoteSession.getInstance().persistAuthenticationToken(
+    		  getApplicationContext(), authToken));
     }
   }
 

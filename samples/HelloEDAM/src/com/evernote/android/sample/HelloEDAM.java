@@ -1,3 +1,28 @@
+/*
+ * Copyright 2012 Evernote Corporation
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, 
+ * are permitted provided that the following conditions are met:
+ *  
+ * 1. Redistributions of source code must retain the above copyright notice, this 
+ *    list of conditions and the following disclaimer.
+ *     
+ * 2. Redistributions in binary form must reproduce the above copyright notice, 
+ *    this list of conditions and the following disclaimer in the documentation 
+ *    and/or other materials provided with the distribution.
+ *  
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.evernote.android.sample;
 
 import android.app.Activity;
@@ -21,9 +46,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import com.evernote.client.conn.mobile.FileData;
 import com.evernote.client.oauth.android.EvernoteSession;
+import com.evernote.client.oauth.android.EvernoteUtil;
 import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Resource;
-import com.evernote.edam.util.EDAMUtil;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -32,11 +57,11 @@ import java.io.InputStream;
 
 /**
  * This simple Android app demonstrates how to integrate with the 
- * Evernote Cloud API (aka EDAM) to create a note.
+ * Evernote API (aka EDAM).
  * 
  * In this sample, the user authorizes access to their account using OAuth
  * and chooses an image from the device's image gallery. The image is then 
- * saved directly to Evernote using the Cloud API.
+ * saved directly to user's Evernote account as a new note.
  */
 public class HelloEDAM extends Activity {
   
@@ -46,8 +71,8 @@ public class HelloEDAM extends Activity {
   
   // Your Evernote API key. See http://dev.evernote.com/documentation/cloud/
   // Please obfuscate your code to help keep these values secret.
-  private static final String CONSUMER_KEY = "Your Consumer Key here";
-  private static final String CONSUMER_SECRET = "Your Consumer Secret here";
+  private static final String CONSUMER_KEY = "Your consumer key";
+  private static final String CONSUMER_SECRET = "Your consumer secret";
 
   /***************************************************************************
    * Change these values as needed to use this code in your own application. *
@@ -56,9 +81,11 @@ public class HelloEDAM extends Activity {
   // Name of this application, for logging
   private static final String TAG = "HelloEDAM";
 
-  // Change to "www.evernote.com" to use the Evernote production service 
-  // instead of the sandbox
-  private static final String EVERNOTE_HOST = "sandbox.evernote.com";
+  // Initial development is done on Evernote's testing service, the sandbox.
+  // Change to HOST_PRODUCTION to use the Evernote production service 
+  // once your code is complete, or HOST_CHINA to use the Yinxiang Biji
+  // (Evernote China) production service.
+  private static final String EVERNOTE_HOST = EvernoteSession.HOST_SANDBOX;
 
   /***************************************************************************
    * The following values are simply part of the demo application.           *
@@ -66,16 +93,6 @@ public class HelloEDAM extends Activity {
   
   // Activity result request codes
   private static final int SELECT_IMAGE = 1;
-
-  // The ENML preamble to every Evernote note. 
-  // Note content goes between <en-note> and </en-note>
-  private static final String NOTE_PREFIX = 
-    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-    "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" +
-    "<en-note>";
-
-  // The ENML postamble to every Evernote note 
-  private static final String NOTE_SUFFIX = "</en-note>";
 
   // Used to interact with the Evernote web service
   private EvernoteSession mEvernoteSession;
@@ -265,7 +282,7 @@ public class HelloEDAM extends Activity {
         // Hash the data in the image file. The hash is used to reference the
         // file in the ENML note content.
         InputStream in = new BufferedInputStream(new FileInputStream(f));
-        FileData data = new FileData(EDAMUtil.hash(in), new File(f));
+        FileData data = new FileData(EvernoteUtil.hash(in), new File(f));
         in.close();
 
         // Create a new Resource
@@ -281,11 +298,10 @@ public class HelloEDAM extends Activity {
         // Set the note's ENML content. Learn about ENML at
         // http://dev.evernote.com/documentation/cloud/chapters/ENML.php
         String content =
-            NOTE_PREFIX +
-                "<p>This note was uploaded from Android. It contains an image.</p>" +
-                "<en-media type=\"" + imageData.mimeType + "\" hash=\"" +
-                EDAMUtil.bytesToHex(resource.getData().getBodyHash()) + "\"/>" +
-                NOTE_SUFFIX;
+            EvernoteUtil.NOTE_PREFIX +
+            "<p>This note was uploaded from Android. It contains an image.</p>" +
+            EvernoteUtil.createEnMediaTag(resource) +
+            EvernoteUtil.NOTE_SUFFIX;
 
         note.setContent(content);
 
