@@ -25,6 +25,7 @@
  */
 package com.evernote.android.sample;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -49,6 +50,7 @@ import com.evernote.client.oauth.android.EvernoteSession;
 import com.evernote.client.oauth.android.EvernoteUtil;
 import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Resource;
+import com.evernote.edam.type.ResourceAttributes;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -125,6 +127,7 @@ public class HelloEDAM extends Activity {
     mBtnSave = (Button) findViewById(R.id.save_button);
     mImageView = (ImageView) findViewById(R.id.image);
 
+    // TODO deprecated
     if(getLastNonConfigurationInstance() != null) {
       mImageData = (ImageData) getLastNonConfigurationInstance();
       mImageView.setImageBitmap(mImageData.imageBitmap);
@@ -144,6 +147,8 @@ public class HelloEDAM extends Activity {
     return mImageData;
   }
 
+  // using createDialog, could use Fragments instead 
+  @SuppressWarnings("deprecation")
   @Override
   protected Dialog onCreateDialog(int id) {
     switch(id) {
@@ -263,6 +268,8 @@ public class HelloEDAM extends Activity {
   }
 
   private class EvernoteNoteCreator extends AsyncTask<ImageData, Void, Note> {
+    // using showDialog, could use Fragments instead 
+  	@SuppressWarnings("deprecation")
     @Override
     protected void onPreExecute() {
       showDialog(DIALOG_PROGRESS);
@@ -289,6 +296,9 @@ public class HelloEDAM extends Activity {
         Resource resource = new Resource();
         resource.setData(data);
         resource.setMime(imageData.mimeType);
+        ResourceAttributes attributes = new ResourceAttributes();
+        attributes.setFileName(imageData.fileName);
+        resource.setAttributes(attributes);
 
         // Create a new Note
         Note note = new Note();
@@ -316,11 +326,13 @@ public class HelloEDAM extends Activity {
       return createdNote;
     }
 
+    // using removeDialog, could use Fragments instead 
+    @SuppressWarnings("deprecation")
     @Override
     protected void onPostExecute(Note note) {
       removeDialog(DIALOG_PROGRESS);
 
-      if(note == null) {
+      if (note == null) {
         Toast.makeText(getApplicationContext(), R.string.err_creating_note, Toast.LENGTH_LONG).show();
         return;
       }
@@ -336,6 +348,8 @@ public class HelloEDAM extends Activity {
    */
   private class ImageSelector extends AsyncTask<Intent, Void, ImageData> {
 
+    // using showDialog, could use Fragments instead 
+    @SuppressWarnings("deprecation")
     @Override
     protected void onPreExecute() {
       showDialog(DIALOG_PROGRESS);
@@ -348,7 +362,11 @@ public class HelloEDAM extends Activity {
      * @param intents
      * @return
      */
+    // using Display.getWidth and getHeight on older SDKs 
+    @SuppressWarnings("deprecation")
     @Override
+    // suppress lint check on Display.getSize(Point)
+    @TargetApi(16) 
     protected ImageData doInBackground(Intent... intents) {
       if(intents == null || intents.length == 0) {
         return null;
@@ -412,6 +430,8 @@ public class HelloEDAM extends Activity {
      * Sets the image to the background and enables saving it to evernote
      * @param image
      */
+    // using removeDialog, could use Fragments instead 
+    @SuppressWarnings("deprecation") 
     @Override
     protected void onPostExecute(ImageData image) {
       removeDialog(DIALOG_PROGRESS);

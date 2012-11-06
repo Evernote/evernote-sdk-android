@@ -100,10 +100,10 @@ public class EvernoteSession {
    * @param consumerKey The consumer key portion of your application's API key.
    * @param consumerSecret The consumer secret portion of your application's API key.
    * @param evernoteHost The hostname for the Evernote service instance that you wish
-   * @param dataDir the data directory to store evernote files
    * to use. Development and testing is typically performed against {@link #HOST_SANDBOX}.
    * The production Evernote service is {@link #HOST_PRODUCTION}. The production Yinxiang Biji
    * (Evernote China) service is {@link #HOST_CHINA}.
+   * @param dataDir the data directory to store evernote files
    * 
    * @return The EvernoteSession singleton instance.
    */
@@ -112,6 +112,8 @@ public class EvernoteSession {
                                      String consumerSecret,
                                      String evernoteHost,
                                      File dataDir) {
+  	// TODO throw an exception if the consumerKey or consumerSecret are not set or
+  	// are set to meaningless values (i.e. "Your consumer key")
     if (sInstance == null) {
       sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteHost, dataDir);
     }
@@ -177,6 +179,7 @@ public class EvernoteSession {
   /**
    * Clear all stored authentication information.
    */
+// suppress lint check on Editor.apply()
   @TargetApi(9)
   public void logOut(Context ctx) {
     mAuthenticationResult = null;
@@ -195,6 +198,8 @@ public class EvernoteSession {
       editor.commit();
     }
 
+    // TODO The cookie jar is application scope, so we should only be removing
+    // evernote.com cookies.
     CookieSyncManager.createInstance(ctx);
     CookieManager cookieManager = CookieManager.getInstance();
     cookieManager.removeAllCookie();
@@ -339,6 +344,7 @@ public class EvernoteSession {
    * @param authToken The authentication information returned at the end of a 
    * successful OAuth authentication.
    */
+  // suppress lint check on Editor.apply()
   @TargetApi(9)
   protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken) {
     if (ctx == null || authToken == null) {
