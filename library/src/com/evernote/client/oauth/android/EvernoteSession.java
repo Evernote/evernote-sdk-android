@@ -349,8 +349,6 @@ public class EvernoteSession {
     if (ctx == null || authToken == null) {
       return false;
     }
-    // TODO reports an error "requires API level 8, current min is 5"
-    ctx.getExternalCacheDir();
     SharedPreferences prefs = ctx.
         getSharedPreferences(EvernoteSession.PREFERENCE_NAME, Context.MODE_PRIVATE);
 
