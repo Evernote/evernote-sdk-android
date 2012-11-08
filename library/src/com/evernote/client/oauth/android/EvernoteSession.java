@@ -37,6 +37,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
@@ -52,15 +53,33 @@ import java.util.Locale;
  * to the service via OAuth and obtain NoteStore.Client objects, which are used 
  * to make authenticated API calls.
  * 
- * To use EvernoteSession:
+ * To use EvernoteSession, first initialize the EvernoteSession singleton and
+ * initiate authentication at an appropriate time:
  * <pre>
- *   // Get set up and authenticated
  *   EvernoteSession session = EvernoteSession.init(...);
- *   session.authenticate(...);
+ *   if (!session.isLoggedIn()) {
+ *     session.authenticate(...);
+ *   }
+ * </pre>
  *   
- *   TODO trap that auth is complete
+ * When authentication completes, you will want to trap the result in onActivityResult
+ * to see if it was successful:
+ * <pre>
+ *   public void onActivityResult(int requestCode, int resultCode, Intent data) {
+ *     super.onActivityResult(requestCode, resultCode, data);
+ *       switch(requestCode) {
+ *       case EvernoteSession.REQUEST_CODE_OAUTH:
+ *         if (resultCode == Activity.RESULT_OK) {
+ *           // OAuth login was successful, do the appropriate thing for your app
+ *         }
+ *         break;
+ *     }
+ *   }
+ * </pre>
  *   
- *   // Later, make the API calls that you need
+ * Later, you can make any Evernote API calls that you need by obtaining a
+ * NoteStore.Client from the session and using the session's auth token: 
+ * <pre>  
  *   NoteStore.client noteStore = session.createNoteStore();
  *   Notebook notebook = noteStore.getDefaultNotebook(session.getAuthToken()); 
  * </pre>

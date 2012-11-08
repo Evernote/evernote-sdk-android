@@ -117,6 +117,7 @@ public class HelloEDAM extends Activity {
   private ImageData mImageData;
 
   /** Called when the activity is first created. */
+  @SuppressWarnings("deprecation")
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -127,8 +128,7 @@ public class HelloEDAM extends Activity {
     mBtnSave = (Button) findViewById(R.id.save_button);
     mImageView = (ImageView) findViewById(R.id.image);
 
-    // TODO deprecated
-    if(getLastNonConfigurationInstance() != null) {
+    if (getLastNonConfigurationInstance() != null) {
       mImageData = (ImageData) getLastNonConfigurationInstance();
       mImageView.setImageBitmap(mImageData.imageBitmap);
     }
@@ -205,7 +205,7 @@ public class HelloEDAM extends Activity {
     if (mEvernoteSession.isLoggedIn()) {
       mEvernoteSession.logOut(getApplicationContext());
     } else {
-      mEvernoteSession.authenticate(HelloEDAM.this);
+      mEvernoteSession.authenticate(this);
     }
     updateUi();
   }

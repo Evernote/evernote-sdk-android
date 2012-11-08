@@ -1,126 +1,139 @@
-Evernote SDK for Android version 0.2.3
-=============================================
+Evernote SDK for Android version 1.0
+====================================
 
 Evernote API version 1.22
 
 Overview
 --------
-This SDK contains wrapper code used to call the Evernote Cloud API from Android apps and a __beta__ SDK for authenticating to Evernote using OAuth. Note that the OAuth SDK components may change quickly over the next couple of weeks.
-
-The SDK also contains two samples. The code in sample/HelloEDAM demonstrates the basic use of the SDK to access the Evernote Cloud API. The code in sample/HelloEvernote demonstrates direct integration with [Evernote for Android](https://play.google.com/store/apps/details?id=com.evernote) using Intents.
+This SDK wraps the [Evernote Cloud API ](http://dev.evernote.com/documentation/cloud/) and provides OAuth authentication functionality. The SDK is provided as an Android Library project that can be included in your application.
 
 Prerequisites
 -------------
 In order to use the code in this SDK, you need to obtain an API key from http://dev.evernote.com/documentation/cloud. You'll also find full API documentation on that page.
 
-In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action 
+In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action
 
-Known Issues
-------------
-The current version of the SDK performs OAuth network requests on the main thread, resulting in a NetworkOnMainThreadException when the targetSDK is set to 11 or higher.
+The instructions below assume that you are developing your Android app in Eclipse and have the [latest Android development tools](http://developer.android.com/tools/sdk/eclipse-adt.html).
 
-Getting Started - HelloEDAM
----------------------------
-The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. To run the sample project:
+Running the sample app from Eclipse
+-----------------------------------
+The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. To build and run the sample project from Eclipse:
 
 1. Open Eclipse
-2. From the File menu, choose Import
-3. Under General, select "Existing Projects into Workspace" and click Next
-4. Choose "Select root directory" and click Browse
-5. Select the HelloEDAM directory and click Open
+2. From the File menu, choose New and then Project...
+3. Under Android, select "Android Project from Existing Code" and click Next
+4. Click Browse
+5. Select the SDK root directory (the directory containing this README) and click Open
 6. Click Finish
-7. From the Package Explorer, expand the src directory and open com.evernote.android.sample.HelloEDAM.java
-8. Scroll down and fill in your Evernote API consumer key and secret.
-8. Open the sample application's AndroidManifest.xml
-8. In the EvernoteOAuthActivity intent-filter, replace "your key" with your API consumer key. For example, if your consumer key is "foobar", the value should be "en-foobar".
+7. From the Package Explorer, expand the HelloEDAM project's src directory and open com.evernote.android.sample.HelloEDAM.java
+8. At the top of HelloEDAM.java, fill in your Evernote API consumer key and secret.
 9. Build and run the project
+
+The sample application allows you to authenticate to Evernote, select an image from your device's image gallery, and then save that image into Evernote as a new note.
 
 Using the SDK in your app
 -------------------------
-It only takes a few steps to add OAuth authentication to Evernote into your Android app. Here are the steps you'll want to borrow from the sample app.
+There are two ways to include the SDK in your project: by including and building the Android Library Project, or by using Maven.
 
-### Include the code
+### Include the Android Library Project in your Eclipse workspace
 
-Open your application's project properties and add lib/evernote-client-android.jar and lib/scribe-1.3.0-jar to the Java build path.
+1. Import the Android Library Project
+   1. Open Eclipse
+   2. From the File menu, choose New and then Project...
+   3. Under Android, select "Android Project from Existing Code" and click Next
+   4. Click Browse
+   5. Select the library directory and click Open
+   6. Click Finish
+1. Add the Android Library Project as a dependency in your app
+   7. Right-click on your project and choose "Properties"
+   8. In the Android section, in the Library area, click Add...
+   9. Select library from the list and click OK
+   10. Click OK 
+
+### Using Maven
+
+If you build your app using Maven, you can simply add the Evernote SDK for Android as a dependency in your pom.xml.
+
+1. Add the Evernote SDK for Android as a dependency:
+
+		<dependency>
+			<groupId>com.evernote</groupId>
+			<artifactId>android-sdk</artifactId>
+			<version>1.0</version>
+			<type>apklib</type>
+		</dependency>
+
+2. Add the Evernote Maven repository to your repositories section, or add the section just before the end of your project definition:
+
+   <repositories>
+    <repository>
+      <id>evernote-m2-releases</id>
+      <url>https://github.com/evernote/evernote-m2/raw/master/releases</url>
+    </repository>
+    <repository>
+      <id>evernote-m2-snapshots</id>
+      <url>https://github.com/evernote/evernote-m2/raw/master/snapshots</url>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
 
 ### Modify your AndroidManifest.xml
 
-As part of the OAuth process, your app needs to know to handle certain URLs. Add the following activity to your app's AndroidManifest.xml file, replacing "your key" with your particular Evernote consumer key:
+The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's AndroidManifest.xml. Simply copy and paste the following snippet into your AndroidManifest.xml within the application section:
 
         <activity
-          android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity"
-          android:launchMode="singleTask"
-          android:configChanges="orientation|keyboard">
-          <intent-filter>
-            <!-- Change this to be en- followed by your consumer key -->
-            <data android:scheme="en-your key" />
-            <action android:name="android.intent.action.VIEW" />                
-            <category android:name="android.intent.category.BROWSABLE"/>
-            <category android:name="android.intent.category.DEFAULT" /> 
-          </intent-filter>
+                android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity"
+                android:configChanges="orientation|keyboard">
         </activity>
 
 ### Set up an EvernoteSession
 
-When your app starts, create an EvernoteSession object that has all of the information that is needed to authenticate to Evernote.
+When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote.
 
 ```java
    private void setupSession() {
-     // TODO reused the cached the authentication token if there is one
-     ApplicationInfo info = 
-       new ApplicationInfo(CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, 
-           APP_NAME, APP_VERSION);
-     session = new EvernoteSession(info, getTempDir());
-     updateUi();
+     mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
    }
 ```
+
 ### Give the user a way to initiate authentication
 
 In our sample app, we have a "Sign in to Evernote" button that initiates the authentication process. You might choose to do something similar, or you might simply initiate authentication the first time that the user tries to access Evernote-related functionality.
 
 ```java
-public void startAuth(View view) {
-     if (session.isLoggedIn()) {
-       session.logOut();
-     } else {
-       session.authenticate(this);
-     }
-     updateUi();
-   }  
+  public void startAuth(View view) {
+    if (mEvernoteSession.isLoggedIn()) {
+      mEvernoteSession.logOut(getApplicationContext());
+    } else {
+      mEvernoteSession.authenticate(this);
+    }
+    updateUi();
+  }
 ```
-### Complete authentication in onResume
+### Complete authentication in onActivityResult
 
-Complete the authentication process in your activity's onResume method by calling EvernoteSession.completeAuthentication.
+You can check whether authentication was successful by watching for the Evernote OAuth Activity in onActivityResult. If authentication is successful, you can start using the Evernote API.
 
 ```java
-   @Override
-   public void onResume() {
-     super.onResume(); 
-     if (!session.completeAuthentication()) {
-       // We only want to do this when we're resuming after authentication...
-       Toast.makeText(this, "Evernote login failed", Toast.LENGTH_LONG).show();
-     }
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    switch(requestCode) {
+      // Update UI when oauth activity returns result
+      case EvernoteSession.REQUEST_CODE_OAUTH:
+        if (resultCode == Activity.RESULT_OK) {
+          // Authentication was successful, do what you need to do in your app
+        }
+        break;
+    }
+  }
 ```
-### Cache the resulting authentication token
 
-You should store the authentication token so that the user doesn't need to authenticate again the next time that they use your app.
-
-### Use the session's NoteStore to make Evernote API calls
+### Get a NoteStore.Client from the EvernoteSession and make Evernote API calls
 
 After you've authenticated, the EvernoteSession will have a valid authentication token. Use the session to get a NoteStore or UserStore client object, and pass the session's authentication token when calling NoteStore/UserStore methods. See saveImage() in the sample application for an example of creating a new note using the API. Browse the JavaDoc at http://dev.evernote.com/documentation/reference/javadoc/
-
-Getting Started - HelloEvernote
--------------------------------
-Android apps can use Intents to integrate directly with Evernote for Android when it is installed. The code in sample/HelloEvernote demonstrates the basics.
-
-1. Open Eclipse
-2. From the File menu, choose Import
-3. Under General, select "Existing Projects into Workspace" and click Next
-4. Choose "Select root directory" and click Browse
-5. Select the HelloEvernote directory and click Open
-6. Click Finish
-7. Install Evernote for Android on the device or emulator where you will run the sample project
-8. Build and run the project
 
 License
 =======
