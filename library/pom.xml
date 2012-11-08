@@ -15,7 +15,6 @@
 	</parent>
 
     <repositories>
-
         <repository>
             <id>evernote-m2-releases</id>
             <url>https://github.com/evernote/evernote-m2/raw/master/releases</url>

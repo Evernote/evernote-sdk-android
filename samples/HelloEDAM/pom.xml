@@ -27,7 +27,6 @@
 			<version>${project.version}</version>
 			<type>apklib</type>
 		</dependency>
-
     </dependencies>
 
 	<build>
