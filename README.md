@@ -56,12 +56,14 @@ If you build your app using Maven, you can simply add the Evernote SDK for Andro
 
 1. Add the Evernote SDK for Android as a dependency:
 
-		<dependency>
-			<groupId>com.evernote</groupId>
-			<artifactId>android-sdk</artifactId>
-			<version>1.0</version>
-			<type>apklib</type>
-		</dependency>
+```
+	<dependency>
+		<groupId>com.evernote</groupId>
+		<artifactId>android-sdk</artifactId>
+		<version>1.0</version>
+		<type>apklib</type>
+	</dependency>
+```
 
 2. Add the Evernote Maven repository to your repositories section, or add the section just before the end of your project definition:
 
