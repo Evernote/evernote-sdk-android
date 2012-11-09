@@ -33,7 +33,7 @@ The sample application allows you to authenticate to Evernote, select an image f
 
 Using the SDK in your app
 -------------------------
-There are two ways to include the SDK in your project: by including and building the Android Library Project, or by using Maven.
+There are two ways to include the SDK in your project: by including and building the Android Library Project or by using Maven.
 
 ### Include the Android Library Project in your Eclipse workspace
 
@@ -50,7 +50,7 @@ There are two ways to include the SDK in your project: by including and building
    9. Select library from the list and click OK
    10. Click OK 
 
-### Using Maven
+### Use Maven
 
 If you build your app using Maven, you can simply add the Evernote SDK for Android as a dependency in your pom.xml.
 
@@ -65,19 +65,19 @@ If you build your app using Maven, you can simply add the Evernote SDK for Andro
 
 2. Add the Evernote Maven repository to your repositories section, or add the section just before the end of your project definition:
 
-   <repositories>
-    <repository>
-      <id>evernote-m2-releases</id>
-      <url>https://github.com/evernote/evernote-m2/raw/master/releases</url>
-    </repository>
-    <repository>
-      <id>evernote-m2-snapshots</id>
-      <url>https://github.com/evernote/evernote-m2/raw/master/snapshots</url>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
+    <repositories>
+     <repository>
+       <id>evernote-m2-releases</id>
+       <url>https://github.com/evernote/evernote-m2/raw/master/releases</url>
+      </repository>
+      <repository>
+        <id>evernote-m2-snapshots</id>
+        <url>https://github.com/evernote/evernote-m2/raw/master/snapshots</url>
+        <snapshots>
+          <enabled>true</enabled>
+        </snapshots>
+      </repository>
+    </repositories>
 
 ### Modify your AndroidManifest.xml
 
@@ -93,9 +93,7 @@ The SDK's OAuth functionality is implemented as an Android Activity that must be
 When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote.
 
 ```java
-   private void setupSession() {
-     mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
-   }
+    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
 ```
 
 ### Give the user a way to initiate authentication
@@ -103,32 +101,25 @@ When your app starts, initialize the EvernoteSession singleton that has all of t
 In our sample app, we have a "Sign in to Evernote" button that initiates the authentication process. You might choose to do something similar, or you might simply initiate authentication the first time that the user tries to access Evernote-related functionality.
 
 ```java
-  public void startAuth(View view) {
-    if (mEvernoteSession.isLoggedIn()) {
-      mEvernoteSession.logOut(getApplicationContext());
-    } else {
-      mEvernoteSession.authenticate(this);
-    }
-    updateUi();
-  }
+    mEvernoteSession.authenticate(this);
 ```
 ### Complete authentication in onActivityResult
 
 You can check whether authentication was successful by watching for the Evernote OAuth Activity in onActivityResult. If authentication is successful, you can start using the Evernote API.
 
 ```java
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-    switch(requestCode) {
-      // Update UI when oauth activity returns result
-      case EvernoteSession.REQUEST_CODE_OAUTH:
-        if (resultCode == Activity.RESULT_OK) {
-          // Authentication was successful, do what you need to do in your app
-        }
-        break;
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+      super.onActivityResult(requestCode, resultCode, data);
+      switch(requestCode) {
+        // Update UI when oauth activity returns result
+        case EvernoteSession.REQUEST_CODE_OAUTH:
+          if (resultCode == Activity.RESULT_OK) {
+            // Authentication was successful, do what you need to do in your app
+          }
+          break;
+      }
     }
-  }
 ```
 
 ### Get a NoteStore.Client from the EvernoteSession and make Evernote API calls
