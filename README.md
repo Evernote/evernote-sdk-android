@@ -65,6 +65,7 @@ If you build your app using Maven, you can simply add the Evernote SDK for Andro
 
 2. Add the Evernote Maven repository to your repositories section, or add the section just before the end of your project definition:
 
+```
     <repositories>
      <repository>
        <id>evernote-m2-releases</id>
@@ -78,6 +79,7 @@ If you build your app using Maven, you can simply add the Evernote SDK for Andro
         </snapshots>
       </repository>
     </repositories>
+```
 
 ### Modify your AndroidManifest.xml
 
