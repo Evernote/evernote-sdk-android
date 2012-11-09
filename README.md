@@ -94,8 +94,7 @@ The SDK's OAuth functionality is implemented as an Android Activity that must be
 
 ### Set up an EvernoteSession
 
-Define your app credentials (key, secret, and host)
-See http://dev.evernote.com/documentation/cloud/
+Define your app credentials (key, secret, and host).  See http://dev.evernote.com/documentation/cloud/
 
 ```java
 	private static final String CONSUMER_KEY = "Your consumer key";
