@@ -48,7 +48,10 @@ There are two ways to include the SDK in your project: by including and building
    7. Right-click on your project and choose "Properties"
    8. In the Android section, in the Library area, click Add...
    9. Select library from the list and click OK
-   10. Click OK 
+   10. Click Java Build Path and then select the Projects tab
+   11. Click Add...
+   12. Select Library and click Ok
+   13. Click OK 
 
 ### Use Maven
 
