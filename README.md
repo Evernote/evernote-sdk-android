@@ -3,6 +3,10 @@ Evernote SDK for Android version 1.0
 
 Evernote API version 1.22
 
+Notice
+------
+This is a non-backwards compatible udpate.  Please git pull before following setup instructions.
+
 Overview
 --------
 This SDK wraps the [Evernote Cloud API ](http://dev.evernote.com/documentation/cloud/) and provides OAuth authentication functionality. The SDK is provided as an Android Library project that can be included in your application.
