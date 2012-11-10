@@ -50,7 +50,7 @@ There are two ways to include the SDK in your project: by including and building
    9. Select library from the list and click OK
    10. Click Java Build Path and then select the Projects tab
    11. Click Add...
-   12. Select Library and click Ok
+   12. Select Library and click OK
    13. Click OK 
 
 ### Use Maven
