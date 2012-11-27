@@ -25,6 +25,7 @@
  */
 package com.evernote.client.oauth.android;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -109,6 +110,7 @@ public class EvernoteOAuthActivity extends Activity {
   };
 
 
+  @SuppressLint("SetJavaScriptEnabled")
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -135,6 +137,7 @@ public class EvernoteOAuthActivity extends Activity {
     mWebView = (WebView) findViewById(R.id.esdk__webview);
     mWebView.setWebViewClient(mWebViewClient);
     mWebView.setWebChromeClient(mWebChromeClient);
+    mWebView.getSettings().setJavaScriptEnabled(true);
   }
 
   @Override
