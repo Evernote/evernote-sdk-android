@@ -33,6 +33,7 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -385,15 +386,16 @@ public class HelloEDAM extends Activity {
         cursor = getContentResolver().query(selectedImage, queryColumns, null, null, null);
         if(cursor.moveToFirst()) {
           image = new ImageData();
-          long imageId= cursor.getLong(cursor.getColumnIndex(queryColumns[0]));
-
+          
           image.filePath = cursor.getString(cursor.getColumnIndex(queryColumns[1]));
           image.mimeType = cursor.getString(cursor.getColumnIndex(queryColumns[2]));
           image.fileName = cursor.getString(cursor.getColumnIndex(queryColumns[3]));
+          
+          // First decode with inJustDecodeBounds=true to check dimensions
+       	  BitmapFactory.Options options = new BitmapFactory.Options();
+       	  options.inJustDecodeBounds = true;
 
-          Uri imageUri = ContentUris.withAppendedId(
-              MediaStore.Images.Media.EXTERNAL_CONTENT_URI, imageId);
-          Bitmap tempBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+          Bitmap tempBitmap = BitmapFactory.decodeFile(image.filePath, options);
 
           int dimen = 0;
           int x = 0;
@@ -411,6 +413,14 @@ public class HelloEDAM extends Activity {
           }
 
           dimen = x < y ? x : y;
+          
+		  // Calculate inSampleSize
+		  options.inSampleSize = calculateInSampleSize(options, dimen, dimen);
+
+		  // Decode bitmap with inSampleSize set
+		  options.inJustDecodeBounds = false;
+		  
+		  tempBitmap = BitmapFactory.decodeFile(image.filePath, options);
 
           image.imageBitmap = Bitmap.createScaledBitmap(tempBitmap, dimen, dimen, true);
           tempBitmap.recycle();
@@ -425,6 +435,39 @@ public class HelloEDAM extends Activity {
       }
       return image;
     }
+    
+    /**
+     * Calculates a sample size to be used when decoding a bitmap if you don't 
+     * require (or don't have enough memory) to load the full size bitmap.
+     * 
+     * <p>This function has been taken form Android's training materials,
+     * specifically the section about "Loading Large Bitmaps Efficiently".<p>
+     * @see 
+     * <a href="http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap">Load a Scaled Down Version into Memory</a>
+     * 
+     * @param options	a BitmapFactory.Options object, obtained from decoding only
+     * 					the bitmap's bounds.
+     * @param reqWidth	The required minimum width of the decoded bitmap.
+     * @param reqHeight	The required minimum height of the decoded bitmap.
+     * 
+     * @return			the sample size needed to decode the bitmap to a size that meets
+     * 					the required width and height.
+     */
+	protected int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+		// Raw height and width of image
+		final int height = options.outHeight;
+		final int width = options.outWidth;
+		int inSampleSize = 1;
+
+		if (height > reqHeight || width > reqWidth) {
+			if (width > height) {
+				inSampleSize = Math.round((float)height / (float)reqHeight);
+			} else {
+				inSampleSize = Math.round((float)width / (float)reqWidth);
+			}
+		}
+		return inSampleSize;
+	}
 
     /**
      * Sets the image to the background and enables saving it to evernote
