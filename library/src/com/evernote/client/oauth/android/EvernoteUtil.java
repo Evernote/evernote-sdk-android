@@ -1,52 +1,52 @@
 /*
  * Copyright 2012 Evernote Corporation.
- * All rights reserved. 
- * 
- * Redistribution and use in source and binary forms, with or without modification, 
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *  
- * 1. Redistributions of source code must retain the above copyright notice, this 
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *     
- * 2. Redistributions in binary form must reproduce the above copyright notice, 
- *    this list of conditions and the following disclaimer in the documentation 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package com.evernote.client.oauth.android;
+
+import com.evernote.edam.type.Resource;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import com.evernote.edam.type.Resource;
-
 public class EvernoteUtil {
 
   /**
    * The ENML preamble to every Evernote note.
-   * Note content goes between <en-note> and </en-note> 
+   * Note content goes between <en-note> and </en-note>
    */
-	public static final String NOTE_PREFIX = 
-			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-			"<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" +
-			"<en-note>";
+  public static final String NOTE_PREFIX =
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+          "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" +
+          "<en-note>";
 
-	/**
-	 * The ENML postamble to every Evernote note 
-	 */
-	public static final String NOTE_SUFFIX = "</en-note>";
+  /**
+   * The ENML postamble to every Evernote note
+   */
+  public static final String NOTE_SUFFIX = "</en-note>";
 
   /**
    * One-way hashing function used for providing a checksum of EDAM data
@@ -57,8 +57,8 @@ public class EvernoteUtil {
    * Create an ENML &lt;en-media&gt; tag for the specified Resource object.
    */
   public static String createEnMediaTag(Resource resource) {
-  	return "<en-media hash=\"" + bytesToHex(resource.getData().getBodyHash()) +
-  			"\" type=\"" + resource.getMime() + "\"/>";
+    return "<en-media hash=\"" + bytesToHex(resource.getData().getBodyHash()) +
+        "\" type=\"" + resource.getMime() + "\"/>";
   }
 
   /**
@@ -103,7 +103,7 @@ public class EvernoteUtil {
    * with two characters per byte.
    *
    * @param withSpaces if true, include a space character between each hex-rendered
-   * byte for readability.
+   *                   byte for readability.
    */
   public static String bytesToHex(byte[] bytes, boolean withSpaces) {
     StringBuilder sb = new StringBuilder();

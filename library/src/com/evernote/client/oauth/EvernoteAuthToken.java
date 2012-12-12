@@ -33,8 +33,8 @@ import org.scribe.exceptions.OAuthException;
 import org.scribe.model.Token;
 import org.scribe.utils.OAuthEncoder;
 
-/** 
- * A Scribe AccessToken that contains Evernote-specific items from the OAuth response. 
+/**
+ * A Scribe AccessToken that contains Evernote-specific items from the OAuth response.
  */
 public class EvernoteAuthToken extends Token {
 
@@ -54,7 +54,7 @@ public class EvernoteAuthToken extends Token {
     this.webApiUrlPrefix = extract(getRawResponse(), WEBAPI_REGEX);
     this.userId = Integer.parseInt(extract(getRawResponse(), USERID_REGEX));
   }
-  
+
   private String extract(String response, Pattern p) {
     Matcher matcher = p.matcher(response);
     if (matcher.find() && matcher.groupCount() >= 1) {

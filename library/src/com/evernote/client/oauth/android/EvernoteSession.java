@@ -1,26 +1,26 @@
 /*
  * Copyright 2012 Evernote Corporation.
- * All rights reserved. 
- * 
- * Redistribution and use in source and binary forms, with or without modification, 
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *  
- * 1. Redistributions of source code must retain the above copyright notice, this 
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *     
- * 2. Redistributions in binary form must reproduce the above copyright notice, 
- *    this list of conditions and the following disclaimer in the documentation 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package com.evernote.client.oauth.android;
@@ -42,17 +42,17 @@ import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
 import com.evernote.edam.userstore.UserStore;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.transport.TTransportException;
+import com.evernote.thrift.protocol.TBinaryProtocol;
+import com.evernote.thrift.transport.TTransportException;
 
 import java.io.File;
 import java.util.Locale;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
- * to the service via OAuth and obtain NoteStore.Client objects, which are used 
+ * to the service via OAuth and obtain NoteStore.Client objects, which are used
  * to make authenticated API calls.
- * 
+ *
  * To use EvernoteSession, first initialize the EvernoteSession singleton and
  * initiate authentication at an appropriate time:
  * <pre>
@@ -61,7 +61,7 @@ import java.util.Locale;
  *     session.authenticate(...);
  *   }
  * </pre>
- *   
+ *
  * When authentication completes, you will want to trap the result in onActivityResult
  * to see if it was successful:
  * <pre>
@@ -76,12 +76,12 @@ import java.util.Locale;
  *     }
  *   }
  * </pre>
- *   
+ *
  * Later, you can make any Evernote API calls that you need by obtaining a
- * NoteStore.Client from the session and using the session's auth token: 
- * <pre>  
+ * NoteStore.Client from the session and using the session's auth token:
+ * <pre>
  *   NoteStore.client noteStore = session.createNoteStore();
- *   Notebook notebook = noteStore.getDefaultNotebook(session.getAuthToken()); 
+ *   Notebook notebook = noteStore.getDefaultNotebook(session.getAuthToken());
  * </pre>
  */
 public class EvernoteSession {
@@ -90,8 +90,8 @@ public class EvernoteSession {
   public static final String HOST_SANDBOX = "sandbox.evernote.com";
   public static final String HOST_PRODUCTION = "www.evernote.com";
   public static final String HOST_CHINA = "app.yinxiang.com";
-	
-  // Keys for values persisted in our shared preferences 
+
+  // Keys for values persisted in our shared preferences
   protected static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
   protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
   protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
@@ -114,7 +114,7 @@ public class EvernoteSession {
    * Use to acquire a singleton instance of the EvernoteSession for authentication.
    * If the singleton has already been initialized, the existing instance will
    * be returned (and the parameters passed to this method will be ignored).
-   * 
+   *
    * @param ctx
    * @param consumerKey The consumer key portion of your application's API key.
    * @param consumerSecret The consumer secret portion of your application's API key.
@@ -123,7 +123,7 @@ public class EvernoteSession {
    * The production Evernote service is {@link #HOST_PRODUCTION}. The production Yinxiang Biji
    * (Evernote China) service is {@link #HOST_CHINA}.
    * @param dataDir the data directory to store evernote files
-   * 
+   *
    * @return The EvernoteSession singleton instance.
    */
   public static EvernoteSession init(Context ctx,
@@ -131,8 +131,8 @@ public class EvernoteSession {
                                      String consumerSecret,
                                      String evernoteHost,
                                      File dataDir) {
-  	// TODO throw an exception if the consumerKey or consumerSecret are not set or
-  	// are set to meaningless values (i.e. "Your consumer key")
+    // TODO throw an exception if the consumerKey or consumerSecret are not set or
+    // are set to meaningless values (i.e. "Your consumer key")
     if (sInstance == null) {
       sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteHost, dataDir);
     }
@@ -141,8 +141,8 @@ public class EvernoteSession {
 
   /**
    * Used to access the initialized EvernoteSession singleton instance.
-   * 
-   * @return The previously initialized EvernoteSession instance, 
+   *
+   * @return The previously initialized EvernoteSession instance,
    * or null if {@link #init(Context, String, String, String, File)} has not been called yet.
    */
   public static EvernoteSession getSession() {
@@ -202,7 +202,7 @@ public class EvernoteSession {
   @TargetApi(9)
   public void logOut(Context ctx) {
     mAuthenticationResult = null;
-    
+
     // Removed cached authentication information
     Editor editor = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE).edit();
     editor.remove(KEY_AUTHTOKEN);
@@ -227,7 +227,7 @@ public class EvernoteSession {
   /**
    * Get the authentication token that is used to make API calls
    * though a NoteStore.Client.
-   *  
+   *
    * @return the authentication token, or null if {@link #isLoggedIn()}
    * is false.
    */
@@ -238,7 +238,7 @@ public class EvernoteSession {
       return null;
     }
   }
-  
+
   /**
    * Get the authentication information returned by a successful
    * OAuth authentication to the Evernote web service.
@@ -248,10 +248,10 @@ public class EvernoteSession {
   }
 
   /**
-   * Create a new NoteStore client. Each call to this method will return 
+   * Create a new NoteStore client. Each call to this method will return
    * a new NoteStore.Client instance. The returned client can be used for any
-   * number of API calls, but is NOT thread safe.  
-   * 
+   * number of API calls, but is NOT thread safe.
+   *
    * @throws IllegalStateException if @link #isLoggedIn() is false.
    * @throws TTransportException if an error occurs setting up the
    * connection to the Evernote service.
@@ -259,19 +259,19 @@ public class EvernoteSession {
   public NoteStore.Client createNoteStore() throws TTransportException {
     if (!isLoggedIn()) {
       throw new IllegalStateException();
-    }   
-    TEvernoteHttpClient transport = 
+    }
+    TEvernoteHttpClient transport =
       new TEvernoteHttpClient(mAuthenticationResult.getNoteStoreUrl(),
           mUserAgentString, mDataDirectory);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new NoteStore.Client(protocol, protocol);  
+    return new NoteStore.Client(protocol, protocol);
   }
 
   /**
-   * Create a new UserStore client. Each call to this method will return 
+   * Create a new UserStore client. Each call to this method will return
    * a new UserStore.Client instance. The returned client can be used for any
-   * number of API calls, but is NOT thread safe.  
-   * 
+   * number of API calls, but is NOT thread safe.
+   *
    * @throws IllegalStateException if @link #isLoggedIn() is false.
    * @throws TTransportException if an error occurs setting up the
    * connection to the Evernote service.
@@ -326,7 +326,7 @@ public class EvernoteSession {
 
   /**
    * Get the user-agent header value that will be included in all
-   * HTTP requests made to the Evernote service. 
+   * HTTP requests made to the Evernote service.
    */
   public String getUserAgentString() {
     return mUserAgentString;
@@ -334,7 +334,7 @@ public class EvernoteSession {
 
   /**
    * Start the OAuth authentication process.
-   * 
+   *
    * TODO do we need to do anything special here if you're already logged in?
    */
   public void authenticate(Context ctx) {
@@ -358,9 +358,9 @@ public class EvernoteSession {
    * Called upon completion of the OAuth process to save resulting authentication
    * information into the application's SharedPreferences, allowing it to be reused
    * later.
-   * 
+   *
    * @param ctx Application Context or activity
-   * @param authToken The authentication information returned at the end of a 
+   * @param authToken The authentication information returned at the end of a
    * successful OAuth authentication.
    */
   // suppress lint check on Editor.apply()

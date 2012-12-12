@@ -1,26 +1,26 @@
 /*
  * Copyright 2012 Evernote Corporation
- * All rights reserved. 
- * 
- * Redistribution and use in source and binary forms, with or without modification, 
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *  
- * 1. Redistributions of source code must retain the above copyright notice, this 
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
  *    list of conditions and the following disclaimer.
- *     
- * 2. Redistributions in binary form must reproduce the above copyright notice, 
- *    this list of conditions and the following disclaimer in the documentation 
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
- *  
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
- * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 package com.evernote.client.oauth.android;
@@ -53,7 +53,7 @@ import org.scribe.oauth.OAuthService;
 /**
  * An Android Activity for authenticating to Evernote using OAuth.
  * Third parties should not need to use this class directly.
- * 
+ *
  * TODO document how to localize strings used in the activity.
  */
 public class EvernoteOAuthActivity extends Activity {
@@ -197,7 +197,7 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * Create a Scribe OAuthService object that can be used to 
+   * Create a Scribe OAuthService object that can be used to
    * perform OAuth authentication with the appropriate Evernote
    * service.
    */
@@ -205,7 +205,7 @@ public class EvernoteOAuthActivity extends Activity {
   private OAuthService createService() {
     OAuthService builder = null;
     @SuppressWarnings("rawtypes")
-	Class apiClass = null;
+    Class apiClass = null;
 
     if (mEvernoteHost.equals(EvernoteSession.HOST_SANDBOX)) {
       apiClass = EvernoteApi.Sandbox.class;
@@ -214,7 +214,7 @@ public class EvernoteOAuthActivity extends Activity {
     } else if (mEvernoteHost.equals(EvernoteSession.HOST_CHINA)) {
       apiClass = YinxiangApi.class;
     } else {
-      throw new IllegalArgumentException("Unsupported Evernote host: " + 
+      throw new IllegalArgumentException("Unsupported Evernote host: " +
                                          mEvernoteHost);
     }
     builder = new ServiceBuilder()
@@ -263,10 +263,10 @@ public class EvernoteOAuthActivity extends Activity {
         EvernoteSession session = EvernoteSession.getSession();
         if (session != null) {
           if (!session.createUserStore().checkVersion(
-              session.getUserAgentString(), 
-              Constants.EDAM_VERSION_MAJOR, 
+              session.getUserAgentString(),
+              Constants.EDAM_VERSION_MAJOR,
               Constants.EDAM_VERSION_MINOR)) {
-        	Log.e(TAG, "Evernote API version " + Constants.EDAM_VERSION_MAJOR + "." + 
+              Log.e(TAG, "Evernote API version " + Constants.EDAM_VERSION_MAJOR + "." +
               Constants.EDAM_VERSION_MINOR + " is no longer supported!");
             return null;
           }
@@ -357,7 +357,7 @@ public class EvernoteOAuthActivity extends Activity {
       }
 
       exit(EvernoteSession.getSession().persistAuthenticationToken(
-    		  getApplicationContext(), authToken));
+      getApplicationContext(), authToken));
     }
   }
 

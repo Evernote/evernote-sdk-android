@@ -55,7 +55,7 @@ There are two ways to include the SDK in your project: by including and building
    10. Click Java Build Path and then select the Projects tab
    11. Click Add...
    12. Select Library and click OK
-   13. Click OK 
+   13. Click OK
 
 ### Use Maven
 
@@ -106,7 +106,7 @@ Define your app credentials (key, secret, and host).  See http://dev.evernote.co
 ```java
 	private static final String CONSUMER_KEY = "Your consumer key";
 	private static final String CONSUMER_SECRET = "Your consumer secret";
-	private static final String EVERNOTE_HOST = EvernoteSession.HOST_SANDBOX;	
+	private static final String EVERNOTE_HOST = EvernoteSession.HOST_SANDBOX;
 ```
 
 When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote.

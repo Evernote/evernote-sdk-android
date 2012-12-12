@@ -21,6 +21,7 @@ classes
 target
 release.properties
 pom.xml.*
+gen-external-apklibs
 
 #Command line
 local.properties

@@ -12,7 +12,7 @@
     <groupId>com.evernote</groupId>
     <artifactId>android-sdk-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.0</version>
+    <version>1.0.1</version>
 
     <name>Android-Evernote SDK (Parent)</name>
     <description>Android library for.</description>

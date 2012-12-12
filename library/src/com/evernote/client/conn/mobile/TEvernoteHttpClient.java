@@ -18,14 +18,8 @@
  */
 package com.evernote.client.conn.mobile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
+import com.evernote.thrift.transport.TTransport;
+import com.evernote.thrift.transport.TTransportException;
 import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -48,8 +42,13 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
-import org.apache.thrift.transport.TTransport;
-import org.apache.thrift.transport.TTransportException;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * HTTP implementation of the TTransport interface modified by Evernote to work
@@ -71,19 +70,18 @@ public class TEvernoteHttpClient extends TTransport {
 
   /**
    * Create a new TAndroidHttpClient.
-   * 
-   * @param url The Thrift server URL, for example, https://www.evernote.com/edam/user.
+   *
+   * @param url       The Thrift server URL, for example, https://www.evernote.com/edam/user.
    * @param userAgent The User-Agent string to send, which should identify the
-   * client application.
-   * @param tempPath A temp directory where Thrift messages should be cached 
-   * before they're sent.
-   * 
+   *                  client application.
+   * @param tempPath  A temp directory where Thrift messages should be cached
+   *                  before they're sent.
    * @throws TTransportException If an error occurs creating the temporary
-   * file that will be used to cache Thrift messages to disk before sending.
+   *                             file that will be used to cache Thrift messages to disk before sending.
    */
   public TEvernoteHttpClient(String url, String userAgent, File tempDir)
       throws TTransportException {
-    
+
     getHTTPClient();
 
     this.userAgent = userAgent;
@@ -127,8 +125,8 @@ public class TEvernoteHttpClient extends TTransport {
       }
       inputStream_ = null;
     }
-    
-    if(mConnectionManager != null){
+
+    if (mConnectionManager != null) {
       mConnectionManager.shutdown();
       mConnectionManager = null;
     }
@@ -142,7 +140,7 @@ public class TEvernoteHttpClient extends TTransport {
     if (inputStream_ == null) {
       throw new TTransportException("Response buffer is empty, no request.");
     }
-    
+
     try {
       int ret = inputStream_.read(buf, off, len);
       if (ret == -1) {
@@ -156,42 +154,42 @@ public class TEvernoteHttpClient extends TTransport {
 
   private ClientConnectionManager mConnectionManager;
   private DefaultHttpClient mHttpClient;
-  
+
   private DefaultHttpClient getHTTPClient() {
-    
-    try{
-      if(mConnectionManager != null){
+
+    try {
+      if (mConnectionManager != null) {
         mConnectionManager.closeExpiredConnections();
         mConnectionManager.closeIdleConnections(1, TimeUnit.SECONDS);
-      }else{
+      } else {
         BasicHttpParams params = new BasicHttpParams();
-        
+
         HttpConnectionParams.setConnectionTimeout(params, 10000);
         HttpConnectionParams.setSoTimeout(params, 20000);
-        
+
         ConnManagerParams.setMaxTotalConnections(params, ConnManagerParams.DEFAULT_MAX_TOTAL_CONNECTIONS);
         ConnManagerParams.setTimeout(params, 10000);
-        
+
         ConnPerRouteBean connPerRoute = new ConnPerRouteBean(18); // Giving 18 connections to Evernote
         ConnManagerParams.setMaxConnectionsPerRoute(params, connPerRoute);
-        
+
         SchemeRegistry schemeRegistry = new SchemeRegistry();
         schemeRegistry.register(
-                new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 
         schemeRegistry.register(
             new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        
+
         mConnectionManager = new ThreadSafeClientConnManager(params, schemeRegistry);
-        DefaultHttpClient httpClient = new DefaultHttpClient(mConnectionManager,params);
+        DefaultHttpClient httpClient = new DefaultHttpClient(mConnectionManager, params);
         httpClient.setKeepAliveStrategy(new ConnectionKeepAliveStrategy() {
           @Override
           public long getKeepAliveDuration(HttpResponse response,
-              HttpContext context) {
+                                           HttpContext context) {
             return 2 * 60 * 1000; // 2 minutes in millis
           }
         });
-        
+
         httpClient.setReuseStrategy(new ConnectionReuseStrategy() {
           @Override
           public boolean keepAlive(HttpResponse response, HttpContext context) {
@@ -200,22 +198,22 @@ public class TEvernoteHttpClient extends TTransport {
         });
         mHttpClient = httpClient;
       }
-    }catch(Exception ex){
+    } catch (Exception ex) {
       return null;
     }
-    
+
     return mHttpClient;
   }
-  
+
   public void write(byte[] buf, int off, int len) {
     requestBuffer_.write(buf, off, len);
   }
 
   public void flush() throws TTransportException {
     long timer = System.currentTimeMillis();
-   
+
     HttpEntity httpEntity = null;
-    
+
     // Extract request and reset buffer
     try {
       // Prepare http post request
@@ -237,11 +235,11 @@ public class TEvernoteHttpClient extends TTransport {
           : userAgent);
       request.getParams().setBooleanParameter(
           CoreProtocolPNames.USE_EXPECT_CONTINUE, false);
-      
+
       DefaultHttpClient dHTTP = getHTTPClient();
       HttpResponse response = dHTTP.execute(request);
       httpEntity = response.getEntity();
-      
+
       int responseCode = response.getStatusLine().getStatusCode();
       if (responseCode != 200) {
         if (httpEntity != null) {
@@ -256,7 +254,7 @@ public class TEvernoteHttpClient extends TTransport {
       throw new TTransportException(iox);
     } catch (Exception ex) {
       throw new TTransportException(ex);
-    }finally {
+    } finally {
       try {
         requestBuffer_.reset();
       } catch (IOException e) {
@@ -276,6 +274,6 @@ public class TEvernoteHttpClient extends TTransport {
   }
 
   public void reset() {
-    
+
   }
 }

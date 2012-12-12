@@ -21,4 +21,4 @@
                 android:configChanges="orientation|keyboard">
         </activity>
     </application>
-</manifest> 
+</manifest>

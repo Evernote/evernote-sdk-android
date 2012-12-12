@@ -7,10 +7,11 @@
 	<name>Sample (Parent)</name>
 	<packaging>pom</packaging>
 
+
 	<parent>
 		<groupId>com.evernote</groupId>
 		<artifactId>android-sdk-parent</artifactId>
-		<version>1.0</version>
+        <version>1.0.1</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
