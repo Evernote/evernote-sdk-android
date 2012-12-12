@@ -54,8 +54,8 @@
 
     <licenses>
         <license>
-            <name>Apache License Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>Evernote SDK License Agreement</name>
+            <url>https://github.com/evernote/evernote-sdk-android/blob/master/README.md</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
