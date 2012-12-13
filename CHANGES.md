@@ -1,3 +1,22 @@
+= 1.0.1 / 2012-12-13
+
+* Moved to Maven Central
+* Updated dependency references to com.evernote.evernote-api which replaces lib-thrift and en-thrift
+* Bug fixes
+
+= 1.0 / 2012-11-01
+
+* Migrated to Library Project
+* Rearchitected most of EvernoteSession to reduce code
+* Removed duplicate class libraries
+* Added Maven support
+* Moved All network requests to background threads
+* Updated UI styles to Holo
+* Created oauth activity to handle with webview
+* Added functionality to HelloEdam to select pictures to upload
+* Removed HelloEvernote, will be moving to another project
+* Bug fixes
+
 = 0.2.3 / 2012-09-28
 
 * Include YinxiangApi.java in src.
