@@ -77,9 +77,7 @@ If you build your app using Maven, you can simply add the Evernote SDK for Andro
 The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's AndroidManifest.xml. Simply copy and paste the following snippet into your AndroidManifest.xml within the application section:
 
         <activity
-                android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity"
-                android:configChanges="orientation|keyboard">
-        </activity>
+                android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity" />
 
 ### Set up an EvernoteSession
 
