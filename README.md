@@ -5,7 +5,7 @@ Evernote API version 1.23
 
 Notice
 ------
-This is a non-backwards compatible udpate.  Please git pull before following setup instructions.
+This is a non-backwards compatible update.  Please `git pull` before following setup instructions.
 
 Overview
 --------
@@ -29,8 +29,8 @@ The sample application HelloEDAM demonstrates how to use the Evernote SDK for An
 4. Click Browse
 5. Select the SDK root directory (the directory containing this README) and click Open
 6. Click Finish
-7. From the Package Explorer, expand the HelloEDAM project's src directory and open com.evernote.android.sample.HelloEDAM.java
-8. At the top of HelloEDAM.java, fill in your Evernote API consumer key and secret.
+7. From the Package Explorer, expand the HelloEDAM project's `src` directory and open `com.evernote.android.sample.HelloEDAM.java`
+8. At the top of `HelloEDAM.java`, fill in your Evernote API consumer key and secret.
 9. Build and run the project
 
 The sample application allows you to authenticate to Evernote, select an image from your device's image gallery, and then save that image into Evernote as a new note.
@@ -61,38 +61,39 @@ There are two ways to include the SDK in your project: by including and building
 
 If you build your app using Maven, you can simply add the Evernote SDK for Android as a dependency in your pom.xml.
 
-1. Add the Evernote SDK for Android as a dependency:
+Add the Evernote SDK for Android as a dependency:
 
+```xml
+<dependency>
+	<groupId>com.evernote</groupId>
+	<artifactId>android-sdk</artifactId>
+	<version>1.0.1</version>
+	<type>apklib</type>
+</dependency>
 ```
-	<dependency>
-		<groupId>com.evernote</groupId>
-		<artifactId>android-sdk</artifactId>
-		<version>1.0.1</version>
-		<type>apklib</type>
-	</dependency>
+
+### Modify your `AndroidManifest.xml`
+
+The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's `AndroidManifest.xml`. Simply copy and paste the following snippet into your `AndroidManifest.xml` within the application section:
+
+```xml
+<activity android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity" />
 ```
 
-### Modify your AndroidManifest.xml
-
-The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's AndroidManifest.xml. Simply copy and paste the following snippet into your AndroidManifest.xml within the application section:
-
-        <activity
-                android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity" />
-
-### Set up an EvernoteSession
+### Set up an `EvernoteSession`
 
 Define your app credentials (key, secret, and host).  See http://dev.evernote.com/documentation/cloud/
 
 ```java
-	private static final String CONSUMER_KEY = "Your consumer key";
-	private static final String CONSUMER_SECRET = "Your consumer secret";
-	private static final String EVERNOTE_HOST = EvernoteSession.HOST_SANDBOX;
+private static final String CONSUMER_KEY = "Your consumer key";
+private static final String CONSUMER_SECRET = "Your consumer secret";
+private static final String EVERNOTE_HOST = EvernoteSession.HOST_SANDBOX;
 ```
 
 When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote.
 
 ```java
-    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
+mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
 ```
 
 ### Give the user a way to initiate authentication
@@ -100,30 +101,30 @@ When your app starts, initialize the EvernoteSession singleton that has all of t
 In our sample app, we have a "Sign in to Evernote" button that initiates the authentication process. You might choose to do something similar, or you might simply initiate authentication the first time that the user tries to access Evernote-related functionality.
 
 ```java
-    mEvernoteSession.authenticate(this);
+mEvernoteSession.authenticate(this);
 ```
-### Complete authentication in onActivityResult
+### Complete authentication in `onActivityResult`
 
-You can check whether authentication was successful by watching for the Evernote OAuth Activity in onActivityResult. If authentication is successful, you can start using the Evernote API.
+You can check whether authentication was successful by watching for the Evernote OAuth Activity in `onActivityResult`. If authentication is successful, you can start using the Evernote API.
 
 ```java
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-      super.onActivityResult(requestCode, resultCode, data);
-      switch(requestCode) {
-        // Update UI when oauth activity returns result
-        case EvernoteSession.REQUEST_CODE_OAUTH:
-          if (resultCode == Activity.RESULT_OK) {
-            // Authentication was successful, do what you need to do in your app
-          }
-          break;
+@Override
+public void onActivityResult(int requestCode, int resultCode, Intent data) {
+  super.onActivityResult(requestCode, resultCode, data);
+  switch(requestCode) {
+    // Update UI when oauth activity returns result
+    case EvernoteSession.REQUEST_CODE_OAUTH:
+      if (resultCode == Activity.RESULT_OK) {
+        // Authentication was successful, do what you need to do in your app
       }
-    }
+      break;
+  }
+}
 ```
 
-### Get a NoteStore.Client from the EvernoteSession and make Evernote API calls
+### Get a `NoteStore.Client` from the `EvernoteSessio`n and make Evernote API calls
 
-After you've authenticated, the EvernoteSession will have a valid authentication token. Use the session to get a NoteStore or UserStore client object, and pass the session's authentication token when calling NoteStore/UserStore methods. See saveImage() in the sample application for an example of creating a new note using the API. Browse the JavaDoc at http://dev.evernote.com/documentation/reference/javadoc/
+After you've authenticated, the EvernoteSession will have a valid authentication token. Use the session to get a `NoteStore` or `UserStore` client object, and pass the session's authentication token when calling `NoteStore`/`UserStore` methods. See `saveImage()` in the sample application for an example of creating a new note using the API. Browse the JavaDoc at http://dev.evernote.com/documentation/reference/javadoc/
 
 License
 =======
