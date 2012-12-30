@@ -1,4 +1,4 @@
-Evernote SDK for Android version 1.0
+Evernote SDK for Android version 1.0.2
 ====================================
 
 Evernote API version 1.23
@@ -67,7 +67,7 @@ Add the Evernote SDK for Android as a dependency:
 <dependency>
 	<groupId>com.evernote</groupId>
 	<artifactId>android-sdk</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<type>apklib</type>
 </dependency>
 ```
