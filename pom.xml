@@ -87,6 +87,12 @@
                 <artifactId>android</artifactId>
                 <version>${android.version}</version>
             </dependency>
+			
+			<dependency>
+			    <groupId>com.google.android</groupId>
+				<artifactId>annotations</artifactId>
+                <version>${android.version}</version>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 
