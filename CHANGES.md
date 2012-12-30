@@ -1,3 +1,8 @@
+= 1.0.2 / 2012-12-30
+
+* Added android annotations
+* Fixed readme formatting
+
 = 1.0.1 / 2012-12-13
 
 * Moved to Maven Central
