@@ -96,7 +96,7 @@ public class EvernoteSession {
   protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
   protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
   protected static final String KEY_USERID = "evernote.userId";
-  public static final int REQUEST_CODE_OAUTH = 1010101;
+  public static final int REQUEST_CODE_OAUTH = 10101;
 
   protected static final String PREFERENCE_NAME = "evernote.preferences";
 
