@@ -44,7 +44,6 @@ import com.evernote.edam.notestore.NoteStore;
 import com.evernote.edam.userstore.UserStore;
 import com.evernote.thrift.transport.TTransportException;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
