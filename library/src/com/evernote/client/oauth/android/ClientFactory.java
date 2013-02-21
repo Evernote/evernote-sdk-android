@@ -10,7 +10,9 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * class created by briangriffey
+ * A class to produce User and Note store clients.
+ *
+ * class created by @briangriffey
  */
 
 public class ClientFactory {
@@ -29,10 +31,27 @@ public class ClientFactory {
     }
 
     /**
+     * Creates a UserStore client interface that can be used to send requests to a
+     * particular UserStore server. For example, the following would provide a
+     * handle to make requests from the "MyClient" application to talk to the
+     * Evernote server at "www.evernote.com" :
+     * <p/>
+     * <pre>
+     * UserStore.Iface userStore = factory.createUserStore(&quot;www.evernote.com&quot;,
+     *     &quot;MyClient (Java)&quot;);
+     * </pre>
+     * <p/>
+     * This call does not actually initiate any communications with the UserStore,
+     * it only creates the handle that will be used.
+     *
      * @param url the hostname (or numeric IP address) for the server that we should
-     *            communicate with. This will attempt to use HTTPS to talk to that
-     *            server unless the hostname contains a port number component, in
-     *            which case we'll use plaintext HTTP.
+     *             communicate with. This will attempt to use HTTPS to talk to that
+     *             server unless the hostname contains a port number component, in
+     *             which case we'll use plaintext HTTP.
+     * @param url  the hostname (or numeric IP address) for the server that we should
+     *             communicate with. This will attempt to use HTTPS to talk to that
+     *             server unless the hostname contains a port number component, in
+     *             which case we'll use plaintext HTTP.
      * @return
      * @throws TTransportException
      */
@@ -82,6 +101,10 @@ public class ClientFactory {
         this.mUserAgent = mUserAgent;
     }
 
+    /**
+     * if non-null, this is a mapping of HTTP headers to values which
+     * will be included in the request.
+     */
     public Map<String, String> getCustomHeaders() {
         return mCustomHeaders;
     }
@@ -90,6 +113,10 @@ public class ClientFactory {
         this.mCustomHeaders = mCustomHeaders;
     }
 
+    /**
+     * a temporary directory in which large outgoing Thrift messages will
+     * be cached to disk before they are sent
+     */
     public File getTempDir() {
         return mTempDir;
     }
