@@ -62,6 +62,8 @@ import java.util.ArrayList;
  * Third parties should not need to use this class directly.
  *
  * TODO document how to localize strings used in the activity.
+ *
+ * class created by @tylersmithnet
  */
 public class EvernoteOAuthActivity extends Activity {
   private static final String LOGTAG = "EvernoteOAuthActivity";
@@ -470,12 +472,12 @@ public class EvernoteOAuthActivity extends Activity {
     protected void onPostExecute(EvernoteAuthToken authToken) {
       // TODO deprecated
       removeDialog(DIALOG_PROGRESS);
-      if (EvernoteSession.getSession() == null) {
+      if (EvernoteSession.getOpenSession() == null) {
         exit(false);
         return;
       }
 
-      exit(EvernoteSession.getSession().persistAuthenticationToken(
+      exit(EvernoteSession.getOpenSession().persistAuthenticationToken(
       getApplicationContext(), authToken, mSelectedBootstrapProfile.getSettings().getServiceHost()));
     }
   }

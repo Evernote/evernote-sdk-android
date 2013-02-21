@@ -12,13 +12,15 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The BootstrapManager provides access to check the current
+ * A class that provides access to check the current
  * {@link com.evernote.edam.userstore.Constants#EDAM_VERSION_MAJOR} and
  * the {@link com.evernote.edam.userstore.Constants#EDAM_VERSION_MINOR} against the Evernote Web serivice for API
  * Compatibility
  *
  * It provides access to the {@link List} of {@link BootstrapProfile} representing the possible server connections
  * for the user.  This list must be requested from the server on any type of authentication attempt
+ *
+ * class created by @tylersmithnet
  */
 public class BootstrapManager {
 
@@ -49,21 +51,29 @@ public class BootstrapManager {
   private UserStore.Client mUserStoreClient;
   private Locale mLocale;
   private ClientFactory mClientProducer;
+  private String mBootstrapServerUsed;
 
-  protected String mBootstrapServerUsed;
+  /**
+   * Private constructor.
+   */
+  private BootstrapManager() {};
 
-  public BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer) {
+  /**
+   * Protected constructor.
+   */
+  protected BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer) {
     this(service, producer, Locale.getDefault());
   }
 
   /**
+   *Protected constructor
    *
    * @param service {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#PRODUCTION} when using
    * production and {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#SANDBOX} when using sandbox
    * @param producer Client producer used to create clients
    * @param locale Used to detect if the china servers need to be checked
    */
-  public BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer, Locale locale) {
+  protected BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer, Locale locale) {
     mLocale = locale;
     mClientProducer = producer;
 

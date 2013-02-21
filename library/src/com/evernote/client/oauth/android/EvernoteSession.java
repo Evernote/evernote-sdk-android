@@ -39,11 +39,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
-import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
 import com.evernote.edam.userstore.UserStore;
-import com.evernote.thrift.protocol.TBinaryProtocol;
 import com.evernote.thrift.transport.TTransportException;
 
 import java.io.File;
@@ -84,6 +82,8 @@ import java.util.Locale;
  *   NoteStore.client noteStore = session.createNoteStore();
  *   Notebook notebook = noteStore.getDefaultNotebook(session.getAuthToken());
  * </pre>
+ *
+ * class created by @tylersmithnet
  */
 public class EvernoteSession {
 
@@ -134,22 +134,19 @@ public class EvernoteSession {
   protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
   protected static final String KEY_USERID = "evernote.userId";
   protected static final String KEY_EVERNOTEHOST = "evernote.mEvernoteHost";
+  protected static final String PREFERENCE_NAME = "evernote.preferences";
   public static final int REQUEST_CODE_OAUTH = 10101;
 
-
-  protected static final String PREFERENCE_NAME = "evernote.preferences";
+  private static EvernoteSession sInstance = null;
 
   private String mConsumerKey;
   private String mConsumerSecret;
   private EvernoteService mEvernoteService;
-  private String mUserAgentString;
   private BootstrapManager mBootstrapManager;
   private ClientFactory mClientProducer;
-
   private AuthenticationResult mAuthenticationResult;
-  private File mDataDirectory;
 
-  private static EvernoteSession sInstance = null;
+
 
   /**
    * Use to acquire a singleton instance of the EvernoteSession for authentication.
@@ -162,31 +159,45 @@ public class EvernoteSession {
    * @param evernoteService The enum of the Evernote service instance that you wish
    * to use. Development and testing is typically performed against {@link EvernoteService#SANDBOX}.
    * The production Evernote service is {@link EvernoteService#HOST_PRODUCTION}.
-   * @param dataDir the data directory to store evernote files, if null then it uses the default
    *
    * @return The EvernoteSession singleton instance.
    */
   public static EvernoteSession init(Context ctx,
                                      String consumerKey,
                                      String consumerSecret,
-                                     EvernoteService evernoteService,
-                                     File dataDir) {
+                                     EvernoteService evernoteService) {
     // TODO throw an exception if the consumerKey or consumerSecret are not set or
     // are set to meaningless values (i.e. "Your consumer key")
     if (sInstance == null) {
-      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteService, dataDir);
+      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteService);
     }
     return sInstance;
+  }
+
+
+  @Deprecated
+  public static EvernoteSession init(Context ctx,
+                                     String consumerKey,
+                                     String consumerSecret,
+                                     EvernoteService evernoteService,
+                                     File dataDir) {
+
+    return init(ctx, consumerKey, consumerSecret, evernoteService);
   }
 
   /**
    * Used to access the initialized EvernoteSession singleton instance.
    *
    * @return The previously initialized EvernoteSession instance,
-   * or null if {@link #init(Context, String, String, EvernoteService, File)} has not been called yet.
+   * or null if {@link #init(Context, String, String, EvernoteService)} has not been called yet.
    */
-  public static EvernoteSession getSession() {
+  public static EvernoteSession getOpenSession() {
     return sInstance;
+  }
+
+  @Deprecated
+  public static EvernoteSession getSession() {
+    return getOpenSession();
   }
 
   /**
@@ -195,25 +206,15 @@ public class EvernoteSession {
   private EvernoteSession(Context ctx,
                           String consumerKey,
                           String consumerSecret,
-                          EvernoteService evernoteService,
-                          File dataDir) {
+                          EvernoteService evernoteService
+                          ) {
+
     mConsumerKey = consumerKey;
     mConsumerSecret = consumerSecret;
     mEvernoteService = evernoteService;
-    initUserAgentString(ctx);
 
-    SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
-    this.mAuthenticationResult = getAuthenticationResult(pref);
-    if(dataDir != null) {
-      mDataDirectory = dataDir;
-    } else {
-      mDataDirectory = ctx.getFilesDir();
-    }
-
-    mClientProducer = new ClientFactory();
-    mClientProducer.setTempDir(mDataDirectory);
-    mClientProducer.setUserAgent(mUserAgentString);
-
+    mAuthenticationResult = getAuthenticationResult(ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE));
+    mClientProducer = new ClientFactory(generateUserAgentString(ctx), ctx.getFilesDir());
     mBootstrapManager = new BootstrapManager(mEvernoteService, mClientProducer);
   }
 
@@ -221,9 +222,19 @@ public class EvernoteSession {
    *
    * @return the Bootstrap object to check for server host urls
    */
-  public BootstrapManager getBootstrapSession() {
+  protected BootstrapManager getBootstrapSession() {
     return mBootstrapManager;
   }
+
+  /**
+   * Use this object to create @{link NoteStore.Client} and {@link UserStore.Client}
+   *
+   * @return the {@link ClientFactory} object that creates notestores, userstores, contains the useragent, and temp dir
+   */
+  public ClientFactory getClientProducer() {
+    return mClientProducer;
+  }
+
 
   /**
    * Restore an AuthenticationResult from shared preferences.
@@ -246,44 +257,6 @@ public class EvernoteSession {
       return null;
     }
     return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, evernoteHost, userId);
-  }
-
-  /**
-   * Check whether the session has valid authentication information
-   * that will allow successful API calls to be made.
-   */
-  public boolean isLoggedIn() {
-    return mAuthenticationResult != null;
-  }
-
-  /**
-   * Clear all stored authentication information.
-   */
-// suppress lint check on Editor.apply()
-  @TargetApi(9)
-  public void logOut(Context ctx) {
-    mAuthenticationResult = null;
-
-    // Removed cached authentication information
-    Editor editor = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE).edit();
-    editor.remove(KEY_AUTHTOKEN);
-    editor.remove(KEY_NOTESTOREURL);
-    editor.remove(KEY_WEBAPIURLPREFIX);
-    editor.remove(KEY_EVERNOTEHOST);
-    editor.remove(KEY_USERID);
-
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-      editor.apply();
-    } else {
-      editor.commit();
-    }
-
-    // TODO The cookie jar is application scope, so we should only be removing
-    // evernote.com cookies.
-    CookieSyncManager.createInstance(ctx);
-    CookieManager cookieManager = CookieManager.getInstance();
-    cookieManager.removeAllCookie();
   }
 
   /**
@@ -310,33 +283,21 @@ public class EvernoteSession {
   }
 
   /**
-   * Create a new NoteStore client. Each call to this method will return
-   * a new NoteStore.Client instance. The returned client can be used for any
-   * number of API calls, but is NOT thread safe.
+   * Deprecated - Use getClientProducer().createNoteStore()
    *
-   * @throws IllegalStateException if @link #isLoggedIn() is false.
-   * @throws TTransportException if an error occurs setting up the
-   * connection to the Evernote service.
    */
+  @Deprecated
   public NoteStore.Client createNoteStore() throws TTransportException {
-    if (!isLoggedIn()) {
-      throw new IllegalStateException();
-    }
-
-      return mClientProducer.createNoteStore(mAuthenticationResult.getNoteStoreUrl());
+    return mClientProducer.createNoteStore(mAuthenticationResult.getNoteStoreUrl());
   }
 
   /**
-   * Create a new UserStore client. Each call to this method will return
-   * a new UserStore.Client instance. The returned client can be used for any
-   * number of API calls, but is NOT thread safe.
+   * Deprecated - Use getClientProducer().createUserStore()
    *
-   * @throws IllegalStateException if @link #isLoggedIn() is false.
-   * @throws TTransportException if an error occurs setting up the
-   * connection to the Evernote service.
    */
+  @Deprecated
   public UserStore.Client createUserStore()  throws TTransportException {
-      return mClientProducer.createUserStore(mAuthenticationResult.getEvernoteHost());
+    return mClientProducer.createUserStore(mAuthenticationResult.getEvernoteHost());
   }
 
 
@@ -346,7 +307,7 @@ public class EvernoteSession {
    * included in HTTP requests made to the Evernote service and assists
    * in measuring traffic and diagnosing problems.
    */
-  private void initUserAgentString(Context ctx) {
+  private String generateUserAgentString(Context ctx) {
     // com.evernote.sample Android/216817 (en); Android/4.0.3; Xoom/15;"
 
     String packageName = null;
@@ -370,16 +331,9 @@ public class EvernoteSession {
     userAgent += "Android/"+Build.VERSION.RELEASE+"; ";
     userAgent +=
         Build.MODEL + "/" + Build.VERSION.SDK_INT + ";";
-    mUserAgentString = userAgent;
+    return userAgent;
   }
 
-  /**
-   * Get the user-agent header value that will be included in all
-   * HTTP requests made to the Evernote service.
-   */
-  public String getUserAgentString() {
-    return mUserAgentString;
-  }
 
   /**
    * Start the OAuth authentication process.
@@ -443,5 +397,43 @@ public class EvernoteSession {
             evernoteHost,
             authToken.getUserId());
     return true;
+  }
+
+  /**
+   * Check whether the session has valid authentication information
+   * that will allow successful API calls to be made.
+   */
+  public boolean isLoggedIn() {
+    return mAuthenticationResult != null;
+  }
+
+  /**
+   * Clear all stored authentication information.
+   */
+// suppress lint check on Editor.apply()
+  @TargetApi(9)
+  public void logOut(Context ctx) {
+    mAuthenticationResult = null;
+
+    // Removed cached authentication information
+    Editor editor = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE).edit();
+    editor.remove(KEY_AUTHTOKEN);
+    editor.remove(KEY_NOTESTOREURL);
+    editor.remove(KEY_WEBAPIURLPREFIX);
+    editor.remove(KEY_EVERNOTEHOST);
+    editor.remove(KEY_USERID);
+
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
+      editor.apply();
+    } else {
+      editor.commit();
+    }
+
+    // TODO The cookie jar is application scope, so we should only be removing
+    // evernote.com cookies.
+    CookieSyncManager.createInstance(ctx);
+    CookieManager cookieManager = CookieManager.getInstance();
+    cookieManager.removeAllCookie();
   }
 }
