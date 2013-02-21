@@ -144,10 +144,10 @@ public class EvernoteSession {
   private EvernoteService mEvernoteService;
   private String mUserAgentString;
   private BootstrapManager mBootstrapManager;
+  private ClientFactory mClientProducer;
 
   private AuthenticationResult mAuthenticationResult;
   private File mDataDirectory;
-
 
   private static EvernoteSession sInstance = null;
 
@@ -210,7 +210,11 @@ public class EvernoteSession {
       mDataDirectory = ctx.getFilesDir();
     }
 
-    mBootstrapManager = new BootstrapManager(mEvernoteService, mUserAgentString, mDataDirectory);
+    mClientProducer = new ClientFactory();
+    mClientProducer.setTempDir(mDataDirectory);
+    mClientProducer.setUserAgent(mUserAgentString);
+
+    mBootstrapManager = new BootstrapManager(mEvernoteService, mClientProducer);
   }
 
   /**
@@ -318,11 +322,8 @@ public class EvernoteSession {
     if (!isLoggedIn()) {
       throw new IllegalStateException();
     }
-    TEvernoteHttpClient transport =
-      new TEvernoteHttpClient(mAuthenticationResult.getNoteStoreUrl(),
-          mUserAgentString, mDataDirectory);
-    TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new NoteStore.Client(protocol, protocol);
+
+      return mClientProducer.createNoteStore(mAuthenticationResult.getNoteStoreUrl());
   }
 
   /**
@@ -335,9 +336,7 @@ public class EvernoteSession {
    * connection to the Evernote service.
    */
   public UserStore.Client createUserStore()  throws TTransportException {
-    return EvernoteUtil.getUserStoreClient(mAuthenticationResult.getEvernoteHost(),
-        mUserAgentString,
-        mDataDirectory);
+      return mClientProducer.createUserStore(mAuthenticationResult.getEvernoteHost());
   }
 
 
