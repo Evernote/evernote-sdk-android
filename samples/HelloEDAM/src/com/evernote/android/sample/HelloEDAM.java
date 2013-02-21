@@ -64,6 +64,8 @@ import java.io.InputStream;
  * In this sample, the user authorizes access to their account using OAuth
  * and chooses an image from the device's image gallery. The image is then
  * saved directly to user's Evernote account as a new note.
+ *
+ * class created by @tylersmithnet
  */
 public class HelloEDAM extends Activity {
 
@@ -182,7 +184,7 @@ public class HelloEDAM extends Activity {
   private void setupSession() {
 
     // Retrieve persisted authentication information
-    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE, null);
+    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE);
   }
 
   /**
@@ -326,7 +328,7 @@ public class HelloEDAM extends Activity {
         // Create the note on the server. The returned Note object
         // will contain server-generated attributes such as the note's
         // unique ID (GUID), the Resource's GUID, and the creation and update time.
-        createdNote = mEvernoteSession.createNoteStore().createNote(mEvernoteSession.getAuthToken(), note);
+        createdNote = mEvernoteSession.getClientProducer().createNoteStore().createNote(mEvernoteSession.getAuthToken(), note);
       } catch (Exception e) {
         Log.e(TAG, getString(R.string.err_creating_note), e);
       }
