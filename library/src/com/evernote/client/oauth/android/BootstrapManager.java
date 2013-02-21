@@ -6,7 +6,6 @@ import com.evernote.edam.userstore.BootstrapProfile;
 import com.evernote.edam.userstore.UserStore;
 import com.evernote.thrift.TException;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,29 +46,26 @@ public class BootstrapManager {
   public static final String DISPLAY_EVERNOTE_INTL = "Evernote International";
 
   private ArrayList<String> mBootstrapServerUrls = new ArrayList<String>();
-  private String mUserAgent;
   private UserStore.Client mUserStoreClient;
   private Locale mLocale;
-  private File mDataDir;
+  private ClientFactory mClientProducer;
 
   protected String mBootstrapServerUsed;
 
-  public BootstrapManager(EvernoteSession.EvernoteService service, String userAgent, File dataDir) {
-    this(service, userAgent, dataDir, Locale.getDefault());
+  public BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer) {
+    this(service, producer, Locale.getDefault());
   }
 
   /**
    *
    * @param service {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#PRODUCTION} when using
    * production and {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#SANDBOX} when using sandbox
-   * @param userAgent The constructed useragent from {@link com.evernote.client.oauth.android.EvernoteSession#getUserAgentString()}
-   * @param dataDir Directory that specifies where to store data
+   * @param producer Client producer used to create clients
    * @param locale Used to detect if the china servers need to be checked
    */
-  public BootstrapManager(EvernoteSession.EvernoteService service, String userAgent, File dataDir, Locale locale) {
+  public BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer, Locale locale) {
     mLocale = locale;
-    mDataDir = dataDir;
-    mUserAgent = userAgent;
+    mClientProducer = producer;
 
     mBootstrapServerUrls.clear();
     switch(service) {
@@ -101,10 +97,9 @@ public class BootstrapManager {
     for (String url : mBootstrapServerUrls) {
       i++;
       try {
+        mUserStoreClient =  mClientProducer.createUserStore(url);//EvernoteUtil.getUserStoreClient(url, mUserAgent, mDataDir);
 
-        mUserStoreClient = EvernoteUtil.getUserStoreClient(url, mUserAgent, mDataDir);
-
-        if (!mUserStoreClient.checkVersion(mUserAgent,
+        if (!mUserStoreClient.checkVersion(mClientProducer.getUserAgent(),
             com.evernote.edam.userstore.Constants.EDAM_VERSION_MAJOR,
             com.evernote.edam.userstore.Constants.EDAM_VERSION_MINOR)) {
           mUserStoreClient = null;

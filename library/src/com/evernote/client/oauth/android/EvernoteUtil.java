@@ -153,98 +153,95 @@ public class EvernoteUtil {
     }
   }
 
-  /**
-   * Creates a UserStore client interface that can be used to send requests to a
-   * particular UserStore server. For example, the following would provide a
-   * handle to make requests from the "MyClient" application to talk to the
-   * Evernote server at "www.evernote.com" :
-   * <p/>
-   * <pre>
-   * UserStore.Iface userStore = EDAMUtil.getUserStoreClient(&quot;www.evernote.com&quot;,
-   *     &quot;MyClient (Java)&quot;);
-   * </pre>
-   * <p/>
-   * This call does not actually initiate any communications with the UserStore,
-   * it only creates the handle that will be used.
-   *
-   * @param host      the hostname (or numeric IP address) for the server that we should
-   *                  communicate with. This will attempt to use HTTPS to talk to that
-   *                  server unless the hostname contains a port number component, in
-   *                  which case we'll use plaintext HTTP.
-   * @param userAgent if non-null, this is the User-Agent string that will be provided
-   *                  on all HTTP requests to the service. This allows for better
-   *                  logging and debugging if problems arise.
-   * @param tempDir   a temporary directory in which large outgoing Thrift messages will
-   *                  be cached to disk before they are sent.
-   * @return The client interface that can be used to talk to the UserStore
-   * @throws TTransportException if the provided information can't be used to construct a
-   *                             UserStore handle. (E.g. if the hostname is malformed.)
-   */
-  public static UserStore.Client getUserStoreClient(String serviceUrl, String userAgent, File tempDir)
-      throws TTransportException {
-    return getUserStoreClient(serviceUrl, 0, userAgent, null, tempDir);
-  }
-
-  public static UserStore.Client getUserStoreClient(String host, int port, String userAgent, File tempDir)
-      throws TTransportException {
-    return getUserStoreClient(host, port, userAgent, null, tempDir);
-  }
-
-  /**
-   * Creates a UserStore client interface that can be used to send requests to a
-   * particular UserStore server. For example, the following would provide a
-   * handle to make requests from the "MyClient" application to talk to the
-   * Evernote server at "www.evernote.com" :
-   * <p/>
-   * <pre>
-   * UserStore.Iface userStore = EDAMUtil.getUserStoreClient(&quot;www.evernote.com&quot;,
-   *     &quot;MyClient (Java)&quot;);
-   * </pre>
-   * <p/>
-   * This call does not actually initiate any communications with the UserStore,
-   * it only creates the handle that will be used.
-   *
-   * @param host          the hostname (or numeric IP address) for the server that we should
-   *                      communicate with. This will attempt to use HTTPS to talk to that
-   *                      server unless the hostname contains a port number component, in
-   *                      which case we'll use plaintext HTTP.
-   * @param port          the port number
-   * @param userAgent     if non-null, this is the User-Agent string that will be provided
-   *                      on all HTTP requests to the service. This allows for better
-   *                      logging and debugging if problems arise.
-   * @param customHeaders if non-null, this is a mapping of HTTP headers to values which
-   *                      will be included in the request.
-   * @param tempDir       a temporary directory in which large outgoing Thrift messages will
-   *                      be cached to disk before they are sent.
-   * @return The client interface that can be used to talk to the UserStore
-   * @throws TTransportException if the provided information can't be used to construct a
-   *                             UserStore handle. (E.g. if the hostname is malformed.)
-   */
-  public static UserStore.Client getUserStoreClient(String serviceUrl,
-                                                    int port,
-                                                    String userAgent,
-                                                    Map<String, String> customHeaders,
-                                                    File tempDir)
-      throws TTransportException {
-    String url = "";
-    if (port != 0) serviceUrl += ":" + port;
-    if (!serviceUrl.startsWith("http")) {
-      url = serviceUrl.contains(":") ? "http://" : "https://";
-    }
-
-    url += serviceUrl + "/edam/user";
-    TEvernoteHttpClient transport =
-        new TEvernoteHttpClient(url, userAgent, tempDir);
-
-    if (customHeaders != null) {
-      for (Map.Entry<String, String> header : customHeaders.entrySet()) {
-        transport.setCustomHeader(header.getKey(), header.getValue());
-      }
-    }
-    if (userAgent != null) {
-      transport.setCustomHeader("User-Agent", userAgent);
-    }
-    TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new UserStore.Client(protocol, protocol);
-  }
+//  /**
+//   * Creates a UserStore client interface that can be used to send requests to a
+//   * particular UserStore server. For example, the following would provide a
+//   * handle to make requests from the "MyClient" application to talk to the
+//   * Evernote server at "www.evernote.com" :
+//   * <p/>
+//   * <pre>
+//   * UserStore.Iface userStore = EDAMUtil.getUserStoreClient(&quot;www.evernote.com&quot;,
+//   *     &quot;MyClient (Java)&quot;);
+//   * </pre>
+//   * <p/>
+//   * This call does not actually initiate any communications with the UserStore,
+//   * it only creates the handle that will be used.
+//   *
+//
+//   * @param userAgent if non-null, this is the User-Agent string that will be provided
+//   *                  on all HTTP requests to the service. This allows for better
+//   *                  logging and debugging if problems arise.
+//   * @param tempDir   a temporary directory in which large outgoing Thrift messages will
+//   *                  be cached to disk before they are sent.
+//   * @return The client interface that can be used to talk to the UserStore
+//   * @throws TTransportException if the provided information can't be used to construct a
+//   *                             UserStore handle. (E.g. if the hostname is malformed.)
+//   */
+//  public static UserStore.Client getUserStoreClient(String serviceUrl, String userAgent, File tempDir)
+//      throws TTransportException {
+//    return getUserStoreClient(serviceUrl, 0, userAgent, null, tempDir);
+//  }
+//
+//  public static UserStore.Client getUserStoreClient(String host, int port, String userAgent, File tempDir)
+//      throws TTransportException {
+//    return getUserStoreClient(host, port, userAgent, null, tempDir);
+//  }
+//
+//  /**
+//   * Creates a UserStore client interface that can be used to send requests to a
+//   * particular UserStore server. For example, the following would provide a
+//   * handle to make requests from the "MyClient" application to talk to the
+//   * Evernote server at "www.evernote.com" :
+//   * <p/>
+//   * <pre>
+//   * UserStore.Iface userStore = EDAMUtil.getUserStoreClient(&quot;www.evernote.com&quot;,
+//   *     &quot;MyClient (Java)&quot;);
+//   * </pre>
+//   * <p/>
+//   * This call does not actually initiate any communications with the UserStore,
+//   * it only creates the handle that will be used.
+//   *
+//   * @param host          the hostname (or numeric IP address) for the server that we should
+//   *                      communicate with. This will attempt to use HTTPS to talk to that
+//   *                      server unless the hostname contains a port number component, in
+//   *                      which case we'll use plaintext HTTP.
+//   * @param port          the port number
+//   * @param userAgent     if non-null, this is the User-Agent string that will be provided
+//   *                      on all HTTP requests to the service. This allows for better
+//   *                      logging and debugging if problems arise.
+//   * @param customHeaders if non-null, this is a mapping of HTTP headers to values which
+//   *                      will be included in the request.
+//   * @param tempDir       a temporary directory in which large outgoing Thrift messages will
+//   *                      be cached to disk before they are sent.
+//   * @return The client interface that can be used to talk to the UserStore
+//   * @throws TTransportException if the provided information can't be used to construct a
+//   *                             UserStore handle. (E.g. if the hostname is malformed.)
+//   */
+//  public static UserStore.Client getUserStoreClient(String serviceUrl,
+//                                                    int port,
+//                                                    String userAgent,
+//                                                    Map<String, String> customHeaders,
+//                                                    File tempDir)
+//      throws TTransportException {
+//    String url = "";
+//    if (port != 0) serviceUrl += ":" + port;
+//    if (!serviceUrl.startsWith("http")) {
+//      url = serviceUrl.contains(":") ? "http://" : "https://";
+//    }
+//
+//    url += serviceUrl + "/edam/user";
+//    TEvernoteHttpClient transport =
+//        new TEvernoteHttpClient(url, userAgent, tempDir);
+//
+//    if (customHeaders != null) {
+//      for (Map.Entry<String, String> header : customHeaders.entrySet()) {
+//        transport.setCustomHeader(header.getKey(), header.getValue());
+//      }
+//    }
+//    if (userAgent != null) {
+//      transport.setCustomHeader("User-Agent", userAgent);
+//    }
+//    TBinaryProtocol protocol = new TBinaryProtocol(transport);
+//    return new UserStore.Client(protocol, protocol);
+//  }
 }
