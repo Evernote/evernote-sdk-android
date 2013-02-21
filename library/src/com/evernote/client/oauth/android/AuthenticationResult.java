@@ -31,10 +31,11 @@ package com.evernote.client.oauth.android;
  */
 public class AuthenticationResult {
 
-  private String authToken;
-  private String noteStoreUrl;
-  private String webApiUrlPrefix;
-  private int userId;
+  private String mAuthToken;
+  private String mNoteStoreUrl;
+  private String mWebApiUrlPrefix;
+  private String mEvernoteHost;
+  private int mUserId;
 
   /**
    * Create a new AuthenticationResult.
@@ -42,35 +43,45 @@ public class AuthenticationResult {
    * @param authToken An Evernote authentication token.
    * @param noteStoreUrl The URL of the Evernote NoteStore for the authenticated user.
    * @param webApiUrlPrefix The URL of misc. Evernote web APIs for the authenticated user.
+   * @param evernoteHost the Evernote Web URL provided from the bootstrap process
    * @param userId The numeric ID of the Evernote user.
    */
   public AuthenticationResult(String authToken, String noteStoreUrl,
-    String webApiUrlPrefix, int userId) {
-    this.authToken = authToken;
-    this.noteStoreUrl = noteStoreUrl;
-    this.webApiUrlPrefix = webApiUrlPrefix;
-    this.userId = userId;
+    String webApiUrlPrefix, String evernoteHost, int userId) {
+    this.mAuthToken = authToken;
+    this.mNoteStoreUrl = noteStoreUrl;
+    this.mWebApiUrlPrefix = webApiUrlPrefix;
+    this.mEvernoteHost = evernoteHost;
+    this.mUserId = userId;
   }
 
   /**
    * Get the authentication token that will be used to make authenticated API requests.
    */
   public String getAuthToken() {
-    return authToken;
+    return mAuthToken;
   }
 
   /**
    * Get the URL that will be used to access the NoteStore service.
    */
   public String getNoteStoreUrl() {
-    return noteStoreUrl;
+    return mNoteStoreUrl;
   }
 
   /**
    * Get the URL prefix that can be used to access non-Thrift API endpoints.
    */
   public String getWebApiUrlPrefix() {
-    return webApiUrlPrefix;
+    return mWebApiUrlPrefix;
+  }
+
+  /**
+   *
+   * Get the Evernote Web URL provided from the bootstrap process
+   */
+  public String getEvernoteHost() {
+    return mEvernoteHost;
   }
 
   /**
@@ -78,6 +89,8 @@ public class AuthenticationResult {
    * Evernote account.
    */
   public int getUserId() {
-    return userId;
+    return mUserId;
   }
+
+
 }

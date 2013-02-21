@@ -1,3 +1,8 @@
+= 1.1 / 2013-2-20
+
+* Added Bootstrapping support for Yinxiang
+* Bug fixes
+
 = 1.0.2 / 2012-12-30
 
 * Added android annotations

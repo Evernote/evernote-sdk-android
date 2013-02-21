@@ -91,7 +91,7 @@ public class HelloEDAM extends Activity {
   // Change to HOST_PRODUCTION to use the Evernote production service
   // once your code is complete, or HOST_CHINA to use the Yinxiang Biji
   // (Evernote China) production service.
-  private static final String EVERNOTE_HOST = EvernoteSession.HOST_SANDBOX;
+  private static final EvernoteSession.EvernoteService EVERNOTE_SERVICE = EvernoteSession.EvernoteService.SANDBOX;
 
   /**
    * ************************************************************************
@@ -182,7 +182,7 @@ public class HelloEDAM extends Activity {
   private void setupSession() {
 
     // Retrieve persisted authentication information
-    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
+    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE, null);
   }
 
   /**

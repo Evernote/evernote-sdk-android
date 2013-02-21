@@ -1,4 +1,4 @@
-Evernote SDK for Android version 1.0.2
+Evernote SDK for Android version 1.1
 ====================================
 
 Evernote API version 1.23
@@ -77,7 +77,7 @@ Add the Evernote SDK for Android as a dependency:
 The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's `AndroidManifest.xml`. Simply copy and paste the following snippet into your `AndroidManifest.xml` within the application section:
 
 ```xml
-<activity android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity" />
+<activity android:name="com.evernote.client.oauth.android.EvernoteOAuthActivity" android:configChanges="orientation|keyboardHidden" />
 ```
 
 ### Set up an `EvernoteSession`
@@ -87,13 +87,13 @@ Define your app credentials (key, secret, and host).  See http://dev.evernote.co
 ```java
 private static final String CONSUMER_KEY = "Your consumer key";
 private static final String CONSUMER_SECRET = "Your consumer secret";
-private static final String EVERNOTE_HOST = EvernoteSession.HOST_SANDBOX;
+private static final EvernoteSession.EvernoteService EVERNOTE_SERVICE = EvernoteSession.EvernoteService.SANDBOX;
 ```
 
 When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote.
 
 ```java
-mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_HOST, null);
+mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE, null);
 ```
 
 ### Give the user a way to initiate authentication

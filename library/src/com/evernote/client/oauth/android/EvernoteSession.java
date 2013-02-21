@@ -33,11 +33,12 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
-
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.edam.notestore.NoteStore;
@@ -86,27 +87,67 @@ import java.util.Locale;
  */
 public class EvernoteSession {
 
-  // Standard hostnames
-  public static final String HOST_SANDBOX = "sandbox.evernote.com";
-  public static final String HOST_PRODUCTION = "www.evernote.com";
-  public static final String HOST_CHINA = "app.yinxiang.com";
+  private final String LOGTAG = "EvernoteSession";
+
+  // Standard hostnames for bootstrap detection
+  public static final String HOST_SANDBOX = "https://sandbox.evernote.com";
+  public static final String HOST_PRODUCTION = "https://www.evernote.com";
+  public static final String HOST_CHINA = "https://app.yinxiang.com";
+
+
+  /**
+   * Evernote Service to use with the bootstrap profile detection.
+   * Sandbox will return profiles referencing sandbox.evernote.com
+   * Production will return evernote.com and app.yinxiang.com
+   */
+  public enum EvernoteService implements Parcelable {
+    SANDBOX,
+    PRODUCTION;
+
+
+    @Override
+    public int describeContents() {
+      return 0;
+    }
+
+    @Override
+    public void writeToParcel(final Parcel dest, final int flags) {
+      dest.writeInt(ordinal());
+    }
+
+    public static final Creator<EvernoteService> CREATOR = new Creator<EvernoteService>() {
+      @Override
+      public EvernoteService createFromParcel(final Parcel source) {
+        return EvernoteService.values()[source.readInt()];
+      }
+
+      @Override
+      public EvernoteService[] newArray(final int size) {
+        return new EvernoteService[size];
+      }
+    };
+  }
 
   // Keys for values persisted in our shared preferences
   protected static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
   protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
   protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
   protected static final String KEY_USERID = "evernote.userId";
+  protected static final String KEY_EVERNOTEHOST = "evernote.mEvernoteHost";
   public static final int REQUEST_CODE_OAUTH = 10101;
+
 
   protected static final String PREFERENCE_NAME = "evernote.preferences";
 
   private String mConsumerKey;
   private String mConsumerSecret;
-  private String mEvernoteHost;
+  private EvernoteService mEvernoteService;
   private String mUserAgentString;
+  private BootstrapManager mBootstrapManager;
 
   private AuthenticationResult mAuthenticationResult;
   private File mDataDirectory;
+
 
   private static EvernoteSession sInstance = null;
 
@@ -118,23 +159,22 @@ public class EvernoteSession {
    * @param ctx
    * @param consumerKey The consumer key portion of your application's API key.
    * @param consumerSecret The consumer secret portion of your application's API key.
-   * @param evernoteHost The hostname for the Evernote service instance that you wish
-   * to use. Development and testing is typically performed against {@link #HOST_SANDBOX}.
-   * The production Evernote service is {@link #HOST_PRODUCTION}. The production Yinxiang Biji
-   * (Evernote China) service is {@link #HOST_CHINA}.
-   * @param dataDir the data directory to store evernote files
+   * @param evernoteService The enum of the Evernote service instance that you wish
+   * to use. Development and testing is typically performed against {@link EvernoteService#SANDBOX}.
+   * The production Evernote service is {@link EvernoteService#HOST_PRODUCTION}.
+   * @param dataDir the data directory to store evernote files, if null then it uses the default
    *
    * @return The EvernoteSession singleton instance.
    */
   public static EvernoteSession init(Context ctx,
                                      String consumerKey,
                                      String consumerSecret,
-                                     String evernoteHost,
+                                     EvernoteService evernoteService,
                                      File dataDir) {
     // TODO throw an exception if the consumerKey or consumerSecret are not set or
     // are set to meaningless values (i.e. "Your consumer key")
     if (sInstance == null) {
-      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteHost, dataDir);
+      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteService, dataDir);
     }
     return sInstance;
   }
@@ -143,7 +183,7 @@ public class EvernoteSession {
    * Used to access the initialized EvernoteSession singleton instance.
    *
    * @return The previously initialized EvernoteSession instance,
-   * or null if {@link #init(Context, String, String, String, File)} has not been called yet.
+   * or null if {@link #init(Context, String, String, EvernoteService, File)} has not been called yet.
    */
   public static EvernoteSession getSession() {
     return sInstance;
@@ -152,10 +192,14 @@ public class EvernoteSession {
   /**
    * Private constructor.
    */
-  private EvernoteSession(Context ctx, String consumerKey, String consumerSecret, String evernoteHost, File dataDir) {
+  private EvernoteSession(Context ctx,
+                          String consumerKey,
+                          String consumerSecret,
+                          EvernoteService evernoteService,
+                          File dataDir) {
     mConsumerKey = consumerKey;
     mConsumerSecret = consumerSecret;
-    mEvernoteHost = evernoteHost;
+    mEvernoteService = evernoteService;
     initUserAgentString(ctx);
 
     SharedPreferences pref = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
@@ -165,6 +209,16 @@ public class EvernoteSession {
     } else {
       mDataDirectory = ctx.getFilesDir();
     }
+
+    mBootstrapManager = new BootstrapManager(mEvernoteService, mUserAgentString, mDataDirectory);
+  }
+
+  /**
+   *
+   * @return the Bootstrap object to check for server host urls
+   */
+  public BootstrapManager getBootstrapSession() {
+    return mBootstrapManager;
   }
 
   /**
@@ -176,15 +230,18 @@ public class EvernoteSession {
     String authToken = prefs.getString(KEY_AUTHTOKEN, null);
     String notestoreUrl = prefs.getString(KEY_NOTESTOREURL, null);
     String webApiUrlPrefix = prefs.getString(KEY_WEBAPIURLPREFIX, null);
+    String evernoteHost = prefs.getString(KEY_EVERNOTEHOST, null);
+
     int userId = prefs.getInt(KEY_USERID, -1);
 
-    if (TextUtils.isEmpty(authToken) ||
+    if (TextUtils.isEmpty(evernoteHost) ||
+        TextUtils.isEmpty(authToken) ||
         TextUtils.isEmpty(notestoreUrl) ||
         TextUtils.isEmpty(webApiUrlPrefix) ||
         userId == -1) {
       return null;
     }
-    return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, userId);
+    return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, evernoteHost, userId);
   }
 
   /**
@@ -208,6 +265,7 @@ public class EvernoteSession {
     editor.remove(KEY_AUTHTOKEN);
     editor.remove(KEY_NOTESTOREURL);
     editor.remove(KEY_WEBAPIURLPREFIX);
+    editor.remove(KEY_EVERNOTEHOST);
     editor.remove(KEY_USERID);
 
 
@@ -243,7 +301,7 @@ public class EvernoteSession {
    * Get the authentication information returned by a successful
    * OAuth authentication to the Evernote web service.
    */
-  public AuthenticationResult getmAuthenticationResult() {
+  public AuthenticationResult getAuthenticationResult() {
     return mAuthenticationResult;
   }
 
@@ -277,19 +335,11 @@ public class EvernoteSession {
    * connection to the Evernote service.
    */
   public UserStore.Client createUserStore()  throws TTransportException {
-    String url = "";
-    if (!mEvernoteHost.startsWith("http")) {
-      url = mEvernoteHost.contains(":") ? "http://" : "https://";
-    }
-    url += mEvernoteHost + "/edam/user";
-
-    TEvernoteHttpClient transport =
-        new TEvernoteHttpClient(url, mUserAgentString, mDataDirectory);
-
-    TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new UserStore.Client(protocol, protocol);
-
+    return EvernoteUtil.getUserStoreClient(mAuthenticationResult.getEvernoteHost(),
+        mUserAgentString,
+        mDataDirectory);
   }
+
 
   /**
    * Construct a user-agent string based on the running application and
@@ -307,7 +357,7 @@ public class EvernoteSession {
       packageVersion = ctx.getPackageManager().getPackageInfo(packageName, 0).versionCode;
 
     } catch (PackageManager.NameNotFoundException e) {
-      Log.e("tag", e.getMessage());
+      Log.e(LOGTAG, e.getMessage());
     }
 
     String userAgent = packageName+ " Android/" +packageVersion;
@@ -340,7 +390,7 @@ public class EvernoteSession {
   public void authenticate(Context ctx) {
     // Create an activity that will be used for authentication
     Intent intent = new Intent(ctx, EvernoteOAuthActivity.class);
-    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_HOST, mEvernoteHost);
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_SERVICE, (Parcelable) mEvernoteService);
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mConsumerKey);
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mConsumerSecret);
 
@@ -362,10 +412,11 @@ public class EvernoteSession {
    * @param ctx Application Context or activity
    * @param authToken The authentication information returned at the end of a
    * successful OAuth authentication.
+   * @param evernoteHost the URL of the Evernote Web API to connect to, provided by the bootstrap results
    */
   // suppress lint check on Editor.apply()
   @TargetApi(9)
-  protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken) {
+  protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken, String evernoteHost) {
     if (ctx == null || authToken == null) {
       return false;
     }
@@ -377,6 +428,7 @@ public class EvernoteSession {
     editor.putString(EvernoteSession.KEY_AUTHTOKEN, authToken.getToken());
     editor.putString(EvernoteSession.KEY_NOTESTOREURL, authToken.getNoteStoreUrl());
     editor.putString(EvernoteSession.KEY_WEBAPIURLPREFIX, authToken.getWebApiUrlPrefix());
+    editor.putString(EvernoteSession.KEY_EVERNOTEHOST, evernoteHost);
     editor.putInt(EvernoteSession.KEY_USERID, authToken.getUserId());
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
@@ -389,6 +441,7 @@ public class EvernoteSession {
             authToken.getToken(),
             authToken.getNoteStoreUrl(),
             authToken.getWebApiUrlPrefix(),
+            evernoteHost,
             authToken.getUserId());
     return true;
   }
