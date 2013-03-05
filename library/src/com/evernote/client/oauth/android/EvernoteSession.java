@@ -25,12 +25,10 @@
  */
 package com.evernote.client.oauth.android;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Parcel;
@@ -40,12 +38,19 @@ import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import com.evernote.client.oauth.EvernoteAuthToken;
+import com.evernote.client.oauth.android.client.OnClientCallback;
+import com.evernote.edam.error.EDAMSystemException;
+import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.NoteStore;
+import com.evernote.edam.type.User;
 import com.evernote.edam.userstore.UserStore;
+import com.evernote.thrift.TException;
 import com.evernote.thrift.transport.TTransportException;
 
 import java.io.File;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
@@ -79,7 +84,7 @@ import java.util.Locale;
  * Later, you can make any Evernote API calls that you need by obtaining a
  * NoteStore.Client from the session and using the session's auth token:
  * <pre>
- *   NoteStore.client noteStore = session.createNoteStore();
+ *   NoteStore.client noteStore = session.createNoteStoreClient();
  *   Notebook notebook = noteStore.getDefaultNotebook(session.getAuthToken());
  * </pre>
  *
@@ -128,13 +133,6 @@ public class EvernoteSession {
     };
   }
 
-  // Keys for values persisted in our shared preferences
-  protected static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
-  protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
-  protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
-  protected static final String KEY_USERID = "evernote.userId";
-  protected static final String KEY_EVERNOTEHOST = "evernote.mEvernoteHost";
-  protected static final String PREFERENCE_NAME = "evernote.preferences";
   public static final int REQUEST_CODE_OAUTH = 10101;
 
   private static EvernoteSession sInstance = null;
@@ -145,8 +143,7 @@ public class EvernoteSession {
   private BootstrapManager mBootstrapManager;
   private ClientFactory mClientProducer;
   private AuthenticationResult mAuthenticationResult;
-
-
+  private ExecutorService mThreadExecutor;
 
   /**
    * Use to acquire a singleton instance of the EvernoteSession for authentication.
@@ -200,6 +197,15 @@ public class EvernoteSession {
     return getOpenSession();
   }
 
+
+  /**
+   *
+   * @return the thread executor for async operations
+   */
+  public ExecutorService getThreadExecutor() {
+    return mThreadExecutor;
+  }
+
   /**
    * Private constructor.
    */
@@ -213,8 +219,9 @@ public class EvernoteSession {
     mConsumerSecret = consumerSecret;
     mEvernoteService = evernoteService;
 
-    mAuthenticationResult = getAuthenticationResult(ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE));
+    mAuthenticationResult = getAuthenticationResult(Preferences.getPreferences(ctx));
     mClientProducer = new ClientFactory(generateUserAgentString(ctx), ctx.getFilesDir());
+    mThreadExecutor = Executors.newSingleThreadExecutor();
     mBootstrapManager = new BootstrapManager(mEvernoteService, mClientProducer);
   }
 
@@ -242,21 +249,19 @@ public class EvernoteSession {
    * did not contain the required information.
    */
   private AuthenticationResult getAuthenticationResult(SharedPreferences prefs) {
-    String authToken = prefs.getString(KEY_AUTHTOKEN, null);
-    String notestoreUrl = prefs.getString(KEY_NOTESTOREURL, null);
-    String webApiUrlPrefix = prefs.getString(KEY_WEBAPIURLPREFIX, null);
-    String evernoteHost = prefs.getString(KEY_EVERNOTEHOST, null);
 
-    int userId = prefs.getInt(KEY_USERID, -1);
+    AuthenticationResult authResult = new AuthenticationResult(prefs);
 
-    if (TextUtils.isEmpty(evernoteHost) ||
-        TextUtils.isEmpty(authToken) ||
-        TextUtils.isEmpty(notestoreUrl) ||
-        TextUtils.isEmpty(webApiUrlPrefix) ||
-        userId == -1) {
+    if (TextUtils.isEmpty(authResult.getEvernoteHost()) ||
+        TextUtils.isEmpty(authResult.getAuthToken()) ||
+        TextUtils.isEmpty(authResult.getNoteStoreUrl()) ||
+        TextUtils.isEmpty(authResult.getWebApiUrlPrefix()) ||
+        TextUtils.isEmpty(authResult.getEvernoteHost()) ||
+        authResult.getUserId() == -1) {
       return null;
     }
-    return new AuthenticationResult(authToken, notestoreUrl, webApiUrlPrefix, evernoteHost, userId);
+
+    return authResult;
   }
 
   /**
@@ -283,21 +288,21 @@ public class EvernoteSession {
   }
 
   /**
-   * Deprecated - Use getClientProducer().createNoteStore()
+   * Deprecated - Use getClientProducer().createNoteStoreClient()
    *
    */
   @Deprecated
   public NoteStore.Client createNoteStore() throws TTransportException {
-    return mClientProducer.createNoteStore(mAuthenticationResult.getNoteStoreUrl());
+    return mClientProducer.createNoteStoreClient(mAuthenticationResult.getNoteStoreUrl());
   }
 
   /**
-   * Deprecated - Use getClientProducer().createUserStore()
+   * Deprecated - Use getClientProducer().createUserStoreClient()
    *
    */
   @Deprecated
   public UserStore.Client createUserStore()  throws TTransportException {
-    return mClientProducer.createUserStore(mAuthenticationResult.getEvernoteHost());
+    return mClientProducer.createUserStoreClient(mAuthenticationResult.getEvernoteHost());
   }
 
 
@@ -367,27 +372,9 @@ public class EvernoteSession {
    * successful OAuth authentication.
    * @param evernoteHost the URL of the Evernote Web API to connect to, provided by the bootstrap results
    */
-  // suppress lint check on Editor.apply()
-  @TargetApi(9)
   protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken, String evernoteHost) {
     if (ctx == null || authToken == null) {
       return false;
-    }
-    SharedPreferences prefs = ctx.
-        getSharedPreferences(EvernoteSession.PREFERENCE_NAME, Context.MODE_PRIVATE);
-
-    SharedPreferences.Editor editor = prefs.edit();
-
-    editor.putString(EvernoteSession.KEY_AUTHTOKEN, authToken.getToken());
-    editor.putString(EvernoteSession.KEY_NOTESTOREURL, authToken.getNoteStoreUrl());
-    editor.putString(EvernoteSession.KEY_WEBAPIURLPREFIX, authToken.getWebApiUrlPrefix());
-    editor.putString(EvernoteSession.KEY_EVERNOTEHOST, evernoteHost);
-    editor.putInt(EvernoteSession.KEY_USERID, authToken.getUserId());
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-      editor.apply();
-    } else {
-      editor.commit();
     }
     mAuthenticationResult =
         new AuthenticationResult(
@@ -396,6 +383,21 @@ public class EvernoteSession {
             authToken.getWebApiUrlPrefix(),
             evernoteHost,
             authToken.getUserId());
+
+    mAuthenticationResult.persist(Preferences.getPreferences(ctx));
+
+    checkBusinessUser(new OnClientCallback<Boolean, Exception>() {
+      @Override
+      public void onResultsReceived(Boolean data) {
+
+      }
+
+      @Override
+      public void onErrorReceived(Exception ex) {
+        Log.e(LOGTAG, ex.toString());
+      }
+    });
+
     return true;
   }
 
@@ -407,28 +409,71 @@ public class EvernoteSession {
     return mAuthenticationResult != null;
   }
 
+
+
+
+  /**
+   * This will make a network request asynchronously to check the business validity of the user
+   */
+  public void checkBusinessUser(final OnClientCallback<Boolean, Exception> callback) {
+
+    try {
+      mClientProducer.createUserStoreClient().getUser(getAuthToken(), new OnClientCallback<User, Exception>() {
+
+        @Override
+        public void onResultsReceived(User user) {
+          if(user.getAccounting().isSetBusinessId()) {
+            getAuthenticationResult().setBusinessId(user.getAccounting().getBusinessId());
+
+            callback.onResultsReceived(true);
+          }
+          callback.onResultsReceived(false);
+        }
+        @Override
+        public void onErrorReceived(Exception ex) {
+
+        }
+      });
+    } catch (TTransportException e) {
+      e.printStackTrace();
+    } catch (IllegalStateException e) {
+      e.printStackTrace();
+    }
+  }
+
+
+  /**
+   * This should be called in each session usage to verify the user is a business user
+   * This makes a network request and should only be used in a background thread
+   * @return if a user belongs to a business account
+   */
+  public boolean isBusinessUser() {
+    AuthenticationResult authResult = getAuthenticationResult();
+
+    try {
+
+      User user = mClientProducer.createUserStoreClient().getUser(authResult.getAuthToken());
+      if(user.getAccounting().isSetBusinessId()) {
+        authResult.setBusinessId(user.getAccounting().getBusinessId());
+        return true;
+      }
+    } catch (EDAMUserException e) {
+      e.printStackTrace();
+    } catch (EDAMSystemException e) {
+      e.printStackTrace();
+    } catch (TException e) {
+      e.printStackTrace();
+    }
+
+    return false;
+  }
+
   /**
    * Clear all stored authentication information.
    */
-// suppress lint check on Editor.apply()
-  @TargetApi(9)
   public void logOut(Context ctx) {
+    mAuthenticationResult.clear(Preferences.getPreferences(ctx));
     mAuthenticationResult = null;
-
-    // Removed cached authentication information
-    Editor editor = ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE).edit();
-    editor.remove(KEY_AUTHTOKEN);
-    editor.remove(KEY_NOTESTOREURL);
-    editor.remove(KEY_WEBAPIURLPREFIX);
-    editor.remove(KEY_EVERNOTEHOST);
-    editor.remove(KEY_USERID);
-
-
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
-      editor.apply();
-    } else {
-      editor.commit();
-    }
 
     // TODO The cookie jar is application scope, so we should only be removing
     // evernote.com cookies.

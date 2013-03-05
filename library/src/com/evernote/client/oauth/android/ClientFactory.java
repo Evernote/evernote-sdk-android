@@ -1,8 +1,16 @@
 package com.evernote.client.oauth.android;
 
+import android.util.Log;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
+import com.evernote.client.oauth.android.client.AsyncNoteStoreClient;
+import com.evernote.client.oauth.android.client.AsyncUserStoreClient;
+import com.evernote.client.oauth.android.client.OnClientCallback;
+import com.evernote.edam.error.EDAMErrorCode;
+import com.evernote.edam.error.EDAMSystemException;
+import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.NoteStore;
-import com.evernote.edam.userstore.UserStore;
+import com.evernote.edam.userstore.AuthenticationResult;
+import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TBinaryProtocol;
 import com.evernote.thrift.transport.TTransportException;
 
@@ -11,17 +19,21 @@ import java.util.Map;
 
 /**
  * A class to produce User and Note store clients.
- * <p/>
- * class created by @briangriffey
+ *
+ *
+ * @author @briangriffey
+ * @author @tylersmithnet
  */
 
 public class ClientFactory {
-
+  private String LOGTAG = "ClientFactory";
   private static final String USER_AGENT_KEY = "User-Agent";
 
   private String mUserAgent;
   private Map<String, String> mCustomHeaders;
   private File mTempDir;
+  private NoteStore.Client mBusinessNoteStoreClient;
+
 
   /**
    * Private constructor
@@ -29,7 +41,7 @@ public class ClientFactory {
   private ClientFactory() {}
 
   /**
-   * Protected constructor. This should always be requested through an {@link EvernoteSession}
+   * Protected constructor. This should always be requested through an {@link com.evernote.client.oauth.android.EvernoteSession}
    */
   protected ClientFactory(String userAgent, File tempDir) {
     mUserAgent = userAgent;
@@ -45,20 +57,79 @@ public class ClientFactory {
    * @throws TTransportException if an error occurs setting up the
    * connection to the Evernote service.
    */
-  public NoteStore.Client createNoteStore() throws TTransportException {
-    if(EvernoteSession.getSession() == null || EvernoteSession.getSession().getAuthenticationResult() == null) {
+  public AsyncNoteStoreClient createNoteStoreClient() throws TTransportException {
+    if(EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
       throw new IllegalStateException();
     }
 
-    return createNoteStore(EvernoteSession.getSession().getAuthenticationResult().getNoteStoreUrl());
+    return createNoteStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getNoteStoreUrl());
   }
 
-  public NoteStore.Client createNoteStore(String url) throws TTransportException {
+  public AsyncNoteStoreClient createNoteStoreClient(String url) throws TTransportException {
     TEvernoteHttpClient transport =
         new TEvernoteHttpClient(url, mUserAgent, mTempDir);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new NoteStore.Client(protocol, protocol);
+    return new AsyncNoteStoreClient(protocol, protocol, EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken());
   }
+
+
+  /**
+   *
+   * Create a new Business NoteStore client. Each call to this method will return
+   * a new NoteStore.Client instance. The returned client can be used for any
+   * number of API calls, but is NOT thread safe.
+   *
+   * This method will check if the user is a business user if the
+   * {@link com.evernote.client.oauth.android.EvernoteSession#isBusinessUser()} has not been called,
+   * this is a network request
+   *
+   * This method will check expiration time for the business authorization token, this is a network request
+   *
+   * This method is synchronous
+   *
+   * @throws TException
+   * @throws EDAMUserException
+   * @throws EDAMSystemException User is not part of a business
+   */
+  public AsyncNoteStoreClient createBusinessNoteStoreClient() throws TException, EDAMUserException, EDAMSystemException {
+    com.evernote.client.oauth.android.AuthenticationResult authResult =
+        EvernoteSession.getOpenSession().getAuthenticationResult();
+
+    if(authResult.getBusinessId() == -1) {
+      //Make one more network request in case user hasn't called isBusinessUser()
+      if(!EvernoteSession.getOpenSession().isBusinessUser()) {
+        Log.e(LOGTAG, "User is not part of a business");
+        throw new EDAMSystemException(EDAMErrorCode.UNSUPPORTED_OPERATION);
+      }
+    }
+
+    if(authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
+      AuthenticationResult evernoteAuth = createUserStoreClient().authenticateToBusiness(authResult.getAuthToken());
+      authResult.setBusinessAuthTokenExpiration(evernoteAuth.getExpiration());
+      authResult.setBusinessNoteStoreUrl(evernoteAuth.getNoteStoreUrl());
+    }
+
+    return createNoteStoreClient(authResult.getBusinessNoteStoreUrl());
+  }
+
+  /**
+   * This is an async call to retrieve a business note store.
+   *
+   * @param callback to receive results from creating NoteStore
+   */
+  public void createBusinessNoteStoreClient(final OnClientCallback callback) {
+    EvernoteSession.getOpenSession().getThreadExecutor().execute(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          callback.onResultsReceived(createBusinessNoteStoreClient());
+        } catch(Exception ex) {
+          callback.onErrorReceived(ex);
+        }
+      }
+    });
+  }
+
 
   /**
    * Creates a UserStore client interface that can be used to send requests to a
@@ -67,7 +138,7 @@ public class ClientFactory {
    * Evernote server at "www.evernote.com" :
    * <p/>
    * <pre>
-   * UserStore.Iface userStore = factory.createUserStore(&quot;www.evernote.com&quot;,
+   * UserStore.Iface userStore = factory.createUserStoreClient(&quot;www.evernote.com&quot;,
    *     &quot;MyClient (Java)&quot;);
    * </pre>
    * <p/>
@@ -85,11 +156,9 @@ public class ClientFactory {
    * @return
    * @throws TTransportException
    */
-  public UserStore.Client createUserStore(String url) throws TTransportException {
-    return createUserStore(url, 0);
+  public AsyncUserStoreClient createUserStoreClient(String url) throws TTransportException {
+    return createUserStoreClient(url, 0);
   }
-
-
 
   /**
    * Create a new UserStore client. Each call to this method will return
@@ -101,15 +170,15 @@ public class ClientFactory {
    * connection to the Evernote service.
    *
    */
-  public UserStore.Client createUserStore()  throws TTransportException {
-    if(EvernoteSession.getSession() == null || EvernoteSession.getSession().getAuthenticationResult() == null) {
+  public AsyncUserStoreClient createUserStoreClient()  throws IllegalStateException, TTransportException {
+    if(EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
       throw new IllegalStateException();
     }
 
-    return createUserStore(EvernoteSession.getSession().getAuthenticationResult().getEvernoteHost());
+    return createUserStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getEvernoteHost());
   }
 
-  public UserStore.Client createUserStore(String serviceUrl, int port) throws TTransportException {
+  public AsyncUserStoreClient createUserStoreClient(String serviceUrl, int port) throws TTransportException {
     String url = getFullUrl(serviceUrl, port);
 
     TEvernoteHttpClient transport =
@@ -124,7 +193,7 @@ public class ClientFactory {
       transport.setCustomHeader(USER_AGENT_KEY, mUserAgent);
     }
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new UserStore.Client(protocol, protocol);
+    return new AsyncUserStoreClient(protocol, protocol);
   }
 
   private String getFullUrl(String serviceUrl, int port) {
@@ -173,4 +242,5 @@ public class ClientFactory {
   public void setTempDir(File mTempDir) {
     this.mTempDir = mTempDir;
   }
+
 }

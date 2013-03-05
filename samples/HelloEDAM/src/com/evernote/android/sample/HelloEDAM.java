@@ -153,6 +153,7 @@ public class HelloEDAM extends Activity {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   public Object onRetainNonConfigurationInstance() {
     return mImageData;
   }
@@ -169,6 +170,7 @@ public class HelloEDAM extends Activity {
   }
 
   @Override
+  @SuppressWarnings("deprecation")
   protected void onPrepareDialog(int id, Dialog dialog) {
     switch (id) {
       case DIALOG_PROGRESS:
@@ -328,7 +330,7 @@ public class HelloEDAM extends Activity {
         // Create the note on the server. The returned Note object
         // will contain server-generated attributes such as the note's
         // unique ID (GUID), the Resource's GUID, and the creation and update time.
-        createdNote = mEvernoteSession.getClientProducer().createNoteStore().createNote(mEvernoteSession.getAuthToken(), note);
+        createdNote = mEvernoteSession.getClientProducer().createNoteStoreClient().createNote(mEvernoteSession.getAuthToken(), note);
       } catch (Exception e) {
         Log.e(TAG, getString(R.string.err_creating_note), e);
       }
