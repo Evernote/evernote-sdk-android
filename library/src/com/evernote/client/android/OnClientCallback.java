@@ -1,4 +1,4 @@
-package com.evernote.client.oauth.android;
+package com.evernote.client.android;
 
 /**
  * This class must be implemented to use the {@link AsyncNoteStoreClient} and the {@link AsyncUserStoreClient}

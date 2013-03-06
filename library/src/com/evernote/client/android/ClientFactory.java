@@ -1,4 +1,4 @@
-package com.evernote.client.oauth.android;
+package com.evernote.client.android;
 
 import android.util.Log;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
@@ -38,7 +38,7 @@ public class ClientFactory {
   private ClientFactory() {}
 
   /**
-   * This should always be requested through an {@link com.evernote.client.oauth.android.EvernoteSession}
+   * This should always be requested through an {@link com.evernote.client.android.EvernoteSession}
    */
   ClientFactory(String userAgent, File tempDir) {
     mUserAgent = userAgent;
@@ -77,7 +77,7 @@ public class ClientFactory {
    * number of API calls, but is NOT thread safe.
    *
    * This method will check if the user is a business user if the
-   * {@link com.evernote.client.oauth.android.EvernoteSession#isBusinessUser()} has not been called,
+   * {@link com.evernote.client.android.EvernoteSession#isBusinessUser()} has not been called,
    * this is a network request
    *
    * This method will check expiration time for the business authorization token, this is a network request
@@ -89,7 +89,7 @@ public class ClientFactory {
    * @throws EDAMSystemException User is not part of a business
    */
   public AsyncNoteStoreClient createBusinessNoteStoreClient() throws TException, EDAMUserException, EDAMSystemException {
-    com.evernote.client.oauth.android.AuthenticationResult authResult =
+    com.evernote.client.android.AuthenticationResult authResult =
         EvernoteSession.getOpenSession().getAuthenticationResult();
 
     if(authResult.getBusinessId() == -1) {

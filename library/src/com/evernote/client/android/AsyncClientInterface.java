@@ -1,4 +1,4 @@
-package com.evernote.client.oauth.android;
+package com.evernote.client.android;
 
 /**
  *An Interface to require the execute for asynchronous reflection wrappers.

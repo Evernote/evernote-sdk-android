@@ -1,4 +1,4 @@
-package com.evernote.client.oauth.android;
+package com.evernote.client.android;
 
 import android.annotation.TargetApi;
 import android.content.Context;

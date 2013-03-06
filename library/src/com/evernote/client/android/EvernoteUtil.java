@@ -23,20 +23,14 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.evernote.client.oauth.android;
+package com.evernote.client.android;
 
-import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.edam.type.Resource;
-import com.evernote.edam.userstore.UserStore;
-import com.evernote.thrift.protocol.TBinaryProtocol;
-import com.evernote.thrift.transport.TTransportException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 public class EvernoteUtil {
 

@@ -1,4 +1,4 @@
-package com.evernote.client.oauth.android;
+package com.evernote.client.android;
 
 import android.util.Log;
 import com.evernote.edam.userstore.BootstrapInfo;
@@ -68,8 +68,8 @@ public class BootstrapManager {
   /**
    * package-scope constructor
    *
-   * @param service {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#PRODUCTION} when using
-   * production and {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#SANDBOX} when using sandbox
+   * @param service {@link com.evernote.client.android.EvernoteSession.EvernoteService#PRODUCTION} when using
+   * production and {@link com.evernote.client.android.EvernoteSession.EvernoteService#SANDBOX} when using sandbox
    * @param producer Client producer used to create clients
    * @param locale Used to detect if the china servers need to be checked
    */
