@@ -2,9 +2,6 @@ package com.evernote.client.oauth.android;
 
 import android.util.Log;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
-import com.evernote.client.oauth.android.client.AsyncNoteStoreClient;
-import com.evernote.client.oauth.android.client.AsyncUserStoreClient;
-import com.evernote.client.oauth.android.client.OnClientCallback;
 import com.evernote.edam.error.EDAMErrorCode;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
@@ -117,14 +114,14 @@ public class ClientFactory {
    *
    * @param callback to receive results from creating NoteStore
    */
-  public void createBusinessNoteStoreClient(final OnClientCallback callback) {
+  public void createBusinessNoteStoreClient(final OnClientCallback<AsyncNoteStoreClient, Exception> callback) {
     EvernoteSession.getOpenSession().getThreadExecutor().execute(new Runnable() {
       @Override
       public void run() {
         try {
-          callback.onResultsReceived(createBusinessNoteStoreClient());
+          callback.onResultsReceivedBG(createBusinessNoteStoreClient());
         } catch(Exception ex) {
-          callback.onErrorReceived(ex);
+          callback.onErrorReceivedBG(ex);
         }
       }
     });

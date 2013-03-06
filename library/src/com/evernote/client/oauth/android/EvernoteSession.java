@@ -38,7 +38,6 @@ import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import com.evernote.client.oauth.EvernoteAuthToken;
-import com.evernote.client.oauth.android.client.OnClientCallback;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.NoteStore;
@@ -431,8 +430,9 @@ public class EvernoteSession {
         }
         @Override
         public void onErrorReceived(Exception ex) {
-
+          Log.e(LOGTAG, ex.toString());
         }
+
       });
     } catch (TTransportException e) {
       e.printStackTrace();
