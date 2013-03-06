@@ -25,23 +25,18 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
   final private ExecutorService mThreadExecutor;
   final private String mAuthenticationToken;
 
-
-  public AsyncNoteStoreClient(TProtocol prot, String authenticationToken) {
+  AsyncNoteStoreClient(TProtocol prot, String authenticationToken) {
     super(prot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
     mAuthenticationToken = authenticationToken;
   }
 
-  public AsyncNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken) {
+  AsyncNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken) {
     super(iprot, oprot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
     mAuthenticationToken = authenticationToken;
   }
 
-  /**
-   * Reflection to run Asynchronous methods
-   *
-   */
   public <T> void execute(final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
     mThreadExecutor.execute(new Runnable() {
       public void run() {

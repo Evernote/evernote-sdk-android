@@ -20,7 +20,7 @@ import java.util.Locale;
  * It provides access to the {@link List} of {@link BootstrapProfile} representing the possible server connections
  * for the user.  This list must be requested from the server on any type of authentication attempt
  *
- * class created by @tylersmithnet
+ * @author @tylersmithnet
  */
 public class BootstrapManager {
 
@@ -54,26 +54,26 @@ public class BootstrapManager {
   private String mBootstrapServerUsed;
 
   /**
-   * Private constructor.
+   * private constructor
    */
   private BootstrapManager() {};
 
   /**
-   * Protected constructor.
+   * package-scope constructor
    */
-  protected BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer) {
+  BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer) {
     this(service, producer, Locale.getDefault());
   }
 
   /**
-   *Protected constructor
+   * package-scope constructor
    *
    * @param service {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#PRODUCTION} when using
    * production and {@link com.evernote.client.oauth.android.EvernoteSession.EvernoteService#SANDBOX} when using sandbox
    * @param producer Client producer used to create clients
    * @param locale Used to detect if the china servers need to be checked
    */
-  protected BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer, Locale locale) {
+  BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer, Locale locale) {
     mLocale = locale;
     mClientProducer = producer;
 

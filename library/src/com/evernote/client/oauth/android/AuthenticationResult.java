@@ -31,6 +31,8 @@ import android.util.Log;
 /**
  * A container class for the results of a successful OAuth authorization with
  * the Evernote service.
+ *
+ * @author @tylersmithnet
  */
 public class AuthenticationResult {
 
@@ -92,7 +94,7 @@ public class AuthenticationResult {
     this.mBusinessAuthTokenExpiration = businessAuthTokenExpiration;
   }
 
-  protected void persist(SharedPreferences pref) {
+  void persist(SharedPreferences pref) {
     Log.d(LOGTAG, "persisting Authentication results to SharedPreference");
     SharedPreferences.Editor editor = pref.edit();
 
@@ -108,7 +110,7 @@ public class AuthenticationResult {
     Preferences.save(editor);
   }
 
-  protected void restore(SharedPreferences pref) {
+  void restore(SharedPreferences pref) {
     Log.d(LOGTAG, "restoring Authentication results from SharedPreference");
     mAuthToken = pref.getString(Preferences.KEY_AUTHTOKEN, null);
     mNoteStoreUrl = pref.getString(Preferences.KEY_NOTESTOREURL, null);
@@ -120,7 +122,7 @@ public class AuthenticationResult {
     mBusinessAuthTokenExpiration = pref.getLong(Preferences.KEY_BUSINESSTOKENEXPIRATION, 0);
   }
 
-  protected void clear(SharedPreferences pref) {
+  void clear(SharedPreferences pref) {
     Log.d(LOGTAG, "clearing Authentication results from SharedPreference");
     SharedPreferences.Editor editor = pref.edit();
 
@@ -186,7 +188,7 @@ public class AuthenticationResult {
   /**
    * Set the Business Id
    */
-  protected void setBusinessId(int mBusinessId) {
+  void setBusinessId(int mBusinessId) {
     this.mBusinessId = mBusinessId;
   }
 
@@ -200,7 +202,7 @@ public class AuthenticationResult {
   /**
    * Set the BusinessNoteStore Url
    */
-  protected void setBusinessNoteStoreUrl(String mBusinessNoteStoreUrl) {
+  void setBusinessNoteStoreUrl(String mBusinessNoteStoreUrl) {
     this.mBusinessNoteStoreUrl = mBusinessNoteStoreUrl;
   }
 
@@ -214,7 +216,7 @@ public class AuthenticationResult {
   /**
    * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch)
    */
-  protected  void setBusinessAuthTokenExpiration(long mBusinessAuthTokenExpiration) {
+  void setBusinessAuthTokenExpiration(long mBusinessAuthTokenExpiration) {
     this.mBusinessAuthTokenExpiration = mBusinessAuthTokenExpiration;
   }
 }

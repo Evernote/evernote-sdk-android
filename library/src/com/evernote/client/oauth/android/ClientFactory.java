@@ -38,9 +38,9 @@ public class ClientFactory {
   private ClientFactory() {}
 
   /**
-   * Protected constructor. This should always be requested through an {@link com.evernote.client.oauth.android.EvernoteSession}
+   * This should always be requested through an {@link com.evernote.client.oauth.android.EvernoteSession}
    */
-  protected ClientFactory(String userAgent, File tempDir) {
+  ClientFactory(String userAgent, File tempDir) {
     mUserAgent = userAgent;
     mTempDir = tempDir;
   }

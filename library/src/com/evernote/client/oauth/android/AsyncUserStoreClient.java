@@ -22,19 +22,16 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
 
   ExecutorService mThreadExecutor;
 
-  public AsyncUserStoreClient(TProtocol prot) {
+  AsyncUserStoreClient(TProtocol prot) {
     super(prot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
   }
 
-  public AsyncUserStoreClient(TProtocol iprot, TProtocol oprot) {
+  AsyncUserStoreClient(TProtocol iprot, TProtocol oprot) {
     super(iprot, oprot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
   }
 
-  /**
-   * Reflection to run Asynchronous methods
-   */
   public <T> void execute(final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
     mThreadExecutor.execute(new Runnable() {
       public void run() {

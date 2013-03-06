@@ -11,25 +11,25 @@ import android.os.Build;
  *
  * @author @tylersmithnet
  */
-public class Preferences {
+class Preferences {
 
   // Keys for values persisted in our shared preferences
-  protected static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
-  protected static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
-  protected static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
-  protected static final String KEY_USERID = "evernote.userId";
-  protected static final String KEY_EVERNOTEHOST = "evernote.mEvernoteHost";
-  protected static final String KEY_BUSINESSID = "evernote.businessId";
-  protected static final String KEY_BUSINESSNOTESTOREURL = "evernote.businessNoteStoreUrl";
-  protected static final String KEY_BUSINESSTOKENEXPIRATION = "evernote.businessTokenExpiration";
+  static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
+  static final String KEY_NOTESTOREURL = "evernote.notestoreUrl";
+  static final String KEY_WEBAPIURLPREFIX = "evernote.webApiUrlPrefix";
+  static final String KEY_USERID = "evernote.userId";
+  static final String KEY_EVERNOTEHOST = "evernote.mEvernoteHost";
+  static final String KEY_BUSINESSID = "evernote.businessId";
+  static final String KEY_BUSINESSNOTESTOREURL = "evernote.businessNoteStoreUrl";
+  static final String KEY_BUSINESSTOKENEXPIRATION = "evernote.businessTokenExpiration";
 
-  protected static final String PREFERENCE_NAME = "evernote.preferences";
+  static final String PREFERENCE_NAME = "evernote.preferences";
 
   /**
    *
    * @return the {@link SharedPreferences} object to the private space
    */
-  protected static SharedPreferences getPreferences(Context ctx) {
+  static SharedPreferences getPreferences(Context ctx) {
     return ctx.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
   }
 
@@ -38,7 +38,7 @@ public class Preferences {
    * Saves {@link SharedPreferences.Editor} using a blocking method below Gingerbread
    */
   @TargetApi(9)
-  protected static void save(SharedPreferences.Editor editor) {
+  static void save(SharedPreferences.Editor editor) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
       editor.apply();
     } else {
