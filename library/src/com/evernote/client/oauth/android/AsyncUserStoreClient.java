@@ -1,6 +1,8 @@
 package com.evernote.client.oauth.android;
 
 
+import android.os.Handler;
+import android.os.Looper;
 import com.evernote.edam.type.PremiumInfo;
 import com.evernote.edam.type.User;
 import com.evernote.edam.userstore.AuthenticationResult;
@@ -20,16 +22,19 @@ import java.util.concurrent.ExecutorService;
  */
 public class AsyncUserStoreClient extends UserStore.Client implements AsyncClientInterface {
 
-  ExecutorService mThreadExecutor;
+  private final ExecutorService mThreadExecutor;
+  private final Handler mUIHandler;
 
   AsyncUserStoreClient(TProtocol prot) {
     super(prot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
+    mUIHandler = new Handler(Looper.getMainLooper());
   }
 
   AsyncUserStoreClient(TProtocol iprot, TProtocol oprot) {
     super(iprot, oprot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
+    mUIHandler = new Handler(Looper.getMainLooper());
   }
 
   public <T> void execute(final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
@@ -42,11 +47,22 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
           }
 
           Method method = AsyncUserStoreClient.this.getClass().getMethod(function, classes);
-          T answer = (T) method.invoke(AsyncUserStoreClient.this, args);
+          final T answer = (T) method.invoke(AsyncUserStoreClient.this, args);
 
-          callback.onResultsReceivedBG(answer);
-        } catch (Exception e) {
-          callback.onErrorReceivedBG(e);
+          mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              callback.onResultsReceived(answer);
+            }
+          });
+
+        } catch (final Exception ex) {
+          mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              callback.onErrorReceived(ex);
+            }
+          });
         }
       }
     });

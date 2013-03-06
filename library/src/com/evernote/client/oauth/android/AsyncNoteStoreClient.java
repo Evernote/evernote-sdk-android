@@ -1,5 +1,7 @@
 package com.evernote.client.oauth.android;
 
+import android.os.Handler;
+import android.os.Looper;
 import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
@@ -22,19 +24,22 @@ import java.util.concurrent.ExecutorService;
  */
 public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClientInterface {
 
-  final private ExecutorService mThreadExecutor;
-  final private String mAuthenticationToken;
+  private final ExecutorService mThreadExecutor;
+  private final String mAuthenticationToken;
+  private final Handler mUIHandler;
 
   AsyncNoteStoreClient(TProtocol prot, String authenticationToken) {
     super(prot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
     mAuthenticationToken = authenticationToken;
+    mUIHandler = new Handler(Looper.getMainLooper());
   }
 
   AsyncNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken) {
     super(iprot, oprot);
     mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
     mAuthenticationToken = authenticationToken;
+    mUIHandler = new Handler(Looper.getMainLooper());
   }
 
   public <T> void execute(final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
@@ -48,11 +53,22 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
 
           Method  method = AsyncNoteStoreClient.this.getClass().getMethod(function, classes.length > 0 ? classes : null);
 
-          T answer = (T) method.invoke(AsyncNoteStoreClient.this, args);
+          final T answer = (T) method.invoke(AsyncNoteStoreClient.this, args);
 
-          callback.onResultsReceivedBG(answer);
-        } catch (Exception e) {
-          callback.onErrorReceivedBG(e);
+          mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              callback.onResultsReceived(answer);
+            }
+          });
+
+        } catch (final Exception ex) {
+          mUIHandler.post(new Runnable() {
+            @Override
+            public void run() {
+              callback.onErrorReceived(ex);
+            }
+          });
         }
       }
     });
