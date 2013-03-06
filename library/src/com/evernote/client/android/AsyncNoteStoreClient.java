@@ -42,6 +42,9 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
     mUIHandler = new Handler(Looper.getMainLooper());
   }
 
+  /**
+   * Reflection to run Asynchronous methods
+   */
   public <T> void execute(final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
     mThreadExecutor.execute(new Runnable() {
       public void run() {
