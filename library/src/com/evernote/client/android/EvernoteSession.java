@@ -30,9 +30,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.Build;
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.*;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.CookieManager;
@@ -91,7 +89,7 @@ import java.util.concurrent.Executors;
  */
 public class EvernoteSession {
 
-  private final String LOGTAG = "EvernoteSession";
+  private static final String LOGTAG = "EvernoteSession";
 
   // Standard hostnames for bootstrap detection
   public static final String HOST_SANDBOX = "https://sandbox.evernote.com";
@@ -218,7 +216,7 @@ public class EvernoteSession {
     mConsumerSecret = consumerSecret;
     mEvernoteService = evernoteService;
 
-    mAuthenticationResult = getAuthenticationResult(Preferences.getPreferences(ctx));
+    mAuthenticationResult = getAuthenticationResult(SessionPreferences.getPreferences(ctx));
     mClientProducer = new ClientFactory(generateUserAgentString(ctx), ctx.getFilesDir());
     mThreadExecutor = Executors.newSingleThreadExecutor();
     mBootstrapManager = new BootstrapManager(mEvernoteService, mClientProducer);
@@ -383,19 +381,10 @@ public class EvernoteSession {
             evernoteHost,
             authToken.getUserId());
 
-    mAuthenticationResult.persist(Preferences.getPreferences(ctx));
+    mAuthenticationResult.persist(SessionPreferences.getPreferences(ctx));
 
-    checkBusinessUser(new OnClientCallback<Boolean, Exception>() {
-      @Override
-      public void onResultsReceived(Boolean data) {
-
-      }
-
-      @Override
-      public void onErrorReceived(Exception ex) {
-        Log.e(LOGTAG, ex.toString());
-      }
-    });
+    //Calling this to set business IDs
+    isBusinessUser(null);
 
     return true;
   }
@@ -409,43 +398,46 @@ public class EvernoteSession {
   }
 
 
-
-
   /**
-   * This will make a network request asynchronously to check the business validity of the user
+   * This or {@link com.evernote.client.android.EvernoteSession#isBusinessUser()} needs to be called
+   * before Business Helper methods are accessed to set refresh the Business auth token and verify the business ID
+   *
+   * Asynchronous call
+   *
    */
-  public void checkBusinessUser(final OnClientCallback<Boolean, Exception> callback) {
-
-    try {
-      mClientProducer.createUserStoreClient().getUser(getAuthToken(), new OnClientCallback<User, Exception>() {
-
-        @Override
-        public void onResultsReceived(User user) {
-          if(user.getAccounting().isSetBusinessId()) {
-            getAuthenticationResult().setBusinessId(user.getAccounting().getBusinessId());
-
-            callback.onResultsReceived(true);
-          }
-          callback.onResultsReceived(false);
+  public void isBusinessUser(final OnClientCallback<Boolean, Exception> callback) {
+    final Handler handler = new Handler(Looper.getMainLooper());
+    mThreadExecutor.execute(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          final Boolean results = isBusinessUser();
+          handler.post(new Runnable() {
+            @Override
+            public void run() {
+              if(callback != null) callback.onResultsReceived(results);
+            }
+          });
+        } catch(final Exception ex) {
+          handler.post(new Runnable() {
+            @Override
+            public void run() {
+              if(callback != null) callback.onErrorReceived(ex);
+            }
+          });
         }
-        @Override
-        public void onErrorReceived(Exception ex) {
-          Log.e(LOGTAG, ex.toString());
-        }
-
-      });
-    } catch (TTransportException e) {
-      e.printStackTrace();
-    } catch (IllegalStateException e) {
-      e.printStackTrace();
-    }
+      }
+    });
   }
 
-
   /**
-   * This should be called in each session usage to verify the user is a business user
-   * This makes a network request and should only be used in a background thread
-   * @return if a user belongs to a business account
+   * This or {@link EvernoteSession#isBusinessUser(OnClientCallback)} needs to be called
+   * before Business Helper methods are accessed to set refresh the Business auth token and verify the business ID
+   *
+   * Synchronous call
+   *
+   *
+   * @return the result of a user belonging to a business account
    */
   public boolean isBusinessUser() {
     AuthenticationResult authResult = getAuthenticationResult();
@@ -472,7 +464,7 @@ public class EvernoteSession {
    * Clear all stored authentication information.
    */
   public void logOut(Context ctx) {
-    mAuthenticationResult.clear(Preferences.getPreferences(ctx));
+    mAuthenticationResult.clear(SessionPreferences.getPreferences(ctx));
     mAuthenticationResult = null;
 
     // TODO The cookie jar is application scope, so we should only be removing

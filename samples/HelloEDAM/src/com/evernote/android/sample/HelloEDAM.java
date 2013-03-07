@@ -45,9 +45,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
-import com.evernote.client.conn.mobile.FileData;
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.EvernoteUtil;
+import com.evernote.client.conn.mobile.FileData;
 import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Resource;
 import com.evernote.edam.type.ResourceAttributes;
@@ -87,7 +87,7 @@ public class HelloEDAM extends Activity {
    */
 
   // Name of this application, for logging
-  private static final String TAG = "HelloEDAM";
+  private static final String LOGTAG = "HelloEDAM";
 
   // Initial development is done on Evernote's testing service, the sandbox.
   // Change to HOST_PRODUCTION to use the Evernote production service
@@ -332,7 +332,7 @@ public class HelloEDAM extends Activity {
         // unique ID (GUID), the Resource's GUID, and the creation and update time.
         createdNote = mEvernoteSession.getClientProducer().createNoteStoreClient().createNote(mEvernoteSession.getAuthToken(), note);
       } catch (Exception e) {
-        Log.e(TAG, getString(R.string.err_creating_note), e);
+        Log.e(LOGTAG, getString(R.string.err_creating_note), e);
       }
 
       return createdNote;
@@ -438,7 +438,7 @@ public class HelloEDAM extends Activity {
 
         }
       } catch (Exception e) {
-        Log.e(TAG, "Error retrieving image");
+        Log.e(LOGTAG, "Error retrieving image");
       } finally {
         if (cursor != null) {
           cursor.close();

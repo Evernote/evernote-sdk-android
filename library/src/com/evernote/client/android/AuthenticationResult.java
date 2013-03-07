@@ -36,7 +36,7 @@ import android.util.Log;
  */
 public class AuthenticationResult {
 
-  private String LOGTAG = "AuthenticatonResult";
+  private static final String LOGTAG = "AuthenticatonResult";
 
   private String mAuthToken;
   private String mNoteStoreUrl;
@@ -98,44 +98,44 @@ public class AuthenticationResult {
     Log.d(LOGTAG, "persisting Authentication results to SharedPreference");
     SharedPreferences.Editor editor = pref.edit();
 
-    editor.putString(Preferences.KEY_AUTHTOKEN, mAuthToken);
-    editor.putString(Preferences.KEY_NOTESTOREURL, mNoteStoreUrl);
-    editor.putString(Preferences.KEY_WEBAPIURLPREFIX, mWebApiUrlPrefix);
-    editor.putString(Preferences.KEY_EVERNOTEHOST, mEvernoteHost);
-    editor.putInt(Preferences.KEY_USERID, mUserId);
-    editor.putInt(Preferences.KEY_BUSINESSID, mBusinessId);
-    editor.putString(Preferences.KEY_BUSINESSNOTESTOREURL, mBusinessNoteStoreUrl);
-    editor.putLong(Preferences.KEY_BUSINESSTOKENEXPIRATION, mBusinessAuthTokenExpiration);
+    editor.putString(SessionPreferences.KEY_AUTHTOKEN, mAuthToken);
+    editor.putString(SessionPreferences.KEY_NOTESTOREURL, mNoteStoreUrl);
+    editor.putString(SessionPreferences.KEY_WEBAPIURLPREFIX, mWebApiUrlPrefix);
+    editor.putString(SessionPreferences.KEY_EVERNOTEHOST, mEvernoteHost);
+    editor.putInt(SessionPreferences.KEY_USERID, mUserId);
+    editor.putInt(SessionPreferences.KEY_BUSINESSID, mBusinessId);
+    editor.putString(SessionPreferences.KEY_BUSINESSNOTESTOREURL, mBusinessNoteStoreUrl);
+    editor.putLong(SessionPreferences.KEY_BUSINESSTOKENEXPIRATION, mBusinessAuthTokenExpiration);
 
-    Preferences.save(editor);
+    SessionPreferences.save(editor);
   }
 
   void restore(SharedPreferences pref) {
     Log.d(LOGTAG, "restoring Authentication results from SharedPreference");
-    mAuthToken = pref.getString(Preferences.KEY_AUTHTOKEN, null);
-    mNoteStoreUrl = pref.getString(Preferences.KEY_NOTESTOREURL, null);
-    mWebApiUrlPrefix = pref.getString(Preferences.KEY_WEBAPIURLPREFIX, null);
-    mEvernoteHost = pref.getString(Preferences.KEY_EVERNOTEHOST, null);
-    mUserId = pref.getInt(Preferences.KEY_USERID, -1);
-    mBusinessId = pref.getInt(Preferences.KEY_BUSINESSID, -1);
-    mBusinessNoteStoreUrl = pref.getString(Preferences.KEY_BUSINESSNOTESTOREURL, null);
-    mBusinessAuthTokenExpiration = pref.getLong(Preferences.KEY_BUSINESSTOKENEXPIRATION, 0);
+    mAuthToken = pref.getString(SessionPreferences.KEY_AUTHTOKEN, null);
+    mNoteStoreUrl = pref.getString(SessionPreferences.KEY_NOTESTOREURL, null);
+    mWebApiUrlPrefix = pref.getString(SessionPreferences.KEY_WEBAPIURLPREFIX, null);
+    mEvernoteHost = pref.getString(SessionPreferences.KEY_EVERNOTEHOST, null);
+    mUserId = pref.getInt(SessionPreferences.KEY_USERID, -1);
+    mBusinessId = pref.getInt(SessionPreferences.KEY_BUSINESSID, -1);
+    mBusinessNoteStoreUrl = pref.getString(SessionPreferences.KEY_BUSINESSNOTESTOREURL, null);
+    mBusinessAuthTokenExpiration = pref.getLong(SessionPreferences.KEY_BUSINESSTOKENEXPIRATION, 0);
   }
 
   void clear(SharedPreferences pref) {
     Log.d(LOGTAG, "clearing Authentication results from SharedPreference");
     SharedPreferences.Editor editor = pref.edit();
 
-    editor.remove(Preferences.KEY_AUTHTOKEN);
-    editor.remove(Preferences.KEY_NOTESTOREURL);
-    editor.remove(Preferences.KEY_WEBAPIURLPREFIX);
-    editor.remove(Preferences.KEY_EVERNOTEHOST);
-    editor.remove(Preferences.KEY_USERID);
-    editor.remove(Preferences.KEY_BUSINESSID);
-    editor.remove(Preferences.KEY_BUSINESSNOTESTOREURL);
-    editor.remove(Preferences.KEY_BUSINESSTOKENEXPIRATION);
+    editor.remove(SessionPreferences.KEY_AUTHTOKEN);
+    editor.remove(SessionPreferences.KEY_NOTESTOREURL);
+    editor.remove(SessionPreferences.KEY_WEBAPIURLPREFIX);
+    editor.remove(SessionPreferences.KEY_EVERNOTEHOST);
+    editor.remove(SessionPreferences.KEY_USERID);
+    editor.remove(SessionPreferences.KEY_BUSINESSID);
+    editor.remove(SessionPreferences.KEY_BUSINESSNOTESTOREURL);
+    editor.remove(SessionPreferences.KEY_BUSINESSTOKENEXPIRATION);
 
-    Preferences.save(editor);
+    SessionPreferences.save(editor);
   }
 
 

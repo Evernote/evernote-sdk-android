@@ -1,5 +1,32 @@
+/*
+ * Copyright 2012 Evernote Corporation
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.evernote.client.android;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.edam.error.EDAMErrorCode;
@@ -23,7 +50,7 @@ import java.util.Map;
  */
 
 public class ClientFactory {
-  private String LOGTAG = "ClientFactory";
+  private static final String LOGTAG = "ClientFactory";
   private static final String USER_AGENT_KEY = "User-Agent";
 
   private String mUserAgent;
@@ -62,6 +89,17 @@ public class ClientFactory {
     return createNoteStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getNoteStoreUrl());
   }
 
+  /**
+   * Create a new NoteStore client from a URL. Each call to this method will return
+   * a new NoteStore.Client instance. The returned client can be used for any
+   * number of API calls, but is NOT thread safe.
+   *
+   * @param url
+   *
+   * @throws IllegalStateException if @link #isLoggedIn() is false.
+   * @throws TTransportException if an error occurs setting up the
+   * connection to the Evernote service.
+   */
   public AsyncNoteStoreClient createNoteStoreClient(String url) throws TTransportException {
     TEvernoteHttpClient transport =
         new TEvernoteHttpClient(url, mUserAgent, mTempDir);
@@ -115,13 +153,25 @@ public class ClientFactory {
    * @param callback to receive results from creating NoteStore
    */
   public void createBusinessNoteStoreClient(final OnClientCallback<AsyncNoteStoreClient, Exception> callback) {
+    final Handler handler = new Handler(Looper.getMainLooper());
     EvernoteSession.getOpenSession().getThreadExecutor().execute(new Runnable() {
       @Override
       public void run() {
         try {
-          callback.onResultsReceivedBG(createBusinessNoteStoreClient());
-        } catch(Exception ex) {
-          callback.onErrorReceivedBG(ex);
+          final AsyncNoteStoreClient client = createBusinessNoteStoreClient();
+          handler.post(new Runnable() {
+            @Override
+            public void run() {
+              if(callback != null) callback.onResultsReceived(client);
+            }
+          });
+        } catch(final Exception ex) {
+          handler.post(new Runnable() {
+            @Override
+            public void run() {
+              if(callback != null) callback.onErrorReceived(ex);
+            }
+          });
         }
       }
     });
@@ -175,11 +225,24 @@ public class ClientFactory {
     return createUserStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getEvernoteHost());
   }
 
-  public AsyncUserStoreClient createUserStoreClient(String serviceUrl, int port) throws TTransportException {
-    String url = getFullUrl(serviceUrl, port);
+  /**
+   * Create a new UserStore client. Each call to this method will return
+   * a new UserStore.Client instance. The returned client can be used for any
+   * number of API calls, but is NOT thread safe.
+   *
+   * @param url to connect to
+   * @param port to connect on
+   *
+   * @throws IllegalStateException if @link #isLoggedIn() is false.
+   * @throws TTransportException if an error occurs setting up the
+   * connection to the Evernote service.
+   *
+   */
+  public AsyncUserStoreClient createUserStoreClient(String url, int port) throws TTransportException {
+    String serviceUrl = getFullUrl(url, port);
 
     TEvernoteHttpClient transport =
-        new TEvernoteHttpClient(url, mUserAgent, mTempDir);
+        new TEvernoteHttpClient(serviceUrl, mUserAgent, mTempDir);
 
     if (mCustomHeaders != null) {
       for (Map.Entry<String, String> header : mCustomHeaders.entrySet()) {
@@ -208,10 +271,18 @@ public class ClientFactory {
   }
 
 
+  /**
+   * The user agent defined for the connection
+   */
   public String getUserAgent() {
     return mUserAgent;
   }
 
+  /**
+   * Set a custom UserAgent String for the client connection
+   *
+   * @param mUserAgent
+   */
   public void setUserAgent(String mUserAgent) {
     this.mUserAgent = mUserAgent;
   }
@@ -224,6 +295,11 @@ public class ClientFactory {
     return mCustomHeaders;
   }
 
+  /**
+   * Allows custom headers to be defined for the Client connection
+   *
+   * @param mCustomHeaders
+   */
   public void setCustomHeaders(Map<String, String> mCustomHeaders) {
     this.mCustomHeaders = mCustomHeaders;
   }
@@ -236,6 +312,12 @@ public class ClientFactory {
     return mTempDir;
   }
 
+  /**
+   * sets the temporary directory in which large outgoing Thrift messages will
+   * be cached to disk before they are sent
+   *
+   * @param mTempDir
+   */
   public void setTempDir(File mTempDir) {
     this.mTempDir = mTempDir;
   }
