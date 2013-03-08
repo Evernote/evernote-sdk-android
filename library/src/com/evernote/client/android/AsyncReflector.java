@@ -17,7 +17,7 @@ class AsyncReflector {
   /**
    * Reflection to run Asynchronous methods
    */
-  public static <T> void execute(final Object receiver, final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
+  static <T> void execute(final Object receiver, final OnClientCallback<T> callback, final String function, final Object... args) {
     final Handler handler = new Handler(Looper.getMainLooper());
     sThreadExecutor.execute(new Runnable() {
       public void run() {
@@ -49,14 +49,22 @@ class AsyncReflector {
             if("authenticationToken".equals(userError.getParameter()) &&
                 (userError.getErrorCode() == EDAMErrorCode.AUTH_EXPIRED ||
                     userError.getErrorCode() == EDAMErrorCode.BAD_DATA_FORMAT)) {
-              EvernoteSession.getOpenSession().logOut(callback.getContext());
+              handler.post(new Runnable() {
+                @Override
+                public void run() {
+                  if(callback != null && callback.getContext() != null){
+                    EvernoteSession.getOpenSession().logOut(callback.getContext());
+                  }
+                }
+              });
+
             }
           }
 
           handler.post(new Runnable() {
             @Override
             public void run() {
-              if(callback != null) callback.onErrorReceived(ex);
+              if(callback != null) callback.onExceptionReceived(ex);
             }
           });
         }

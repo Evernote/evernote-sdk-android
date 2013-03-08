@@ -42,7 +42,6 @@ import com.evernote.edam.notestore.NoteStore;
 import com.evernote.edam.userstore.UserStore;
 import com.evernote.thrift.transport.TTransportException;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
@@ -150,43 +149,27 @@ public class EvernoteSession {
    * The production Evernote service is {@link EvernoteService#HOST_PRODUCTION}.
    *
    * @return The EvernoteSession singleton instance.
+   * @throws IllegalArgumentException
    */
-  public static EvernoteSession init(Context ctx,
+   public static EvernoteSession getInstance(Context ctx,
                                      String consumerKey,
                                      String consumerSecret,
-                                     EvernoteService evernoteService) {
-    // TODO throw an exception if the consumerKey or consumerSecret are not set or
-    // are set to meaningless values (i.e. "Your consumer key")
+                                     EvernoteService evernoteService) throws IllegalArgumentException{
     if (sInstance == null) {
       sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteService);
     }
     return sInstance;
   }
 
-
-  @Deprecated
-  public static EvernoteSession init(Context ctx,
-                                     String consumerKey,
-                                     String consumerSecret,
-                                     EvernoteService evernoteService,
-                                     File dataDir) {
-
-    return init(ctx, consumerKey, consumerSecret, evernoteService);
-  }
-
   /**
    * Used to access the initialized EvernoteSession singleton instance.
    *
    * @return The previously initialized EvernoteSession instance,
-   * or null if {@link #init(Context, String, String, EvernoteService)} has not been called yet.
+   * or null if {@link #getInstance(android.content.Context, String, String, com.evernote.client.android.EvernoteSession.EvernoteService)}
+   * has not been called yet.
    */
-  public static EvernoteSession getOpenSession() {
+  static EvernoteSession getOpenSession() {
     return sInstance;
-  }
-
-  @Deprecated
-  public static EvernoteSession getSession() {
-    return getOpenSession();
   }
 
 
@@ -196,14 +179,21 @@ public class EvernoteSession {
   private EvernoteSession(Context ctx,
                           String consumerKey,
                           String consumerSecret,
-                          EvernoteService evernoteService
-                          ) {
+                          EvernoteService evernoteService) throws IllegalArgumentException {
+
+    if( ctx == null ||
+        TextUtils.isEmpty(consumerKey) ||
+        TextUtils.isEmpty(consumerSecret) ||
+        evernoteService == null) {
+      throw new IllegalArgumentException("Parameters canot be null or empty");
+    }
 
     mConsumerKey = consumerKey;
     mConsumerSecret = consumerSecret;
     mEvernoteService = evernoteService;
-
-    mAuthenticationResult = getAuthenticationResultFromPref(SessionPreferences.getPreferences(ctx));
+    synchronized (this) {
+      mAuthenticationResult = getAuthenticationResultFromPref(SessionPreferences.getPreferences(ctx));
+    }
     mClientFactory = new ClientFactory(generateUserAgentString(ctx), ctx.getFilesDir());
     mBootstrapManager = new BootstrapManager(mEvernoteService, mClientFactory);
   }
@@ -232,7 +222,6 @@ public class EvernoteSession {
    * did not contain the required information.
    */
   private AuthenticationResult getAuthenticationResultFromPref(SharedPreferences prefs) {
-
     AuthenticationResult authResult = new AuthenticationResult(prefs);
 
     if (TextUtils.isEmpty(authResult.getEvernoteHost()) ||
@@ -358,16 +347,17 @@ public class EvernoteSession {
     if (ctx == null || authToken == null) {
       return false;
     }
-    mAuthenticationResult =
-        new AuthenticationResult(
-            authToken.getToken(),
-            authToken.getNoteStoreUrl(),
-            authToken.getWebApiUrlPrefix(),
-            evernoteHost,
-            authToken.getUserId());
+    synchronized (this) {
+      mAuthenticationResult =
+          new AuthenticationResult(
+              authToken.getToken(),
+              authToken.getNoteStoreUrl(),
+              authToken.getWebApiUrlPrefix(),
+              evernoteHost,
+              authToken.getUserId());
 
-    mAuthenticationResult.persist(SessionPreferences.getPreferences(ctx));
-
+      mAuthenticationResult.persist(SessionPreferences.getPreferences(ctx));
+    }
 
     return true;
   }
@@ -377,7 +367,9 @@ public class EvernoteSession {
    * that will allow successful API calls to be made.
    */
   public boolean isLoggedIn() {
-    return mAuthenticationResult != null;
+    synchronized (this) {
+      return mAuthenticationResult != null;
+    }
   }
 
 
@@ -386,8 +378,10 @@ public class EvernoteSession {
    * Clear all stored authentication information.
    */
   public void logOut(Context ctx) {
-    mAuthenticationResult.clear(SessionPreferences.getPreferences(ctx));
-    mAuthenticationResult = null;
+    synchronized (this) {
+      mAuthenticationResult.clear(SessionPreferences.getPreferences(ctx));
+      mAuthenticationResult = null;
+    }
 
     // TODO The cookie jar is application scope, so we should only be removing
     // evernote.com cookies.

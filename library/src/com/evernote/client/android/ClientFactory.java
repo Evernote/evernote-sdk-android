@@ -144,7 +144,7 @@ public class ClientFactory {
    *
    * @param callback to receive results from creating NoteStore
    */
-  public void createBusinessNoteStoreClient(final OnClientCallback<AsyncNoteStoreClient, Exception> callback) {
+  public void createBusinessNoteStoreClient(final OnClientCallback<AsyncNoteStoreClient> callback) {
     AsyncReflector.execute(this, callback, "createBusinessNoteStoreClient");
   }
 

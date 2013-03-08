@@ -47,6 +47,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.EvernoteUtil;
+import com.evernote.client.android.OnClientCallback;
 import com.evernote.client.conn.mobile.FileData;
 import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Resource;
@@ -64,7 +65,7 @@ import java.io.InputStream;
  * In this sample, the user authorizes access to their account using OAuth
  * and chooses an image from the device's image gallery. The image is then
  * saved directly to user's Evernote account as a new note.
- *
+ * <p/>
  * class created by @tylersmithnet
  */
 public class HelloEDAM extends Activity {
@@ -186,7 +187,7 @@ public class HelloEDAM extends Activity {
   private void setupSession() {
 
     // Retrieve persisted authentication information
-    mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE);
+    mEvernoteSession = EvernoteSession.getInstance(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE);
   }
 
   /**
@@ -201,7 +202,6 @@ public class HelloEDAM extends Activity {
         mBtnSave.setEnabled(false);
       }
       mBtnSelect.setEnabled(true);
-
     } else {
       mBtnAuth.setText(R.string.label_log_in);
       mBtnSave.setEnabled(false);
@@ -265,39 +265,19 @@ public class HelloEDAM extends Activity {
   /**
    * Called when the user taps the "Save Image" button.
    * <p/>
-   * You probably don't want to do this on your UI thread in the
-   * real world.
-   * <p/>
    * Saves the currently selected image to the user's Evernote account using
-   * the Evernote web service API.
+   * the Evernote web service API using an asynchronous method
    * <p/>
    * Does nothing if the Evernote API wasn't successfully initialized
    * when the activity started.
    */
   public void saveImage(View view) {
     if (mEvernoteSession.isLoggedIn() && mImageData != null && mImageData.filePath != null) {
-      new EvernoteNoteCreator().execute(mImageData);
-    }
-  }
 
-  private class EvernoteNoteCreator extends AsyncTask<ImageData, Void, Note> {
-    // using showDialog, could use Fragments instead
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onPreExecute() {
+
       showDialog(DIALOG_PROGRESS);
-    }
 
-    @Override
-    protected Note doInBackground(ImageData... imageDatas) {
-      if (imageDatas == null || imageDatas.length == 0) {
-        return null;
-      }
-      ImageData imageData = imageDatas[0];
-
-
-      Note createdNote = null;
-      String f = imageData.filePath;
+      String f = mImageData.filePath;
       try {
         // Hash the data in the image file. The hash is used to reference the
         // file in the ENML note content.
@@ -308,9 +288,9 @@ public class HelloEDAM extends Activity {
         // Create a new Resource
         Resource resource = new Resource();
         resource.setData(data);
-        resource.setMime(imageData.mimeType);
+        resource.setMime(mImageData.mimeType);
         ResourceAttributes attributes = new ResourceAttributes();
-        attributes.setFileName(imageData.fileName);
+        attributes.setFileName(mImageData.fileName);
         resource.setAttributes(attributes);
 
         // Create a new Note
@@ -331,26 +311,23 @@ public class HelloEDAM extends Activity {
         // Create the note on the server. The returned Note object
         // will contain server-generated attributes such as the note's
         // unique ID (GUID), the Resource's GUID, and the creation and update time.
-        createdNote = mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(mEvernoteSession.getAuthToken(), note);
-      } catch (Exception e) {
-        Log.e(LOGTAG, getString(R.string.err_creating_note), e);
+
+        mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, new OnClientCallback<Note>(this) {
+          @Override
+          public void onResultsReceived(Note data) {
+            removeDialog(DIALOG_PROGRESS);
+            Toast.makeText(getApplicationContext(), R.string.msg_image_saved, Toast.LENGTH_LONG).show();
+          }
+
+          @Override
+          public void onExceptionReceived(Exception exception) {
+            removeDialog(DIALOG_PROGRESS);
+            Toast.makeText(getApplicationContext(), R.string.err_creating_note, Toast.LENGTH_LONG).show();
+          }
+        });
+      } catch (Exception ex) {
+
       }
-
-      return createdNote;
-    }
-
-    // using removeDialog, could use Fragments instead
-    @SuppressWarnings("deprecation")
-    @Override
-    protected void onPostExecute(Note note) {
-      removeDialog(DIALOG_PROGRESS);
-
-      if (note == null) {
-        Toast.makeText(getApplicationContext(), R.string.err_creating_note, Toast.LENGTH_LONG).show();
-        return;
-      }
-
-      Toast.makeText(getApplicationContext(), R.string.msg_image_saved, Toast.LENGTH_LONG).show();
     }
   }
 
@@ -460,7 +437,7 @@ public class HelloEDAM extends Activity {
      * @param reqWidth  The required minimum width of the decoded bitmap.
      * @param reqHeight The required minimum height of the decoded bitmap.
      * @return the sample size needed to decode the bitmap to a size that meets
-     * the required width and height.
+     *         the required width and height.
      * @see <a href="http://developer.android.com/training/displaying-bitmaps/load-bitmap.html#load-bitmap">Load a Scaled Down Version into Memory</a>
      */
     protected int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {

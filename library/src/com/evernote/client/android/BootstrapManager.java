@@ -166,7 +166,7 @@ public class BootstrapManager {
    * @return {@link BootstrapInfoWrapper}
    * @throws Exception
    */
-  public BootstrapInfoWrapper getBootstrapInfo() throws Exception {
+  BootstrapInfoWrapper getBootstrapInfo() throws Exception {
     Log.d(LOGTAG, "getBootstrapInfo()");
     BootstrapInfo bsInfo = null;
     try {
@@ -191,7 +191,7 @@ public class BootstrapManager {
    * Log the {@link BootstrapProfile} list
    * @param bsInfo
    */
-  public void printBootstrapInfo(BootstrapInfo bsInfo) {
+  void printBootstrapInfo(BootstrapInfo bsInfo) {
     if (bsInfo == null) return;
 
     Log.d(LOGTAG, "printBootstrapInfo");
@@ -208,20 +208,20 @@ public class BootstrapManager {
   /**
    * Wrapper class to hold the Evernote API server URL and the {@link BootstrapProfile} object
    */
-  public static class BootstrapInfoWrapper {
+  static class BootstrapInfoWrapper {
     private String mServerUrl;
     private BootstrapInfo mBootstrapInfo;
 
-    public BootstrapInfoWrapper(String serverUrl, BootstrapInfo info) {
+    BootstrapInfoWrapper(String serverUrl, BootstrapInfo info) {
       mServerUrl = serverUrl;
       mBootstrapInfo = info;
     }
 
-    public String getServerUrl() {
+    String getServerUrl() {
       return mServerUrl;
     }
 
-    public BootstrapInfo getBootstrapInfo() {
+    BootstrapInfo getBootstrapInfo() {
       return mBootstrapInfo;
     }
   }

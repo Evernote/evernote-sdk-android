@@ -30,7 +30,7 @@ import android.content.Context;
 /**
  * This class must be implemented to use the {@link AsyncNoteStoreClient} and the {@link AsyncUserStoreClient}
  */
-public abstract class OnClientCallback<T, Y extends Throwable> {
+public abstract class OnClientCallback<T> {
   private Context mContext;
 
   /**
@@ -56,5 +56,5 @@ public abstract class OnClientCallback<T, Y extends Throwable> {
   /**
    * @param exception is the error sent to the callback when the async operation has completed negatively
    */
-  public abstract void onErrorReceived(Y exception);
+  public abstract void onExceptionReceived(Exception exception);
 }

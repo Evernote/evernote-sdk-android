@@ -61,7 +61,6 @@ import java.util.ArrayList;
  * An Android Activity for authenticating to Evernote using OAuth.
  * Third parties should not need to use this class directly.
  *
- * TODO document how to localize strings used in the activity.
  *
  * class created by @tylersmithnet
  */
@@ -360,7 +359,7 @@ public class EvernoteOAuthActivity extends Activity {
       String url = null;
       try {
 
-        EvernoteSession session = EvernoteSession.getSession();
+        EvernoteSession session = EvernoteSession.getOpenSession();
         if (session != null) {
           //Network request
           BootstrapManager.BootstrapInfoWrapper infoWrapper = session.getBootstrapSession().getBootstrapInfo();

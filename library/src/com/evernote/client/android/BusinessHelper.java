@@ -53,7 +53,7 @@ public class BusinessHelper {
    * @param businessNotebook
    * @param callback
    */
-  public static void createBusinessNote(final Note note, final LinkedNotebook businessNotebook, final OnClientCallback<Note, Exception> callback) {
+  public static void createBusinessNote(final Note note, final LinkedNotebook businessNotebook, final OnClientCallback<Note> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "createBusinessNote", note, businessNotebook);
 
   }
@@ -84,7 +84,7 @@ public class BusinessHelper {
    *
    * @param callback
    */
-  public static void listBusinessNotebooks(final OnClientCallback<List<LinkedNotebook>, Exception> callback) {
+  public static void listBusinessNotebooks(final OnClientCallback<List<LinkedNotebook>> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "listBusinessNotebooks");
   }
 
@@ -116,7 +116,7 @@ public class BusinessHelper {
    *
    * @param callback
    */
-  public static void createBusinessNotebook(Notebook notebook, OnClientCallback<LinkedNotebook, Exception> callback) {
+  public static void createBusinessNotebook(Notebook notebook, OnClientCallback<LinkedNotebook> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "createBusinessNotebook", notebook);
   }
 
@@ -149,7 +149,7 @@ public class BusinessHelper {
    * Asynchronous call
    * @param callback
    */
-  public static void deleteBusinessNotebook(LinkedNotebook businessNotebook, OnClientCallback<Integer, Exception> callback) {
+  public static void deleteBusinessNotebook(LinkedNotebook businessNotebook, OnClientCallback<Integer> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "deleteBusinessNotebook", businessNotebook);
   }
 
@@ -181,7 +181,7 @@ public class BusinessHelper {
    * @param linkedNotebook
    * @param callback
    */
-  public static void getCorrespondingBusinessNotebook(LinkedNotebook linkedNotebook, OnClientCallback<Notebook, Exception> callback) {
+  public static void getCorrespondingBusinessNotebook(LinkedNotebook linkedNotebook, OnClientCallback<Notebook> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "getCorrespondingBusinessNotebook", linkedNotebook);
   }
 
@@ -211,7 +211,7 @@ public class BusinessHelper {
    * @param linkedNotebook
    * @param callback
    */
-  public static void isBusinessNotebookWritable(LinkedNotebook linkedNotebook, OnClientCallback<Boolean, Exception> callback) {
+  public static void isBusinessNotebookWritable(LinkedNotebook linkedNotebook, OnClientCallback<Boolean> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "isBusinessNotebookWritable", linkedNotebook);
   }
   /**
@@ -225,4 +225,26 @@ public class BusinessHelper {
     Notebook notebook = getCorrespondingBusinessNotebook(linkedNotebook);
     return !notebook.getRestrictions().isNoCreateNotes();
   }
+
+  /**
+   *
+   * Asynchronous call
+   *
+   */
+  public void isBusinessUser(final OnClientCallback<Boolean> callback) {
+    AsyncReflector.execute(BusinessHelper.class, callback, "isBusinessUser");
+  }
+
+  /**
+   *
+   * Synchronous call
+   *
+   *
+   * @return the result of a user belonging to a business account
+   */
+  public boolean isBusinessUser() throws TException, EDAMUserException, EDAMSystemException {
+    AsyncUserStoreClient userStoreClient = EvernoteSession.getOpenSession().getClientFactory().createUserStoreClient();
+    return userStoreClient.getUser(userStoreClient.getAuthenticationToken()).getAccounting().isSetBusinessId();
+  }
+
 }
