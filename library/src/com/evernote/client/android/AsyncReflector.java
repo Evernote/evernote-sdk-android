@@ -2,8 +2,6 @@ package com.evernote.client.android;
 
 import android.os.Handler;
 import android.os.Looper;
-import com.evernote.edam.error.EDAMErrorCode;
-import com.evernote.edam.error.EDAMUserException;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
@@ -39,33 +37,15 @@ class AsyncReflector {
           handler.post(new Runnable() {
             @Override
             public void run() {
-              if(callback != null) callback.onResultsReceived(answer);
+              if(callback != null) callback.onSuccess(answer);
             }
           });
 
         } catch (final Exception ex) {
-          if(ex instanceof EDAMUserException) {
-            EDAMUserException userError = (EDAMUserException)ex;
-            if("authenticationToken".equals(userError.getParameter()) &&
-                (userError.getErrorCode() == EDAMErrorCode.AUTH_EXPIRED ||
-                    userError.getErrorCode() == EDAMErrorCode.BAD_DATA_FORMAT)) {
-              handler.post(new Runnable() {
-                @Override
-                public void run() {
-                  if(callback != null && callback.getContext() != null){
-                    EvernoteSession.getOpenSession().logOut(callback.getContext());
-                    EvernoteSession.getOpenSession().authenticate(callback.getContext());
-                  }
-                }
-              });
-
-            }
-          }
-
           handler.post(new Runnable() {
             @Override
             public void run() {
-              if(callback != null) callback.onExceptionReceived(ex);
+              if(callback != null) callback.onException(ex);
             }
           });
         }

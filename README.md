@@ -130,6 +130,107 @@ Calling `EvernoteSession.getClientFactory()` will give you access to `createNote
 
 After you've authenticated, the EvernoteSession will have a valid authentication token. Use the session to get an `AsyncNoteStoreClient` or `AsyncUserStoreClient` object. See `saveImage()` in the sample application for an example of creating a new note using the API. Browse the JavaDoc at http://dev.evernote.com/documentation/reference/javadoc/
 
+### Using the `AsyncBusinessNoteStoreClient`
+
+1. Check if user is member of a business
+2. Create `AsyncBusinessNoteStore`
+3. Call synchronous methods from a background thread or call async methods from UI thread
+
+Example using the synchronous business methods inside a background thread to create a note in a business account
+
+```java
+new Thread(new Runnable() {
+  @Override
+  public void run() {
+    try {
+      if(mEvernoteSession.getClientFactory().createUserStoreClient().isBusinessUser()) {
+        AsyncBusinessNoteStoreClient client = mEvernoteSession.getClientFactory().createBusinessNoteStoreClient();
+        List<LinkedNotebook> notebooks = client.listNotebooks();
+        if(notebooks.size() > 0) {
+          Note note = new Note();
+          note.setTitle("New Note");
+          note.setContent(EvernoteUtil.NOTE_PREFIX + "Content of Note" + EvernoteUtil.NOTE_SUFFIX);
+          final Note createdNote = client.createNote(note, notebooks.get(0));
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              Toast.makeText(getApplicationContext(), createdNote.getTitle() + " has been created.", Toast.LENGTH_LONG).show();
+            }
+          });
+
+        }
+      } else {
+        Log.d(LOGTAG, "Not a business User");
+      }
+    } catch(Exception exception) {
+      Log.e(LOGTAG, "Error received::", exception);
+    }
+  }
+}).start();
+```
+
+Example using the asynchronous business methods with callbacks from the UI thread to create a note in a business notebook
+
+```java
+try {
+mEvernoteSession.getClientFactory().createUserStoreClient().isBusinessUserAsync(new OnClientCallback<Boolean>() {
+  @Override
+  public void onSuccess(Boolean isBusiness) {
+    if(isBusiness) {
+      //User is business
+      mEvernoteSession.getClientFactory().createBusinessNoteStoreClientAsync(new OnClientCallback<AsyncBusinessNoteStoreClient>() {
+        @Override
+        public void onSuccess(final AsyncBusinessNoteStoreClient noteStore) {
+          //I have a valid notestore to make calls with
+          noteStore.listNotebooksAsync(new OnClientCallback<List<LinkedNotebook>>() {
+            @Override
+            public void onSuccess(final List<LinkedNotebook> data) {
+              if(data.size() > 0) {
+                Note note = new Note();
+                note.setTitle("New Note");
+                note.setContent(EvernoteUtil.NOTE_PREFIX + "Content of Note" + EvernoteUtil.NOTE_SUFFIX);
+                noteStore.createNoteAsync(note, data.get(0), new OnClientCallback<Note>() {
+                  @Override
+                  public void onSuccess(Note data) {
+                    Toast.makeText(getApplicationContext(), data.getTitle() + " has been created.", Toast.LENGTH_LONG).show();
+                  }
+
+                  @Override
+                  public void onException(Exception exception) {
+                    Log.e(LOGTAG, "Error received::", exception);
+                  }
+                });
+              }
+            }
+
+            @Override
+            public void onException(Exception exception) {
+              Log.e(LOGTAG, "Error received::", exception);
+            }
+          });
+        }
+
+        @Override
+        public void onException(Exception exception) {
+          Log.e(LOGTAG, "Error received::", exception);
+        }
+      });
+    } else {
+      Log.d(LOGTAG, "Not a business User");
+    }
+  }
+
+  @Override
+  public void onException(Exception exception) {
+    Log.e(LOGTAG, "Error received::", exception);
+  }
+});
+} catch (TTransportException exception) {
+  Log.e(LOGTAG, "Error received::", exception);
+}
+```
+
+
 License
 =======
     Copyright (c) 2007-2012 by Evernote Corporation, All rights reserved.

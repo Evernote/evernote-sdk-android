@@ -25,36 +25,18 @@
  */
 package com.evernote.client.android;
 
-import android.content.Context;
-
 /**
  * This class must be implemented to use the {@link AsyncNoteStoreClient} and the {@link AsyncUserStoreClient}
  */
 public abstract class OnClientCallback<T> {
-  private Context mContext;
-
-  /**
-   * Requires Context for forcing logout when invalid token is caught
-   * @param ctx
-   */
-  public OnClientCallback(Context ctx) {
-    mContext = ctx;
-  }
-
-  /**
-   * @return the context that initiated this object
-   */
-  Context getContext() {
-    return mContext;
-  }
 
   /**
    * @param data sent to callback when the async operation has completed positively
    */
-  public abstract void onResultsReceived(T data);
+  public abstract void onSuccess(final T data);
 
   /**
    * @param exception is the error sent to the callback when the async operation has completed negatively
    */
-  public abstract void onExceptionReceived(Exception exception);
+  public abstract void onException(final Exception exception);
 }

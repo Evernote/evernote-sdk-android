@@ -93,7 +93,7 @@ public class ClientFactory {
    *
    * @param callback to receive results from creating NoteStore
    */
-  public void createBusinessNoteStoreClientAsync(final OnClientCallback<AsyncNoteStoreClient> callback) {
+  public void createBusinessNoteStoreClientAsync(final OnClientCallback<AsyncBusinessNoteStoreClient> callback) {
     AsyncReflector.execute(this, callback, "createBusinessNoteStoreClient");
   }
 

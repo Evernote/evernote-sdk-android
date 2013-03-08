@@ -179,6 +179,7 @@ public class HelloEDAM extends Activity {
         dialog.setCancelable(false);
         ((ProgressDialog) dialog).setMessage(getString(R.string.loading));
     }
+
   }
 
   /**
@@ -312,15 +313,15 @@ public class HelloEDAM extends Activity {
         // will contain server-generated attributes such as the note's
         // unique ID (GUID), the Resource's GUID, and the creation and update time.
 
-        mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, new OnClientCallback<Note>(this) {
+        mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, new OnClientCallback<Note>() {
           @Override
-          public void onResultsReceived(Note data) {
+          public void onSuccess(Note data) {
             removeDialog(DIALOG_PROGRESS);
             Toast.makeText(getApplicationContext(), R.string.msg_image_saved, Toast.LENGTH_LONG).show();
           }
 
           @Override
-          public void onExceptionReceived(Exception exception) {
+          public void onException(Exception exception) {
             removeDialog(DIALOG_PROGRESS);
             Toast.makeText(getApplicationContext(), R.string.err_creating_note, Toast.LENGTH_LONG).show();
           }
