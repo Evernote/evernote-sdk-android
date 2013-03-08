@@ -130,25 +130,30 @@ The Async Wrappers provides for each note store allow access to all the synchron
 
 If the underlying `Client` object is needed, access via the `getClient()` method.
 
+
 Create an `AsyncNoteStore` to access primary methods like `createNote(note)` and `listNotebooks()` on the users main account
 ```java
 mEvernoteSession.getClientFactory().createNoteStore();
 ```
+
 
 Create an `AsyncUserStore` to access User related methods
 ```java
 mEvernoteSession.getClientFactory().createUserStore();
 ```
 
+
 Create an `AsyncBusinessNoteStoreClient` to access Business Notebooks
 ```java
 mEvernoteSession.getClientFactory().createBusinessNoteStore();
 ```
 
+
 Create an `AsyncLinkedNoteStoreClient` to access shared notebooks
 ```java
 mEvernoteSession.getClientFactory().createLinkedNoteStore(linkedNotebook);
 ```
+
 
 
 Calling `EvernoteSession.getClientFactory()` will give you access to `createNoteStore()`, `createUserStore()`, and `createBusinessNoteStore()`. These objects return Asynchronously wrapped `Client` objects that allow you to interact with the Evernote API.
