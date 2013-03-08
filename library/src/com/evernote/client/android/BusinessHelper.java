@@ -53,7 +53,7 @@ public class BusinessHelper {
    * @param businessNotebook
    * @param callback
    */
-  public static void createBusinessNote(final Note note, final LinkedNotebook businessNotebook, final OnClientCallback<Note> callback) {
+  public static void createBusinessNoteAsync(final Note note, final LinkedNotebook businessNotebook, final OnClientCallback<Note> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "createBusinessNote", note, businessNotebook);
 
   }
@@ -84,7 +84,7 @@ public class BusinessHelper {
    *
    * @param callback
    */
-  public static void listBusinessNotebooks(final OnClientCallback<List<LinkedNotebook>> callback) {
+  public static void listBusinessNotebooksAsync(final OnClientCallback<List<LinkedNotebook>> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "listBusinessNotebooks");
   }
 
@@ -116,7 +116,7 @@ public class BusinessHelper {
    *
    * @param callback
    */
-  public static void createBusinessNotebook(Notebook notebook, OnClientCallback<LinkedNotebook> callback) {
+  public static void createBusinessNotebookAsync(Notebook notebook, OnClientCallback<LinkedNotebook> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "createBusinessNotebook", notebook);
   }
 
@@ -149,7 +149,7 @@ public class BusinessHelper {
    * Asynchronous call
    * @param callback
    */
-  public static void deleteBusinessNotebook(LinkedNotebook businessNotebook, OnClientCallback<Integer> callback) {
+  public static void deleteBusinessNotebookAsync(LinkedNotebook businessNotebook, OnClientCallback<Integer> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "deleteBusinessNotebook", businessNotebook);
   }
 
@@ -181,7 +181,7 @@ public class BusinessHelper {
    * @param linkedNotebook
    * @param callback
    */
-  public static void getCorrespondingBusinessNotebook(LinkedNotebook linkedNotebook, OnClientCallback<Notebook> callback) {
+  public static void getCorrespondingBusinessNotebookAsync(LinkedNotebook linkedNotebook, OnClientCallback<Notebook> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "getCorrespondingBusinessNotebook", linkedNotebook);
   }
 
@@ -211,7 +211,7 @@ public class BusinessHelper {
    * @param linkedNotebook
    * @param callback
    */
-  public static void isBusinessNotebookWritable(LinkedNotebook linkedNotebook, OnClientCallback<Boolean> callback) {
+  public static void isBusinessNotebookWritableAsync(LinkedNotebook linkedNotebook, OnClientCallback<Boolean> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "isBusinessNotebookWritable", linkedNotebook);
   }
   /**
@@ -231,7 +231,7 @@ public class BusinessHelper {
    * Asynchronous call
    *
    */
-  public void isBusinessUser(final OnClientCallback<Boolean> callback) {
+  public void isBusinessUserAsync(final OnClientCallback<Boolean> callback) {
     AsyncReflector.execute(BusinessHelper.class, callback, "isBusinessUser");
   }
 
