@@ -26,8 +26,10 @@
 package com.evernote.client.android;
 
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
+import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
+import com.evernote.edam.type.LinkedNotebook;
 import com.evernote.edam.userstore.AuthenticationResult;
 import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TBinaryProtocol;
@@ -80,27 +82,20 @@ public class ClientFactory {
       throw new IllegalStateException();
     }
 
-    return createNoteStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getNoteStoreUrl());
-  }
-
-  /**
-   * Create a new NoteStore client from a URL. Each call to this method will return
-   * a new NoteStore.Client instance. The returned client can be used for any
-   * number of API calls, but is NOT thread safe.
-   *
-   * @param url
-   *
-   * @throws IllegalStateException if @link #isLoggedIn() is false.
-   * @throws TTransportException if an error occurs setting up the
-   * connection to the Evernote service.
-   */
-  public AsyncNoteStoreClient createNoteStoreClient(String url) throws TTransportException {
     TEvernoteHttpClient transport =
-        new TEvernoteHttpClient(url, mUserAgent, mTempDir);
+        new TEvernoteHttpClient(EvernoteSession.getOpenSession().getAuthenticationResult().getNoteStoreUrl(), mUserAgent, mTempDir);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
     return new AsyncNoteStoreClient(protocol, protocol, EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken());
   }
 
+  /**
+   * This is an async call to retrieve a business note store.
+   *
+   * @param callback to receive results from creating NoteStore
+   */
+  public void createBusinessNoteStoreClientAsync(final OnClientCallback<AsyncNoteStoreClient> callback) {
+    AsyncReflector.execute(this, callback, "createBusinessNoteStoreClient");
+  }
 
   /**
    *
@@ -116,7 +111,7 @@ public class ClientFactory {
    * @throws EDAMUserException
    * @throws EDAMSystemException User is not part of a business
    */
-  public AsyncNoteStoreClient createBusinessNoteStoreClient() throws TException, EDAMUserException, EDAMSystemException {
+  public AsyncBusinessNoteStoreClient createBusinessNoteStoreClient() throws TException, EDAMUserException, EDAMSystemException {
     com.evernote.client.android.AuthenticationResult authResult =
         EvernoteSession.getOpenSession().getAuthenticationResult();
 
@@ -134,18 +129,55 @@ public class ClientFactory {
     TEvernoteHttpClient transport =
         new TEvernoteHttpClient(authResult.getBusinessNoteStoreUrl(), mUserAgent, mTempDir);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new AsyncNoteStoreClient(protocol, protocol, authResult.getBusinessAuthToken());
+    return new AsyncBusinessNoteStoreClient(protocol, protocol, authResult.getBusinessAuthToken(), this);
+  }
+
+
+  /**
+   * Creates a LinkedNoteStoreClient from a {@link LinkedNotebook} asynchronously
+   *
+   * @param notebook
+   * @param callback
+   */
+  public void createLinkedNoteStoreClientAsync(LinkedNotebook notebook, OnClientCallback<AsyncLinkedNoteStoreClient> callback) {
+    AsyncReflector.execute(this, callback, "createLinkedNoteStoreClient", notebook);
   }
 
   /**
-   * This is an async call to retrieve a business note store.
+   * Creates a LinkedNoteStoreClient from a {@link LinkedNotebook} synchronously
    *
-   * @param callback to receive results from creating NoteStore
+   * @param linkedNotebook
    */
-  public void createBusinessNoteStoreClientAsync(final OnClientCallback<AsyncNoteStoreClient> callback) {
-    AsyncReflector.execute(this, callback, "createBusinessNoteStoreClient");
+  public AsyncLinkedNoteStoreClient createLinkedNoteStoreClient(LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
+    com.evernote.client.android.AuthenticationResult authResult =
+        EvernoteSession.getOpenSession().getAuthenticationResult();
+
+    TEvernoteHttpClient transport =
+        new TEvernoteHttpClient(linkedNotebook.getNoteStoreUrl(), mUserAgent, mTempDir);
+    TBinaryProtocol protocol = new TBinaryProtocol(transport);
+
+    AsyncLinkedNoteStoreClient sharedNoteStore = new AsyncLinkedNoteStoreClient(protocol, protocol, authResult.getAuthToken(), this);
+    AuthenticationResult sharedAuthKey = sharedNoteStore.getAsyncClient().getClient().authenticateToSharedNotebook(linkedNotebook.getShareKey(), authResult.getAuthToken());
+    sharedNoteStore.setAuthToken(sharedAuthKey.getAuthenticationToken());
+    return sharedNoteStore;
   }
 
+  /**
+   * Create a new UserStore client. Each call to this method will return
+   * a new UserStore.Client instance. The returned client can be used for any
+   * number of API calls, but is NOT thread safe.
+   *
+   * @throws IllegalStateException if @link #isLoggedIn() is false.
+   * @throws TTransportException if an error occurs setting up the
+   * connection to the Evernote service.
+   *
+   */
+  public AsyncUserStoreClient createUserStoreClient()  throws IllegalStateException, TTransportException {
+    if(EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
+      throw new IllegalStateException();
+    }
+    return createUserStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getEvernoteHost());
+  }
 
   /**
    * Creates a UserStore client interface that can be used to send requests to a
@@ -172,26 +204,8 @@ public class ClientFactory {
    * @return
    * @throws TTransportException
    */
-  public AsyncUserStoreClient createUserStoreClient(String url) throws TTransportException {
+  AsyncUserStoreClient createUserStoreClient(String url) throws TTransportException {
     return createUserStoreClient(url, 0);
-  }
-
-  /**
-   * Create a new UserStore client. Each call to this method will return
-   * a new UserStore.Client instance. The returned client can be used for any
-   * number of API calls, but is NOT thread safe.
-   *
-   * @throws IllegalStateException if @link #isLoggedIn() is false.
-   * @throws TTransportException if an error occurs setting up the
-   * connection to the Evernote service.
-   *
-   */
-  public AsyncUserStoreClient createUserStoreClient()  throws IllegalStateException, TTransportException {
-    if(EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
-      throw new IllegalStateException();
-    }
-
-    return createUserStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getEvernoteHost());
   }
 
   /**
@@ -207,7 +221,7 @@ public class ClientFactory {
    * connection to the Evernote service.
    *
    */
-  public AsyncUserStoreClient createUserStoreClient(String url, int port) throws TTransportException {
+  AsyncUserStoreClient createUserStoreClient(String url, int port) throws TTransportException {
     String serviceUrl = getFullUrl(url, port);
 
     TEvernoteHttpClient transport =

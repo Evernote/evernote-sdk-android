@@ -26,12 +26,15 @@
 package com.evernote.client.android;
 
 
+import com.evernote.edam.error.EDAMSystemException;
+import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.type.PremiumInfo;
 import com.evernote.edam.type.User;
 import com.evernote.edam.userstore.AuthenticationResult;
 import com.evernote.edam.userstore.BootstrapInfo;
 import com.evernote.edam.userstore.PublicUserInfo;
 import com.evernote.edam.userstore.UserStore;
+import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TProtocol;
 
 /**
@@ -68,6 +71,26 @@ public class AsyncUserStoreClient {
    */
   String getAuthenticationToken() {
     return mAuthenticationToken;
+  }
+
+  /**
+   *
+   * Asynchronous call
+   *
+   */
+  public void isBusinessUserAsync(final OnClientCallback<Boolean> callback) {
+    AsyncReflector.execute(this, callback, "isBusinessUser");
+  }
+
+  /**
+   *
+   * Synchronous call
+   *
+   *
+   * @return the result of a user belonging to a business account
+   */
+  public boolean isBusinessUser() throws TException, EDAMUserException, EDAMSystemException {
+    return getClient().getUser(getAuthenticationToken()).getAccounting().isSetBusinessId();
   }
 
   /**

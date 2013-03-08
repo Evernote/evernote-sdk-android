@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class AsyncNoteStoreClient {
 
-  protected final String mAuthenticationToken;
+  protected String mAuthenticationToken;
   protected final NoteStore.Client mClient;
 
   AsyncNoteStoreClient(TProtocol prot, String authenticationToken) {
@@ -66,6 +66,10 @@ public class AsyncNoteStoreClient {
    */
   String getAuthenticationToken() {
     return mAuthenticationToken;
+  }
+
+  void setAuthToken(String authenticationToken) {
+    mAuthenticationToken = authenticationToken;
   }
 
   /**
@@ -818,4 +822,5 @@ public class AsyncNoteStoreClient {
   public void findRelated(RelatedQuery query, RelatedResultSpec resultSpec, OnClientCallback<RelatedResult> callback) {
     AsyncReflector.execute(mClient, callback, "findRelated", mAuthenticationToken, query, resultSpec);
   }
+
 }
