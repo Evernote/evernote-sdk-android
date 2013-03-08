@@ -78,8 +78,8 @@ public class HelloEDAM extends Activity {
 
   // Your Evernote API key. See http://dev.evernote.com/documentation/cloud/
   // Please obfuscate your code to help keep these values secret.
-  private static final String CONSUMER_KEY = "Your consumer key";
-  private static final String CONSUMER_SECRET = "Your consumer secret";
+  private static final String CONSUMER_KEY = "frostbite7217-3214";
+  private static final String CONSUMER_SECRET = "eaaea933d63c266a";
 
   /**
    * ************************************************************************

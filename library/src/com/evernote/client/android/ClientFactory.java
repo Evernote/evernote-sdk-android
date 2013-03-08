@@ -28,7 +28,6 @@ package com.evernote.client.android;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
-import com.evernote.edam.notestore.NoteStore;
 import com.evernote.edam.userstore.AuthenticationResult;
 import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TBinaryProtocol;
@@ -52,7 +51,6 @@ public class ClientFactory {
   private String mUserAgent;
   private Map<String, String> mCustomHeaders;
   private File mTempDir;
-  private NoteStore.Client mBusinessNoteStoreClient;
 
 
   /**
@@ -125,7 +123,7 @@ public class ClientFactory {
     if(authResult.getBusinessAuthToken() == null ||
         authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
 
-      AuthenticationResult businessAuthResult = createUserStoreClient().authenticateToBusiness(authResult.getAuthToken());
+      AuthenticationResult businessAuthResult = createUserStoreClient().getClient().authenticateToBusiness(authResult.getAuthToken());
 
       authResult.setBusinessAuthToken(businessAuthResult.getAuthenticationToken());
       authResult.setBusinessAuthTokenExpiration(businessAuthResult.getExpiration());
@@ -144,7 +142,7 @@ public class ClientFactory {
    *
    * @param callback to receive results from creating NoteStore
    */
-  public void createBusinessNoteStoreClient(final OnClientCallback<AsyncNoteStoreClient> callback) {
+  public void createBusinessNoteStoreClientAsync(final OnClientCallback<AsyncNoteStoreClient> callback) {
     AsyncReflector.execute(this, callback, "createBusinessNoteStoreClient");
   }
 

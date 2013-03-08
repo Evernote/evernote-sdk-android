@@ -28,7 +28,6 @@ package com.evernote.client.android;
 import android.util.Log;
 import com.evernote.edam.userstore.BootstrapInfo;
 import com.evernote.edam.userstore.BootstrapProfile;
-import com.evernote.edam.userstore.UserStore;
 import com.evernote.thrift.TException;
 
 import java.util.ArrayList;
@@ -73,7 +72,7 @@ public class BootstrapManager {
   public static final String DISPLAY_EVERNOTE_INTL = "Evernote International";
 
   private ArrayList<String> mBootstrapServerUrls = new ArrayList<String>();
-  private UserStore.Client mUserStoreClient;
+  private AsyncUserStoreClient mUserStoreClient;
   private Locale mLocale;
   private ClientFactory mClientProducer;
   private String mBootstrapServerUsed;
@@ -134,7 +133,7 @@ public class BootstrapManager {
       try {
         mUserStoreClient =  mClientProducer.createUserStoreClient(url);
 
-        if (!mUserStoreClient.checkVersion(mClientProducer.getUserAgent(),
+        if (!mUserStoreClient.getClient().checkVersion(mClientProducer.getUserAgent(),
             com.evernote.edam.userstore.Constants.EDAM_VERSION_MAJOR,
             com.evernote.edam.userstore.Constants.EDAM_VERSION_MINOR)) {
           mUserStoreClient = null;
@@ -174,7 +173,7 @@ public class BootstrapManager {
         initializeUserStoreAndCheckVersion();
       }
 
-      bsInfo = mUserStoreClient.getBootstrapInfo(mLocale.toString());
+      bsInfo = mUserStoreClient.getClient().getBootstrapInfo(mLocale.toString());
       printBootstrapInfo(bsInfo);
 
     } catch (ClientUnsupportedException cue) {

@@ -5,11 +5,11 @@
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  *
- * 1. Redistributions of source code must retain the above copyright notice, this
+ * 1. Redistributions of source code must retain the above copyright notice, mClient
  *    list of conditions and the following disclaimer.
  *
  * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
+ *    mClient list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
@@ -40,20 +40,32 @@ import com.evernote.thrift.protocol.TProtocol;
  *
  * @author @tylersmithnet
  */
-public class AsyncUserStoreClient extends UserStore.Client {
+public class AsyncUserStoreClient {
 
-  protected final String mAuthenticationToken;
+  private final String mAuthenticationToken;
+  private final UserStore.Client mClient;
 
   AsyncUserStoreClient(TProtocol prot, String authenticationToken) {
-    super(prot);
+    mClient = new UserStore.Client(prot);
     mAuthenticationToken = authenticationToken;
   }
 
   AsyncUserStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken) {
-    super(iprot, oprot);
+    mClient = new UserStore.Client(iprot, oprot);
     mAuthenticationToken = authenticationToken;
   }
 
+  /**
+   * If direct access to the Note Store is needed, all of these calls are synchronous
+   * @return {@link UserStore.Client}
+   */
+  public UserStore.Client getClient() {
+    return mClient;
+  }
+
+  /**
+   * @return authToken inserted into calls
+   */
   String getAuthenticationToken() {
     return mAuthenticationToken;
   }
@@ -65,7 +77,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#checkVersion(String, short, short)
    */
   public void checkVersion(final String clientName, final short edamVersionMajor, final short edamVersionMinor, final OnClientCallback<Boolean> callback) {
-    AsyncReflector.execute(this, callback, "checkVersion", clientName, edamVersionMajor, edamVersionMinor);
+    AsyncReflector.execute(mClient, callback, "checkVersion", clientName, edamVersionMajor, edamVersionMinor);
   }
 
   /**
@@ -75,7 +87,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#getBootstrapInfo(String)
    */
   public void getBootstrapInfo(final String locale, final OnClientCallback<BootstrapInfo> callback) {
-    AsyncReflector.execute(this, callback, "getBootstrapInfo", locale);
+    AsyncReflector.execute(mClient, callback, "getBootstrapInfo", locale);
   }
 
   /**
@@ -85,7 +97,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#authenticate(String, String, String, String)
    */
   public void authenticate(final String username, final String password, final String consumerKey, final String consumerSecret, final OnClientCallback<AuthenticationResult> callback) {
-    AsyncReflector.execute(this, callback, "authenticate", username, password, consumerKey, consumerSecret);
+    AsyncReflector.execute(mClient, callback, "authenticate", username, password, consumerKey, consumerSecret);
   }
 
   /**
@@ -95,7 +107,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#authenticateLongSession(String, String, String, String, String, String)
    */
   public void authenticateLongSession(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier, final String deviceDescription, final OnClientCallback<AuthenticationResult> callback) {
-    AsyncReflector.execute(this, callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription);
+    AsyncReflector.execute(mClient, callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription);
   }
 
   /**
@@ -105,7 +117,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#authenticateToBusiness(String)
    */
   public void authenticateToBusiness(final String authenticationToken, final OnClientCallback<AuthenticationResult> callback) {
-    AsyncReflector.execute(this, callback, "authenticateToBusiness", authenticationToken);
+    AsyncReflector.execute(mClient, callback, "authenticateToBusiness", authenticationToken);
   }
 
   /**
@@ -115,7 +127,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#refreshAuthentication(String)
    */
   public void refreshAuthentication(final String authenticationToken, final OnClientCallback<AuthenticationResult> callback) {
-    AsyncReflector.execute(this, callback, "refreshAuthentication", authenticationToken);
+    AsyncReflector.execute(mClient, callback, "refreshAuthentication", authenticationToken);
   }
 
   /**
@@ -125,7 +137,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#getUser(String)
    */
   public void getUser(final OnClientCallback<User> callback) {
-    AsyncReflector.execute(this, callback, "getUser", mAuthenticationToken);
+    AsyncReflector.execute(mClient, callback, "getUser", mAuthenticationToken);
   }
 
   /**
@@ -135,7 +147,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#getPublicUserInfo(String)
    */
   public void getPublicUserInfo(final String username, final OnClientCallback<PublicUserInfo> callback) {
-    AsyncReflector.execute(this, callback, "getPublicUserInfo", username);
+    AsyncReflector.execute(mClient, callback, "getPublicUserInfo", username);
   }
 
   /**
@@ -145,7 +157,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#getPremiumInfo(String)
    */
   public void getPremiumInfo(final OnClientCallback<PremiumInfo> callback) {
-    AsyncReflector.execute(this, callback, "getPremiumInfo", mAuthenticationToken);
+    AsyncReflector.execute(mClient, callback, "getPremiumInfo", mAuthenticationToken);
   }
 
   /**
@@ -155,7 +167,7 @@ public class AsyncUserStoreClient extends UserStore.Client {
    * @see UserStore.Client#getNoteStoreUrl(String)
    */
   public void getNoteStoreUrl(final OnClientCallback<String> callback) {
-    AsyncReflector.execute(this, callback, "getNoteStoreUrl", mAuthenticationToken);
+    AsyncReflector.execute(mClient, callback, "getNoteStoreUrl", mAuthenticationToken);
   }
 }
 

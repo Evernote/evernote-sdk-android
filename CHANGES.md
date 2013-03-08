@@ -1,6 +1,9 @@
 = 1.1 / 2013-2-20
 
-* Added Bootstrapping support for Yinxiang
+* Added automatic bootstrapping support for Yinxiang
+* Added asynchronous wrappers of UserStore.Client and NoteStore.Client
+* Added Business support and helper methods
+* Cleaned up architecture
 * Bug fixes
 
 = 1.0.2 / 2012-12-30

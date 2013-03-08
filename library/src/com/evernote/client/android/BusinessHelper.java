@@ -74,7 +74,7 @@ public class BusinessHelper {
    */
   public static Note createBusinessNote(Note note, LinkedNotebook businessNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
     AsyncNoteStoreClient noteStoreClient = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient();
-    SharedNotebook notebook = noteStoreClient.getSharedNotebookByAuth(noteStoreClient.getAuthenticationToken());
+    SharedNotebook notebook = noteStoreClient.getClient().getSharedNotebookByAuth(noteStoreClient.getAuthenticationToken());
     note.setNotebookGuid(notebook.getNotebookGuid());
     return note;
   }
@@ -101,7 +101,7 @@ public class BusinessHelper {
     AsyncNoteStoreClient noteStoreClient = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient();
 
     List<LinkedNotebook> linkedNotebooks = new ArrayList<LinkedNotebook>();
-    for (LinkedNotebook notebook : noteStoreClient.listLinkedNotebooks(noteStoreClient.getAuthenticationToken())) {
+    for (LinkedNotebook notebook : noteStoreClient.getClient().listLinkedNotebooks(noteStoreClient.getAuthenticationToken())) {
       if (notebook.isSetBusinessId()) {
         linkedNotebooks.add(notebook);
       }
@@ -132,7 +132,7 @@ public class BusinessHelper {
     AsyncNoteStoreClient businessNoteStore = EvernoteSession.getOpenSession().getClientFactory().createBusinessNoteStoreClient();
     AsyncNoteStoreClient noteStoreClient = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient();
 
-    Notebook businessNotebook = businessNoteStore.createNotebook(businessNoteStore.getAuthenticationToken(), notebook);
+    Notebook businessNotebook = businessNoteStore.getClient().createNotebook(businessNoteStore.getAuthenticationToken(), notebook);
     SharedNotebook sharedNotebook = businessNotebook.getSharedNotebooks().get(0);
     LinkedNotebook linkedNotebook = new LinkedNotebook();
     linkedNotebook.setShareKey(sharedNotebook.getShareKey());
@@ -140,7 +140,7 @@ public class BusinessHelper {
     linkedNotebook.setUsername(EvernoteSession.getOpenSession().getAuthenticationResult().getBusinessUser().getUsername());
     linkedNotebook.setShardId(EvernoteSession.getOpenSession().getAuthenticationResult().getBusinessUser().getShardId());
 
-    return noteStoreClient.createLinkedNotebook(noteStoreClient.getAuthenticationToken(), linkedNotebook);
+    return noteStoreClient.getClient().createLinkedNotebook(noteStoreClient.getAuthenticationToken(), linkedNotebook);
   }
 
   /**
@@ -165,12 +165,12 @@ public class BusinessHelper {
     AsyncNoteStoreClient businessNoteStore = EvernoteSession.getOpenSession().getClientFactory().createBusinessNoteStoreClient();
     AsyncNoteStoreClient sharedNoteStore = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient(linkedNotebook.getNoteStoreUrl());
     AsyncNoteStoreClient noteStore = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient();
-    AuthenticationResult sharedAuthKey = sharedNoteStore.authenticateToSharedNotebook(linkedNotebook.getShareKey(), noteStore.getAuthenticationToken());
+    AuthenticationResult sharedAuthKey = sharedNoteStore.getClient().authenticateToSharedNotebook(linkedNotebook.getShareKey(), noteStore.getAuthenticationToken());
 
-    SharedNotebook sharedNotebook = sharedNoteStore.getSharedNotebookByAuth(sharedAuthKey.getAuthenticationToken());
+    SharedNotebook sharedNotebook = sharedNoteStore.getClient().getSharedNotebookByAuth(sharedAuthKey.getAuthenticationToken());
     Long[] ids = {sharedNotebook.getId()};
-    businessNoteStore.expungeSharedNotebooks(businessNoteStore.getAuthenticationToken(), Arrays.asList(ids));
-    return noteStore.expungeLinkedNotebook(noteStore.getAuthenticationToken(), linkedNotebook.getGuid());
+    businessNoteStore.getClient().expungeSharedNotebooks(businessNoteStore.getAuthenticationToken(), Arrays.asList(ids));
+    return noteStore.getClient().expungeLinkedNotebook(noteStore.getAuthenticationToken(), linkedNotebook.getGuid());
   }
 
   /**
@@ -197,10 +197,10 @@ public class BusinessHelper {
     AsyncNoteStoreClient businessNoteStore = EvernoteSession.getOpenSession().getClientFactory().createBusinessNoteStoreClient();
     AsyncNoteStoreClient sharedNoteStore = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient(linkedNotebook.getNoteStoreUrl());
     AsyncNoteStoreClient noteStoreClient = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient();
-    AuthenticationResult sharedAuthKey = sharedNoteStore.authenticateToSharedNotebook(linkedNotebook.getShareKey(), noteStoreClient.getAuthenticationToken());
+    AuthenticationResult sharedAuthKey = sharedNoteStore.getClient().authenticateToSharedNotebook(linkedNotebook.getShareKey(), noteStoreClient.getAuthenticationToken());
 
-    SharedNotebook sharedNotebook = sharedNoteStore.getSharedNotebookByAuth(sharedAuthKey.getAuthenticationToken());
-    return businessNoteStore.getNotebook(businessNoteStore.getAuthenticationToken(), sharedNotebook.getNotebookGuid());
+    SharedNotebook sharedNotebook = sharedNoteStore.getClient().getSharedNotebookByAuth(sharedAuthKey.getAuthenticationToken());
+    return businessNoteStore.getClient().getNotebook(businessNoteStore.getAuthenticationToken(), sharedNotebook.getNotebookGuid());
   }
 
   /**
@@ -244,7 +244,7 @@ public class BusinessHelper {
    */
   public boolean isBusinessUser() throws TException, EDAMUserException, EDAMSystemException {
     AsyncUserStoreClient userStoreClient = EvernoteSession.getOpenSession().getClientFactory().createUserStoreClient();
-    return userStoreClient.getUser(userStoreClient.getAuthenticationToken()).getAccounting().isSetBusinessId();
+    return userStoreClient.getClient().getUser(userStoreClient.getAuthenticationToken()).getAccounting().isSetBusinessId();
   }
 
 }
