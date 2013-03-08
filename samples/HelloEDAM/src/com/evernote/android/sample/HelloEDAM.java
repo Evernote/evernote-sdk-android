@@ -201,6 +201,7 @@ public class HelloEDAM extends Activity {
         mBtnSave.setEnabled(false);
       }
       mBtnSelect.setEnabled(true);
+
     } else {
       mBtnAuth.setText(R.string.label_log_in);
       mBtnSave.setEnabled(false);

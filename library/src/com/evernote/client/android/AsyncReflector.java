@@ -49,7 +49,7 @@ class AsyncReflector {
             if("authenticationToken".equals(userError.getParameter()) &&
                 (userError.getErrorCode() == EDAMErrorCode.AUTH_EXPIRED ||
                     userError.getErrorCode() == EDAMErrorCode.BAD_DATA_FORMAT)) {
-              //Force log out
+              EvernoteSession.getOpenSession().logOut(callback.getContext());
             }
           }
 
