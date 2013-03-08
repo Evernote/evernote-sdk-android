@@ -54,6 +54,7 @@ class AsyncReflector {
                 public void run() {
                   if(callback != null && callback.getContext() != null){
                     EvernoteSession.getOpenSession().logOut(callback.getContext());
+                    EvernoteSession.getOpenSession().authenticate(callback.getContext());
                   }
                 }
               });
