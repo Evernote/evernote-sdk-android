@@ -27,6 +27,7 @@ package com.evernote.client.android;
 
 import android.content.SharedPreferences;
 import android.util.Log;
+import com.evernote.edam.type.User;
 
 /**
  * A container class for the results of a successful OAuth authorization with
@@ -44,9 +45,10 @@ public class AuthenticationResult {
   private String mEvernoteHost;
   private int mUserId;
 
-  private int mBusinessId;
   private String mBusinessNoteStoreUrl;
+  private String mBusinessAuthToken;
   private long mBusinessAuthTokenExpiration;
+  private User mBusinessUser;
 
 
   public AuthenticationResult(SharedPreferences pref) {
@@ -61,37 +63,15 @@ public class AuthenticationResult {
    * @param webApiUrlPrefix The URL of misc. Evernote web APIs for the authenticated user.
    * @param evernoteHost the Evernote Web URL provided from the bootstrap process
    * @param userId The numeric ID of the Evernote user.
-   */
-  public AuthenticationResult(String authToken, String noteStoreUrl,
-    String webApiUrlPrefix, String evernoteHost, int userId) {
-
-    this(authToken, noteStoreUrl, webApiUrlPrefix, evernoteHost, userId, null, -1, -1);
-  }
-
-  /**
-   * Create a new AuthenticationResult.
-   *
-   * @param authToken An Evernote authentication token.
-   * @param noteStoreUrl The URL of the Evernote NoteStore for the authenticated user.
-   * @param webApiUrlPrefix The URL of misc. Evernote web APIs for the authenticated user.
-   * @param evernoteHost the Evernote Web URL provided from the bootstrap process
-   * @param userId The numeric ID of the Evernote user.
-   * @param userId The numeric ID of the Evernote user.
-   * @param businessNoteStoreUrl The URL of the Evernote BusinessNoteStore for the authenticated user's Business Account.
-   * @param businessAuthTokenExpiration The epoch time for business auth token expiraton
    *
    */
 
-  public AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, String evernoteHost, int userId,
-      String businessNoteStoreUrl, int businessId, long businessAuthTokenExpiration) {
+  public AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, String evernoteHost, int userId) {
     this.mAuthToken = authToken;
     this.mNoteStoreUrl = noteStoreUrl;
     this.mWebApiUrlPrefix = webApiUrlPrefix;
     this.mEvernoteHost = evernoteHost;
     this.mUserId = userId;
-    this.mBusinessId = businessId;
-    this.mBusinessNoteStoreUrl = businessNoteStoreUrl;
-    this.mBusinessAuthTokenExpiration = businessAuthTokenExpiration;
   }
 
   void persist(SharedPreferences pref) {
@@ -103,9 +83,6 @@ public class AuthenticationResult {
     editor.putString(SessionPreferences.KEY_WEBAPIURLPREFIX, mWebApiUrlPrefix);
     editor.putString(SessionPreferences.KEY_EVERNOTEHOST, mEvernoteHost);
     editor.putInt(SessionPreferences.KEY_USERID, mUserId);
-    editor.putInt(SessionPreferences.KEY_BUSINESSID, mBusinessId);
-    editor.putString(SessionPreferences.KEY_BUSINESSNOTESTOREURL, mBusinessNoteStoreUrl);
-    editor.putLong(SessionPreferences.KEY_BUSINESSTOKENEXPIRATION, mBusinessAuthTokenExpiration);
 
     SessionPreferences.save(editor);
   }
@@ -117,9 +94,6 @@ public class AuthenticationResult {
     mWebApiUrlPrefix = pref.getString(SessionPreferences.KEY_WEBAPIURLPREFIX, null);
     mEvernoteHost = pref.getString(SessionPreferences.KEY_EVERNOTEHOST, null);
     mUserId = pref.getInt(SessionPreferences.KEY_USERID, -1);
-    mBusinessId = pref.getInt(SessionPreferences.KEY_BUSINESSID, -1);
-    mBusinessNoteStoreUrl = pref.getString(SessionPreferences.KEY_BUSINESSNOTESTOREURL, null);
-    mBusinessAuthTokenExpiration = pref.getLong(SessionPreferences.KEY_BUSINESSTOKENEXPIRATION, 0);
   }
 
   void clear(SharedPreferences pref) {
@@ -131,9 +105,6 @@ public class AuthenticationResult {
     editor.remove(SessionPreferences.KEY_WEBAPIURLPREFIX);
     editor.remove(SessionPreferences.KEY_EVERNOTEHOST);
     editor.remove(SessionPreferences.KEY_USERID);
-    editor.remove(SessionPreferences.KEY_BUSINESSID);
-    editor.remove(SessionPreferences.KEY_BUSINESSNOTESTOREURL);
-    editor.remove(SessionPreferences.KEY_BUSINESSTOKENEXPIRATION);
 
     SessionPreferences.save(editor);
   }
@@ -176,22 +147,6 @@ public class AuthenticationResult {
     return mUserId;
   }
 
-
-  /**
-   *
-   * @return The Business ID
-   */
-  public int getBusinessId() {
-    return mBusinessId;
-  }
-
-  /**
-   * Set the Business Id
-   */
-  void setBusinessId(int mBusinessId) {
-    this.mBusinessId = mBusinessId;
-  }
-
   /**
    * @return the URL that will be used to access the BusinessNoteStore service.
    */
@@ -202,8 +157,36 @@ public class AuthenticationResult {
   /**
    * Set the BusinessNoteStore Url
    */
-  void setBusinessNoteStoreUrl(String mBusinessNoteStoreUrl) {
-    this.mBusinessNoteStoreUrl = mBusinessNoteStoreUrl;
+  void setBusinessNoteStoreUrl(String businessNoteStoreUrl) {
+    this.mBusinessNoteStoreUrl = businessNoteStoreUrl;
+  }
+
+  /**
+   * @return the {@link User} that references the business account user object
+   */
+  public User getBusinessUser() {
+    return mBusinessUser;
+  }
+
+  /**
+   * Set the BusinessNoteStore Url
+   */
+  void setBusinessUser(User user) {
+    this.mBusinessUser = user;
+  }
+
+  /**
+   * @return the Business Auth token
+   */
+  public String getBusinessAuthToken() {
+    return mBusinessAuthToken;
+  }
+
+  /**
+   * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch)
+   */
+  void setBusinessAuthToken(String authToken) {
+    this.mBusinessAuthToken = authToken;
   }
 
   /**
@@ -216,7 +199,7 @@ public class AuthenticationResult {
   /**
    * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch)
    */
-  void setBusinessAuthTokenExpiration(long mBusinessAuthTokenExpiration) {
-    this.mBusinessAuthTokenExpiration = mBusinessAuthTokenExpiration;
+  void setBusinessAuthTokenExpiration(long businessAuthTokenExpiration) {
+    this.mBusinessAuthTokenExpiration = businessAuthTokenExpiration;
   }
 }

@@ -45,8 +45,6 @@ class SessionPreferences {
   static final String KEY_USERID = "evernote.userId";
   static final String KEY_EVERNOTEHOST = "evernote.mEvernoteHost";
   static final String KEY_BUSINESSID = "evernote.businessId";
-  static final String KEY_BUSINESSNOTESTOREURL = "evernote.businessNoteStoreUrl";
-  static final String KEY_BUSINESSTOKENEXPIRATION = "evernote.businessTokenExpiration";
 
   static final String PREFERENCE_NAME = "evernote.preferences";
 

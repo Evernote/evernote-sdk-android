@@ -25,22 +25,12 @@
  */
 package com.evernote.client.android;
 
-import android.os.Handler;
-import android.os.Looper;
-import com.evernote.edam.error.EDAMErrorCode;
-import com.evernote.edam.error.EDAMNotFoundException;
-import com.evernote.edam.error.EDAMSystemException;
-import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.*;
 import com.evernote.edam.type.*;
 import com.evernote.edam.userstore.AuthenticationResult;
-import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TProtocol;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 /**
  * An Async wrapper for {@link NoteStore.Client}
@@ -48,176 +38,22 @@ import java.util.concurrent.ExecutorService;
  *
  * @author @tylersmithnet
  */
-public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClientInterface {
+public class AsyncNoteStoreClient extends NoteStore.Client {
 
-  private final ExecutorService mThreadExecutor;
-  private final String mAuthenticationToken;
-  private final Handler mUIHandler;
+  protected final String mAuthenticationToken;
 
   AsyncNoteStoreClient(TProtocol prot, String authenticationToken) {
     super(prot);
-    mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
     mAuthenticationToken = authenticationToken;
-    mUIHandler = new Handler(Looper.getMainLooper());
   }
 
   AsyncNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken) {
     super(iprot, oprot);
-    mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
     mAuthenticationToken = authenticationToken;
-    mUIHandler = new Handler(Looper.getMainLooper());
   }
 
-  /**
-   * Reflection to run Asynchronous methods
-   */
-  public <T> void execute(final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
-    mThreadExecutor.execute(new Runnable() {
-      public void run() {
-        try {
-          Class[] classes = new Class[args.length];
-          for (int i = 0; i < args.length; i++) {
-            classes[i] = args[i].getClass();
-          }
-
-          Method  method = AsyncNoteStoreClient.this.getClass().getMethod(function, classes.length > 0 ? classes : null);
-
-          final T answer = (T) method.invoke(AsyncNoteStoreClient.this, args);
-
-          mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onResultsReceived(answer);
-            }
-          });
-
-        } catch (final Exception ex) {
-          if(ex instanceof EDAMUserException) {
-            EDAMUserException userError = (EDAMUserException)ex;
-            if("authenticationToken".equals(userError.getParameter()) &&
-                (userError.getErrorCode() == EDAMErrorCode.AUTH_EXPIRED ||
-                    userError.getErrorCode() == EDAMErrorCode.BAD_DATA_FORMAT)) {
-              //Force log out
-            }
-          }
-
-          mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onErrorReceived(ex);
-            }
-          });
-        }
-      }
-    });
-  }
-
-  /**
-   * Custom Business Helper Methods
-   */
-
-  /**
-   * Helper method to create a note asynchronously in a business notebook
-   *
-   * @param note
-   * @param businessNotebook
-   * @param callback
-   */
-  public void createBusinessNote(final Note note, final LinkedNotebook businessNotebook, final OnClientCallback<Note, Exception> callback) {
-    execute(callback, "createBusinessNote", mAuthenticationToken, note, businessNotebook);
-  }
-
-  /**
-   * Helper method to create a note synchronously in a business notebook
-   *
-   * @param note
-   * @param businessNotebook
-   * @return
-   * @throws com.evernote.edam.error.EDAMUserException
-   *
-   * @throws com.evernote.edam.error.EDAMSystemException
-   *
-   * @throws com.evernote.thrift.TException
-   * @throws com.evernote.edam.error.EDAMNotFoundException
-   *
-   */
-  public Note createBusinessNote(Note note, LinkedNotebook businessNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
-    SharedNotebook notebook = getSharedNotebookByAuth(mAuthenticationToken);
-    note.setNotebookGuid(notebook.getNotebookGuid());
-    return note;
-  }
-
-  /**
-   * Helper method to list business notebooks asynchronously
-   *
-   * @param callback
-   */
-  public void listBusinessNotebooks(final OnClientCallback<List<LinkedNotebook>, Exception> callback) {
-    execute(callback, "listBusinessNotebooks", mAuthenticationToken);
-  }
-
-  /**
-   * Helper method to list business notebooks synchronously
-   *
-   * @return
-   * @throws EDAMUserException
-   * @throws EDAMSystemException
-   * @throws TException
-   * @throws EDAMNotFoundException
-   */
-  public List<LinkedNotebook> listBusinessNotebooks() throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
-    List<LinkedNotebook> linkedNotebooks = new ArrayList<LinkedNotebook>();
-    for (LinkedNotebook notebook : listLinkedNotebooks(mAuthenticationToken)) {
-      if (notebook.isSetBusinessId()) {
-        linkedNotebooks.add(notebook);
-      }
-    }
-    return linkedNotebooks;
-  }
-
-  /**
-   * Create Business Notebook from a Notebook
-   *
-   * Asynchronous call
-   *
-   * @param callback
-   */
-  public void createBusinessNotebook(Notebook notebook, OnClientCallback<LinkedNotebook, Exception> callback) {
-    execute(callback, "createBusinessNotebook", notebook);
-  }
-
-  /**
-   * Create Business Notebook from a Notebook
-   *
-   * Synchronous call
-   *
-   * @return {@link LinkedNotebook} with guid from server
-   */
-  public LinkedNotebook createBusinessNotebook(Notebook notebook) {
-    //TODO: Implement
-    return null;
-  }
-
-  /**
-   * Providing a LinkedNotebook referencing a Business notebook, perform a delete
-   *
-   * Asynchronous call
-   * @param callback
-   */
-  public void deleteBusinessNotebook(LinkedNotebook notebook, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "deleteBusinessNotebook", notebook);
-  }
-
-  /**
-   * Providing a LinkedNotebook referencing a Business notebook, perform a delete
-   *
-   * Synchronous call
-   *
-   * @return guid of notebook deleted
-   */
-  public int deleteBusinessNotebook(LinkedNotebook notebook) {
-    //TODO: Implement
-    return 0;
+  String getAuthenticationToken() {
+    return mAuthenticationToken;
   }
 
 
@@ -232,7 +68,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getSyncState(String)
    */
   public void getSyncState(OnClientCallback<SyncState, Exception> callback) {
-    execute(callback, "getSyncState", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getSyncState", mAuthenticationToken);
   }
 
   /**
@@ -242,7 +78,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client##getSyncStateWithMetrics(com.evernote.edam.notestore.ClientUsageMetrics, OnClientCallback)
    */
   public void getSyncStateWithMetrics(ClientUsageMetrics clientMetrics, OnClientCallback<SyncState, Exception> callback) {
-    execute(callback, "getSyncStateWithMetrics", mAuthenticationToken, clientMetrics);
+    AsyncReflector.execute(this, callback, "getSyncStateWithMetrics", mAuthenticationToken, clientMetrics);
   }
 
 
@@ -253,7 +89,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getSyncChunk(String, int, int, boolean)
    */
   public void getSyncChunk(int afterUSN, int maxEntries, boolean fullSyncOnly, OnClientCallback<SyncChunk, Exception> callback) {
-    execute(callback, "getSyncChunk", mAuthenticationToken, afterUSN, maxEntries, fullSyncOnly);
+    AsyncReflector.execute(this, callback, "getSyncChunk", mAuthenticationToken, afterUSN, maxEntries, fullSyncOnly);
   }
 
 
@@ -264,7 +100,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getFilteredSyncChunk(String, int, int, com.evernote.edam.notestore.SyncChunkFilter)
    */
   public void getFilteredSyncChunk(int afterUSN, int maxEntries, SyncChunkFilter filter, OnClientCallback<SyncChunk, Exception> callback) {
-    execute(callback, "getFilteredSyncChunk", mAuthenticationToken, afterUSN, maxEntries, filter);
+    AsyncReflector.execute(this, callback, "getFilteredSyncChunk", mAuthenticationToken, afterUSN, maxEntries, filter);
   }
 
   /**
@@ -274,7 +110,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getLinkedNotebookSyncState(String, com.evernote.edam.type.LinkedNotebook)
    */
   public void getLinkedNotebookSyncState(LinkedNotebook linkedNotebook, OnClientCallback<SyncState, Exception> callback) {
-    execute(callback, "getLinkedNotebookSyncState", mAuthenticationToken, linkedNotebook);
+    AsyncReflector.execute(this, callback, "getLinkedNotebookSyncState", mAuthenticationToken, linkedNotebook);
   }
 
 
@@ -285,7 +121,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getLinkedNotebookSyncChunk(String, com.evernote.edam.type.LinkedNotebook, int, int, boolean)
    */
   public void getLinkedNotebookSyncChunk(LinkedNotebook linkedNotebook, int afterUSN, int maxEntries, boolean fullSyncOnly, OnClientCallback<SyncChunk, Exception> callback) {
-    execute(callback, "getLinkedNotebookSyncChunk", mAuthenticationToken, linkedNotebook, afterUSN);
+    AsyncReflector.execute(this, callback, "getLinkedNotebookSyncChunk", mAuthenticationToken, linkedNotebook, afterUSN);
   }
 
   /**
@@ -295,7 +131,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#listNotebooks(String)
    */
   public void listNotebooks(OnClientCallback<List<Notebook>, Exception> callback) {
-    execute(callback, "listNotebooks", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "listNotebooks", mAuthenticationToken);
   }
 
   /**
@@ -305,7 +141,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNotebook(String, String)
    */
   public void getNotebook(String guid, OnClientCallback<Notebook, Exception> callback) {
-    execute(callback, "getNotebook", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getNotebook", mAuthenticationToken);
   }
 
   /**
@@ -315,7 +151,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getDefaultNotebook(String)
    */
   public void getDefaultNotebook(OnClientCallback<Notebook, Exception> callback) {
-    execute(callback, "getDefaultNotebook", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getDefaultNotebook", mAuthenticationToken);
   }
 
   /**
@@ -325,7 +161,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#createNotebook(String, com.evernote.edam.type.Notebook)
    */
   public void createNotebook(Notebook notebook, OnClientCallback<Notebook, Exception> callback) {
-    execute(callback, "createNotebook", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "createNotebook", mAuthenticationToken);
   }
 
   /**
@@ -335,7 +171,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#updateNotebook(String, com.evernote.edam.type.Notebook)
    */
   public void updateNotebook(Notebook notebook, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "updateNotebook", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "updateNotebook", mAuthenticationToken);
   }
 
   /**
@@ -345,7 +181,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeNotebook(String, String)
    */
   public void expungeNotebook(String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeNotebook", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "expungeNotebook", mAuthenticationToken);
   }
 
   /**
@@ -355,7 +191,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#listTags(String)
    */
   public void listTags(OnClientCallback<List<Tag>, Exception> callback) {
-    execute(callback, "listTags", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "listTags", mAuthenticationToken);
   }
 
   /**
@@ -365,7 +201,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#listTagsByNotebook(String, String)
    */
   public void listTagsByNotebook(String notebookGuid, OnClientCallback<List<Tag>, Exception> callback) {
-    execute(callback, "listTagsByNotebook", mAuthenticationToken, notebookGuid);
+    AsyncReflector.execute(this, callback, "listTagsByNotebook", mAuthenticationToken, notebookGuid);
   }
 
   /**
@@ -375,7 +211,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getTag(String, String)
    */
   public void getTag(String guid, OnClientCallback<Tag, Exception> callback) {
-    execute(callback, "getTag", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getTag", mAuthenticationToken);
   }
 
   /**
@@ -385,7 +221,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#createTag(String, com.evernote.edam.type.Tag)
    */
   public void createTag(Tag tag, OnClientCallback<Tag, Exception> callback) {
-    execute(callback, "createTag", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "createTag", mAuthenticationToken);
   }
 
   /**
@@ -395,7 +231,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#updateTag(String, com.evernote.edam.type.Tag)
    */
   public void updateTag(Tag tag, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "updateTag", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "updateTag", mAuthenticationToken);
   }
 
   /**
@@ -405,7 +241,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#untagAll(String, String)
    */
   public void untagAll(String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "untagAll", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "untagAll", mAuthenticationToken);
   }
 
   /**
@@ -415,7 +251,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeTag(String, String)
    */
   public void expungeTag(String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeTag", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "expungeTag", mAuthenticationToken);
   }
 
   /**
@@ -425,7 +261,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#listSearches(String)
    */
   public void listSearches(OnClientCallback<List<SavedSearch>, Exception> callback) {
-    execute(callback, "listSearches", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "listSearches", mAuthenticationToken);
   }
 
   /**
@@ -435,7 +271,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getSearch(String, String)
    */
   public void getSearch(String guid, OnClientCallback<SavedSearch, Exception> callback) {
-    execute(callback, "getSearch", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getSearch", mAuthenticationToken);
   }
 
   /**
@@ -445,7 +281,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#createSearch(String, com.evernote.edam.type.SavedSearch)
    */
   public void createSearch(SavedSearch search, OnClientCallback<SavedSearch, Exception> callback) {
-    execute(callback, "createSearch", mAuthenticationToken, search)
+    AsyncReflector.execute(this, callback, "createSearch", mAuthenticationToken, search)
     ;
   }
 
@@ -456,7 +292,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#updateSearch(String, com.evernote.edam.type.SavedSearch)
    */
   public void updateSearch(SavedSearch search, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "updateSearch", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "updateSearch", mAuthenticationToken);
   }
 
   /**
@@ -466,7 +302,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeSearch(String, String)
    */
   public void expungeSearch(String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeSearch", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "expungeSearch", mAuthenticationToken);
   }
 
   /**
@@ -476,7 +312,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#findNotes(String, com.evernote.edam.notestore.NoteFilter, int, int)
    */
   public void findNotes(NoteFilter filter, int offset, int maxNotes, OnClientCallback<NoteList, Exception> callback) {
-    execute(callback, "findNotes", mAuthenticationToken, filter, offset, maxNotes);
+    AsyncReflector.execute(this, callback, "findNotes", mAuthenticationToken, filter, offset, maxNotes);
   }
 
   /**
@@ -486,7 +322,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#findNoteOffset(String, com.evernote.edam.notestore.NoteFilter, String)
    */
   public void findNoteOffset(NoteFilter filter, String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "findNoteOffset", mAuthenticationToken, filter, guid);
+    AsyncReflector.execute(this, callback, "findNoteOffset", mAuthenticationToken, filter, guid);
   }
 
   /**
@@ -496,7 +332,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, com.evernote.edam.notestore.NotesMetadataResultSpec)
    */
   public void findNotesMetadata(NoteFilter filter, int offset, int maxNotes, NotesMetadataResultSpec resultSpec, OnClientCallback<NotesMetadataList, Exception> callback) {
-    execute(callback, "findNotesMetadata", mAuthenticationToken, filter, offset, maxNotes);
+    AsyncReflector.execute(this, callback, "findNotesMetadata", mAuthenticationToken, filter, offset, maxNotes);
   }
 
   /**
@@ -506,7 +342,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#findNoteCounts(String, com.evernote.edam.notestore.NoteFilter, boolean)
    */
   public void findNoteCounts(NoteFilter filter, boolean withTrash, OnClientCallback<NoteCollectionCounts, Exception> callback) {
-    execute(callback, "findNoteCounts", mAuthenticationToken, filter, withTrash);
+    AsyncReflector.execute(this, callback, "findNoteCounts", mAuthenticationToken, filter, withTrash);
   }
 
   /**
@@ -516,7 +352,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNote(String, String, boolean, boolean, boolean, boolean)
    */
   public void getNote(String guid, boolean withContent, boolean withResourcesData, boolean withResourcesRecognition, boolean withResourcesAlternateData, OnClientCallback<Note, Exception> callback) {
-    execute(callback, "getNote", mAuthenticationToken, guid, withContent, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
+    AsyncReflector.execute(this, callback, "getNote", mAuthenticationToken, guid, withContent, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
   }
 
   /**
@@ -526,7 +362,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNoteApplicationData(String, String)
    */
   public void getNoteApplicationData(String guid, OnClientCallback<LazyMap, Exception> callback) {
-    execute(callback, "getNoteApplicationData", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getNoteApplicationData", mAuthenticationToken);
   }
 
   /**
@@ -536,7 +372,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNoteApplicationDataEntry(String, String, String)
    */
   public void getNoteApplicationDataEntry(String guid, String key, OnClientCallback<String, Exception> callback) {
-    execute(callback, "getNoteApplicationDataEntry", mAuthenticationToken, guid, key);
+    AsyncReflector.execute(this, callback, "getNoteApplicationDataEntry", mAuthenticationToken, guid, key);
   }
 
   /**
@@ -546,7 +382,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#setNoteApplicationDataEntry(String, String, String, String)
    */
   public void setNoteApplicationDataEntry(String guid, String key, String value, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "setNoteApplicationDataEntry", mAuthenticationToken, guid, key, value);
+    AsyncReflector.execute(this, callback, "setNoteApplicationDataEntry", mAuthenticationToken, guid, key, value);
   }
 
   /**
@@ -556,7 +392,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#unsetNoteApplicationDataEntry(String, String, String)
    */
   public void unsetNoteApplicationDataEntry(String guid, String key, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "unsetNoteApplicationDataEntry", mAuthenticationToken, guid, key);
+    AsyncReflector.execute(this, callback, "unsetNoteApplicationDataEntry", mAuthenticationToken, guid, key);
   }
 
   /**
@@ -566,7 +402,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNoteContent(String, String)
    */
   public void getNoteContent(String guid, OnClientCallback<String, Exception> callback) {
-    execute(callback, "getNoteContent", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getNoteContent", mAuthenticationToken);
   }
 
   /**
@@ -576,7 +412,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNoteSearchText(String, String, boolean, boolean)
    */
   public void getNoteSearchText(String guid, boolean noteOnly, boolean tokenizeForIndexing, OnClientCallback<String, Exception> callback) {
-    execute(callback, "getNoteSearchText", mAuthenticationToken, guid, noteOnly, tokenizeForIndexing);
+    AsyncReflector.execute(this, callback, "getNoteSearchText", mAuthenticationToken, guid, noteOnly, tokenizeForIndexing);
   }
 
   /**
@@ -586,7 +422,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceSearchText(String, String)
    */
   public void getResourceSearchText(String guid, OnClientCallback<String, Exception> callback) {
-    execute(callback, "getResourceSearchText", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getResourceSearchText", mAuthenticationToken);
   }
 
   /**
@@ -596,7 +432,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNoteTagNames(String, String)
    */
   public void getNoteTagNames(String guid, OnClientCallback<List<String>, Exception> callback) {
-    execute(callback, "getNoteTagNames", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getNoteTagNames", mAuthenticationToken);
   }
 
   /**
@@ -606,7 +442,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#createNote(String, com.evernote.edam.type.Note)
    */
   public void createNote(Note note, OnClientCallback<Note, Exception> callback) {
-    execute(callback, "createNote", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "createNote", mAuthenticationToken);
   }
 
   /**
@@ -616,7 +452,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#updateNote(String, com.evernote.edam.type.Note)
    */
   public void updateNote(Note note, OnClientCallback<Note, Exception> callback) {
-    execute(callback, "updateNote", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "updateNote", mAuthenticationToken);
   }
 
   /**
@@ -626,7 +462,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#deleteNote(String, String)
    */
   public void deleteNote(String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "deleteNote", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "deleteNote", mAuthenticationToken);
   }
 
   /**
@@ -636,7 +472,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeNote(String, String)
    */
   public void expungeNote(String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeNote", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "expungeNote", mAuthenticationToken);
   }
 
   /**
@@ -646,7 +482,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeNotes(String, java.util.List)
    */
   public void expungeNotes(List<String> noteGuids, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeNotes", mAuthenticationToken, noteGuids)
+    AsyncReflector.execute(this, callback, "expungeNotes", mAuthenticationToken, noteGuids)
     ;
   }
 
@@ -657,7 +493,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeInactiveNotes(String)
    */
   public void expungeInactiveNotes(OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeInactiveNotes", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "expungeInactiveNotes", mAuthenticationToken);
   }
 
   /**
@@ -667,7 +503,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#copyNote(String, String, String)
    */
   public void copyNote(String noteGuid, String toNotebookGuid, OnClientCallback<Note, Exception> callback) {
-    execute(callback, "copyNote", mAuthenticationToken, noteGuid, toNotebookGuid);
+    AsyncReflector.execute(this, callback, "copyNote", mAuthenticationToken, noteGuid, toNotebookGuid);
   }
 
   /**
@@ -677,7 +513,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#listNoteVersions(String, String)
    */
   public void listNoteVersions(String noteGuid, OnClientCallback<List<NoteVersionId>, Exception> callback) {
-    execute(callback, "listNoteVersions", mAuthenticationToken, noteGuid);
+    AsyncReflector.execute(this, callback, "listNoteVersions", mAuthenticationToken, noteGuid);
   }
 
   /**
@@ -687,7 +523,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getNoteVersion(String, String, int, boolean, boolean, boolean)
    */
   public void getNoteVersion(String noteGuid, int updateSequenceNum, boolean withResourcesData, boolean withResourcesRecognition, boolean withResourcesAlternateData, OnClientCallback<Note, Exception> callback) {
-    execute(callback, "getNoteVersion", mAuthenticationToken, noteGuid, updateSequenceNum, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
+    AsyncReflector.execute(this, callback, "getNoteVersion", mAuthenticationToken, noteGuid, updateSequenceNum, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
   }
 
   /**
@@ -697,7 +533,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResource(String, String, boolean, boolean, boolean, boolean)
    */
   public void getResource(String guid, boolean withData, boolean withRecognition, boolean withAttributes, boolean withAlternateData, OnClientCallback<Resource, Exception> callback) {
-    execute(callback, "getResource", mAuthenticationToken, guid, withData, withRecognition, withAttributes, withAlternateData)
+    AsyncReflector.execute(this, callback, "getResource", mAuthenticationToken, guid, withData, withRecognition, withAttributes, withAlternateData)
     ;
   }
 
@@ -708,7 +544,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceApplicationData(String, String)
    */
   public void getResourceApplicationData(String guid, OnClientCallback<LazyMap, Exception> callback) {
-    execute(callback, "getResourceApplicationData", mAuthenticationToken, guid);
+    AsyncReflector.execute(this, callback, "getResourceApplicationData", mAuthenticationToken, guid);
   }
 
   /**
@@ -718,7 +554,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceApplicationDataEntry(String, String, String)
    */
   public void getResourceApplicationDataEntry(String guid, String key, OnClientCallback<String, Exception> callback) {
-    execute(callback, "getResourceApplicationDataEntry", mAuthenticationToken, guid, key);
+    AsyncReflector.execute(this, callback, "getResourceApplicationDataEntry", mAuthenticationToken, guid, key);
   }
 
   /**
@@ -728,7 +564,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#setResourceApplicationDataEntry(String, String, String, String)
    */
   public void setResourceApplicationDataEntry(String guid, String key, String value, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "setResourceApplicationDataEntry", mAuthenticationToken, guid, key, value);
+    AsyncReflector.execute(this, callback, "setResourceApplicationDataEntry", mAuthenticationToken, guid, key, value);
   }
 
   /**
@@ -738,7 +574,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#unsetResourceApplicationDataEntry(String, String, String)
    */
   public void unsetResourceApplicationDataEntry(String guid, String key, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "unsetResourceApplicationDataEntry", mAuthenticationToken, guid, key);
+    AsyncReflector.execute(this, callback, "unsetResourceApplicationDataEntry", mAuthenticationToken, guid, key);
   }
 
   /**
@@ -748,7 +584,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#updateResource(String, com.evernote.edam.type.Resource)
    */
   public void updateResource(Resource resource, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "updateResource", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "updateResource", mAuthenticationToken);
   }
 
   /**
@@ -758,7 +594,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceData(String, String)
    */
   public void getResourceData(String guid, OnClientCallback<byte[], Exception> callback) {
-    execute(callback, "getResourceData", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getResourceData", mAuthenticationToken);
   }
 
   /**
@@ -768,7 +604,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceByHash(String, String, byte[], boolean, boolean, boolean)
    */
   public void getResourceByHash(String noteGuid, byte[] contentHash, boolean withData, boolean withRecognition, boolean withAlternateData, OnClientCallback<Resource, Exception> callback) {
-    execute(callback, "getResourceByHash", mAuthenticationToken, noteGuid, contentHash, withData, withRecognition, withAlternateData);
+    AsyncReflector.execute(this, callback, "getResourceByHash", mAuthenticationToken, noteGuid, contentHash, withData, withRecognition, withAlternateData);
   }
 
   /**
@@ -778,7 +614,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceRecognition(String, String)
    */
   public void getResourceRecognition(String guid, OnClientCallback<byte[], Exception> callback) {
-    execute(callback, "getResourceRecognition", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getResourceRecognition", mAuthenticationToken);
   }
 
   /**
@@ -788,7 +624,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceAlternateData(String, String)
    */
   public void getResourceAlternateData(String guid, OnClientCallback<byte[], Exception> callback) {
-    execute(callback, "getResourceAlternateData", mAuthenticationToken, guid)
+    AsyncReflector.execute(this, callback, "getResourceAlternateData", mAuthenticationToken, guid)
     ;
   }
 
@@ -799,7 +635,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getResourceAttributes(String, String)
    */
   public void getResourceAttributes(String guid, OnClientCallback<ResourceAttributes, Exception> callback) {
-    execute(callback, "getResourceAttributes", mAuthenticationToken, guid);
+    AsyncReflector.execute(this, callback, "getResourceAttributes", mAuthenticationToken, guid);
   }
 
   /**
@@ -809,7 +645,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getPublicNotebook(int, String)
    */
   public void getPublicNotebook(int userId, String publicUri, OnClientCallback<Notebook, Exception> callback) {
-    execute(callback, "getPublicNotebook", mAuthenticationToken, userId, publicUri);
+    AsyncReflector.execute(this, callback, "getPublicNotebook", mAuthenticationToken, userId, publicUri);
   }
 
   /**
@@ -819,7 +655,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#createSharedNotebook(String, com.evernote.edam.type.SharedNotebook)
    */
   public void createSharedNotebook(SharedNotebook sharedNotebook, OnClientCallback<SharedNotebook, Exception> callback) {
-    execute(callback, "createSharedNotebook", mAuthenticationToken, sharedNotebook);
+    AsyncReflector.execute(this, callback, "createSharedNotebook", mAuthenticationToken, sharedNotebook);
   }
 
   /**
@@ -829,7 +665,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#updateSharedNotebook(String, com.evernote.edam.type.SharedNotebook)
    */
   public void updateSharedNotebook(SharedNotebook sharedNotebook, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "updateSharedNotebook", mAuthenticationToken, sharedNotebook);
+    AsyncReflector.execute(this, callback, "updateSharedNotebook", mAuthenticationToken, sharedNotebook);
   }
 
   /**
@@ -839,7 +675,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#sendMessageToSharedNotebookMembers(String, String, String, java.util.List)
    */
   public void sendMessageToSharedNotebookMembers(String notebookGuid, String messageText, List<String> recipients, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "sendMessageToSharedNotebookMembers", mAuthenticationToken, notebookGuid, messageText);
+    AsyncReflector.execute(this, callback, "sendMessageToSharedNotebookMembers", mAuthenticationToken, notebookGuid, messageText);
   }
 
   /**
@@ -849,7 +685,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#listSharedNotebooks(String)
    */
   public void listSharedNotebooks(OnClientCallback<List<SharedNotebook>, Exception> callback) {
-    execute(callback, "listSharedNotebooks", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "listSharedNotebooks", mAuthenticationToken);
   }
 
   /**
@@ -859,7 +695,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeSharedNotebooks(String, java.util.List)
    */
   public void expungeSharedNotebooks(List<Long> sharedNotebookIds, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeSharedNotebooks", mAuthenticationToken, sharedNotebookIds);
+    AsyncReflector.execute(this, callback, "expungeSharedNotebooks", mAuthenticationToken, sharedNotebookIds);
   }
 
   /**
@@ -869,7 +705,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#createLinkedNotebook(String, com.evernote.edam.type.LinkedNotebook)
    */
   public void createLinkedNotebook(LinkedNotebook linkedNotebook, OnClientCallback<LinkedNotebook, Exception> callback) {
-    execute(callback, "createLinkedNotebook", mAuthenticationToken, linkedNotebook);
+    AsyncReflector.execute(this, callback, "createLinkedNotebook", mAuthenticationToken, linkedNotebook);
   }
 
   /**
@@ -879,7 +715,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#updateLinkedNotebook(String, com.evernote.edam.type.LinkedNotebook)
    */
   public void updateLinkedNotebook(LinkedNotebook linkedNotebook, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "updateLinkedNotebook", mAuthenticationToken, linkedNotebook);
+    AsyncReflector.execute(this, callback, "updateLinkedNotebook", mAuthenticationToken, linkedNotebook);
   }
 
   /**
@@ -889,7 +725,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#listLinkedNotebooks(String)
    */
   public void listLinkedNotebooks(OnClientCallback<List<LinkedNotebook>, Exception> callback) {
-    execute(callback, "listLinkedNotebooks", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "listLinkedNotebooks", mAuthenticationToken);
   }
 
   /**
@@ -899,7 +735,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#expungeLinkedNotebook(String, String)
    */
   public void expungeLinkedNotebook(String guid, OnClientCallback<Integer, Exception> callback) {
-    execute(callback, "expungeLinkedNotebook", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "expungeLinkedNotebook", mAuthenticationToken);
   }
 
   /**
@@ -909,7 +745,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#authenticateToSharedNotebook(String, String)
    */
   public void authenticateToSharedNotebook(String shareKey, OnClientCallback<AuthenticationResult, Exception> callback) {
-    execute(callback, "authenticateToSharedNotebook", mAuthenticationToken, shareKey);
+    AsyncReflector.execute(this, callback, "authenticateToSharedNotebook", mAuthenticationToken, shareKey);
   }
 
   /**
@@ -919,7 +755,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#getSharedNotebookByAuth(String)
    */
   public void getSharedNotebookByAuth(OnClientCallback<SharedNotebook, Exception> callback) {
-    execute(callback, "getSharedNotebookByAuth", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "getSharedNotebookByAuth", mAuthenticationToken);
   }
 
   /**
@@ -929,7 +765,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#emailNote(String, com.evernote.edam.notestore.NoteEmailParameters)
    */
   public void emailNote(NoteEmailParameters parameters, OnClientCallback<Void, Exception> callback) {
-    execute(callback, "emailNote", mAuthenticationToken, parameters);
+    AsyncReflector.execute(this, callback, "emailNote", mAuthenticationToken, parameters);
   }
 
   /**
@@ -939,7 +775,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#shareNote(String, String)
    */
   public void shareNote(String guid, OnClientCallback<String, Exception> callback) {
-    execute(callback, "shareNote", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "shareNote", mAuthenticationToken);
   }
 
   /**
@@ -949,7 +785,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#stopSharingNote(String, String)
    */
   public void stopSharingNote(String guid, OnClientCallback<Void, Exception> callback) {
-    execute(callback, "stopSharingNote", mAuthenticationToken);
+    AsyncReflector.execute(this, callback, "stopSharingNote", mAuthenticationToken);
   }
 
   /**
@@ -959,7 +795,7 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#authenticateToSharedNote(String, String)
    */
   public void authenticateToSharedNote(String guid, String noteKey, OnClientCallback<AuthenticationResult, Exception> callback) {
-    execute(callback, "authenticateToSharedNote", mAuthenticationToken, guid, noteKey);
+    AsyncReflector.execute(this, callback, "authenticateToSharedNote", mAuthenticationToken, guid, noteKey);
   }
 
   /**
@@ -969,6 +805,6 @@ public class AsyncNoteStoreClient extends NoteStore.Client implements AsyncClien
    * @see NoteStore.Client#findRelated(String, com.evernote.edam.notestore.RelatedQuery, com.evernote.edam.notestore.RelatedResultSpec)
    */
   public void findRelated(RelatedQuery query, RelatedResultSpec resultSpec, OnClientCallback<RelatedResult, Exception> callback) {
-    execute(callback, "findRelated", mAuthenticationToken, query, resultSpec);
+    AsyncReflector.execute(this, callback, "findRelated", mAuthenticationToken, query, resultSpec);
   }
 }

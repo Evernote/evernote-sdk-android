@@ -25,11 +25,7 @@
  */
 package com.evernote.client.android;
 
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
-import com.evernote.edam.error.EDAMErrorCode;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.NoteStore;
@@ -114,10 +110,6 @@ public class ClientFactory {
    * a new NoteStore.Client instance. The returned client can be used for any
    * number of API calls, but is NOT thread safe.
    *
-   * This method will check if the user is a business user if the
-   * {@link com.evernote.client.android.EvernoteSession#isBusinessUser()} has not been called,
-   * this is a network request
-   *
    * This method will check expiration time for the business authorization token, this is a network request
    *
    * This method is synchronous
@@ -130,21 +122,21 @@ public class ClientFactory {
     com.evernote.client.android.AuthenticationResult authResult =
         EvernoteSession.getOpenSession().getAuthenticationResult();
 
-    if(authResult.getBusinessId() == -1) {
-      //Make one more network request in case user hasn't called isBusinessUser()
-      if(!EvernoteSession.getOpenSession().isBusinessUser()) {
-        Log.e(LOGTAG, "User is not part of a business");
-        throw new EDAMSystemException(EDAMErrorCode.UNSUPPORTED_OPERATION);
-      }
+    if(authResult.getBusinessAuthToken() == null ||
+        authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
+
+      AuthenticationResult businessAuthResult = createUserStoreClient().authenticateToBusiness(authResult.getAuthToken());
+
+      authResult.setBusinessAuthToken(businessAuthResult.getAuthenticationToken());
+      authResult.setBusinessAuthTokenExpiration(businessAuthResult.getExpiration());
+      authResult.setBusinessNoteStoreUrl(businessAuthResult.getNoteStoreUrl());
+      authResult.setBusinessUser(businessAuthResult.getUser());
     }
 
-    if(authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
-      AuthenticationResult evernoteAuth = createUserStoreClient().authenticateToBusiness(authResult.getAuthToken());
-      authResult.setBusinessAuthTokenExpiration(evernoteAuth.getExpiration());
-      authResult.setBusinessNoteStoreUrl(evernoteAuth.getNoteStoreUrl());
-    }
-
-    return createNoteStoreClient(authResult.getBusinessNoteStoreUrl());
+    TEvernoteHttpClient transport =
+        new TEvernoteHttpClient(authResult.getBusinessNoteStoreUrl(), mUserAgent, mTempDir);
+    TBinaryProtocol protocol = new TBinaryProtocol(transport);
+    return new AsyncNoteStoreClient(protocol, protocol, authResult.getBusinessAuthToken());
   }
 
   /**
@@ -153,28 +145,7 @@ public class ClientFactory {
    * @param callback to receive results from creating NoteStore
    */
   public void createBusinessNoteStoreClient(final OnClientCallback<AsyncNoteStoreClient, Exception> callback) {
-    final Handler handler = new Handler(Looper.getMainLooper());
-    EvernoteSession.getOpenSession().getThreadExecutor().execute(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          final AsyncNoteStoreClient client = createBusinessNoteStoreClient();
-          handler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onResultsReceived(client);
-            }
-          });
-        } catch(final Exception ex) {
-          handler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onErrorReceived(ex);
-            }
-          });
-        }
-      }
-    });
+    AsyncReflector.execute(this, callback, "createBusinessNoteStoreClient");
   }
 
 
@@ -253,7 +224,12 @@ public class ClientFactory {
       transport.setCustomHeader(USER_AGENT_KEY, mUserAgent);
     }
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new AsyncUserStoreClient(protocol, protocol);
+    String authToken = null;
+    if(EvernoteSession.getOpenSession().isLoggedIn()) {
+      authToken = EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken();
+    }
+
+    return new AsyncUserStoreClient(protocol, protocol, authToken);
   }
 
   private String getFullUrl(String serviceUrl, int port) {

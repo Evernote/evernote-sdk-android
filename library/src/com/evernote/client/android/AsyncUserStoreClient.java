@@ -26,18 +26,16 @@
 package com.evernote.client.android;
 
 
-import android.os.Handler;
-import android.os.Looper;
+import com.evernote.edam.error.EDAMSystemException;
+import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.type.PremiumInfo;
 import com.evernote.edam.type.User;
 import com.evernote.edam.userstore.AuthenticationResult;
 import com.evernote.edam.userstore.BootstrapInfo;
 import com.evernote.edam.userstore.PublicUserInfo;
 import com.evernote.edam.userstore.UserStore;
+import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TProtocol;
-
-import java.lang.reflect.Method;
-import java.util.concurrent.ExecutorService;
 
 /**
  * An Async wrapper for {@link UserStore.Client}
@@ -45,55 +43,39 @@ import java.util.concurrent.ExecutorService;
  *
  * @author @tylersmithnet
  */
-public class AsyncUserStoreClient extends UserStore.Client implements AsyncClientInterface {
+public class AsyncUserStoreClient extends UserStore.Client {
 
-  private final ExecutorService mThreadExecutor;
-  private final Handler mUIHandler;
+  protected final String mAuthenticationToken;
 
-  AsyncUserStoreClient(TProtocol prot) {
+  AsyncUserStoreClient(TProtocol prot, String authenticationToken) {
     super(prot);
-    mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
-    mUIHandler = new Handler(Looper.getMainLooper());
+    mAuthenticationToken = authenticationToken;
   }
 
-  AsyncUserStoreClient(TProtocol iprot, TProtocol oprot) {
+  AsyncUserStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken) {
     super(iprot, oprot);
-    mThreadExecutor = EvernoteSession.getOpenSession().getThreadExecutor();
-    mUIHandler = new Handler(Looper.getMainLooper());
+    mAuthenticationToken = authenticationToken;
   }
 
   /**
-   * Reflection to run Asynchronous methods
+
+   *
+   * Asynchronous call
+   *
    */
-  public <T> void execute(final OnClientCallback<T, Exception> callback, final String function, final Object... args) {
-    mThreadExecutor.execute(new Runnable() {
-      public void run() {
-        try {
-          Class[] classes = new Class[args.length];
-          for (int i = 0; i < args.length; i++) {
-            classes[i] = args[i].getClass();
-          }
+  public void isBusinessUser(final OnClientCallback<Boolean, Exception> callback) {
+    AsyncReflector.execute(this, callback, "isBusinessUser");
+  }
 
-          Method method = AsyncUserStoreClient.this.getClass().getMethod(function, classes);
-          final T answer = (T) method.invoke(AsyncUserStoreClient.this, args);
-
-          mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onResultsReceived(answer);
-            }
-          });
-
-        } catch (final Exception ex) {
-          mUIHandler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onErrorReceived(ex);
-            }
-          });
-        }
-      }
-    });
+  /**
+   *
+   * Synchronous call
+   *
+   *
+   * @return the result of a user belonging to a business account
+   */
+  public boolean isBusinessUser() throws TException, EDAMUserException, EDAMSystemException {
+    return getUser(mAuthenticationToken).getAccounting().isSetBusinessId();
   }
 
   /**
@@ -103,7 +85,7 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @see UserStore.Client#checkVersion(String, short, short)
    */
   public void checkVersion(final String clientName, final short edamVersionMajor, final short edamVersionMinor, final OnClientCallback<Boolean, Exception> callback) {
-    execute(callback, "checkVersion", clientName, edamVersionMajor, edamVersionMinor);
+    AsyncReflector.execute(this, callback, "checkVersion", clientName, edamVersionMajor, edamVersionMinor);
   }
 
   /**
@@ -113,7 +95,7 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @see UserStore.Client#getBootstrapInfo(String)
    */
   public void getBootstrapInfo(final String locale, final OnClientCallback<BootstrapInfo, Exception> callback) {
-    execute(callback, "getBootstrapInfo", locale);
+    AsyncReflector.execute(this, callback, "getBootstrapInfo", locale);
   }
 
   /**
@@ -123,7 +105,7 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @see UserStore.Client#authenticate(String, String, String, String)
    */
   public void authenticate(final String username, final String password, final String consumerKey, final String consumerSecret, final OnClientCallback<AuthenticationResult, Exception> callback) {
-    execute(callback, "authenticate", username, password, consumerKey, consumerSecret);
+    AsyncReflector.execute(this, callback, "authenticate", username, password, consumerKey, consumerSecret);
   }
 
   /**
@@ -133,7 +115,7 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @see UserStore.Client#authenticateLongSession(String, String, String, String, String, String)
    */
   public void authenticateLongSession(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier, final String deviceDescription, final OnClientCallback<AuthenticationResult, Exception> callback) {
-    execute(callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription);
+    AsyncReflector.execute(this, callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription);
   }
 
   /**
@@ -143,7 +125,7 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @see UserStore.Client#authenticateToBusiness(String)
    */
   public void authenticateToBusiness(final String authenticationToken, final OnClientCallback<AuthenticationResult, Exception> callback) {
-    execute(callback, "authenticateToBusiness", authenticationToken);
+    AsyncReflector.execute(this, callback, "authenticateToBusiness", authenticationToken);
   }
 
   /**
@@ -153,7 +135,7 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @see UserStore.Client#refreshAuthentication(String)
    */
   public void refreshAuthentication(final String authenticationToken, final OnClientCallback<AuthenticationResult, Exception> callback) {
-    execute(callback, "refreshAuthentication", authenticationToken);
+    AsyncReflector.execute(this, callback, "refreshAuthentication", authenticationToken);
   }
 
   /**
@@ -162,8 +144,8 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @param {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getUser(String)
    */
-  public void getUser(final String authenticationToken, final OnClientCallback<User, Exception> callback) {
-    execute(callback, "getUser", authenticationToken);
+  public void getUser(final OnClientCallback<User, Exception> callback) {
+    AsyncReflector.execute(this, callback, "getUser", mAuthenticationToken);
   }
 
   /**
@@ -173,7 +155,7 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @see UserStore.Client#getPublicUserInfo(String)
    */
   public void getPublicUserInfo(final String username, final OnClientCallback<PublicUserInfo, Exception> callback) {
-    execute(callback, "getPublicUserInfo", username);
+    AsyncReflector.execute(this, callback, "getPublicUserInfo", username);
   }
 
   /**
@@ -182,8 +164,8 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @param {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getPremiumInfo(String)
    */
-  public void getPremiumInfo(final String authenticationToken, final OnClientCallback<PremiumInfo, Exception> callback) {
-    execute(callback, "getPremiumInfo", authenticationToken);
+  public void getPremiumInfo(final OnClientCallback<PremiumInfo, Exception> callback) {
+    AsyncReflector.execute(this, callback, "getPremiumInfo", mAuthenticationToken);
   }
 
   /**
@@ -192,8 +174,8 @@ public class AsyncUserStoreClient extends UserStore.Client implements AsyncClien
    * @param {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getNoteStoreUrl(String)
    */
-  public void getNoteStoreUrl(final String authenticationToken, final OnClientCallback<String, Exception> callback) {
-    execute(callback, "getNoteStoreUrl", authenticationToken);
+  public void getNoteStoreUrl(final OnClientCallback<String, Exception> callback) {
+    AsyncReflector.execute(this, callback, "getNoteStoreUrl", mAuthenticationToken);
   }
 }
 

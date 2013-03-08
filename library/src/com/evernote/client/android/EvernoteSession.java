@@ -30,24 +30,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.os.*;
+import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import com.evernote.client.oauth.EvernoteAuthToken;
-import com.evernote.edam.error.EDAMSystemException;
-import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.NoteStore;
-import com.evernote.edam.type.User;
 import com.evernote.edam.userstore.UserStore;
-import com.evernote.thrift.TException;
 import com.evernote.thrift.transport.TTransportException;
 
 import java.io.File;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
@@ -138,9 +134,8 @@ public class EvernoteSession {
   private String mConsumerSecret;
   private EvernoteService mEvernoteService;
   private BootstrapManager mBootstrapManager;
-  private ClientFactory mClientProducer;
+  private ClientFactory mClientFactory;
   private AuthenticationResult mAuthenticationResult;
-  private ExecutorService mThreadExecutor;
 
   /**
    * Use to acquire a singleton instance of the EvernoteSession for authentication.
@@ -196,14 +191,6 @@ public class EvernoteSession {
 
 
   /**
-   *
-   * @return the thread executor for async operations
-   */
-  public ExecutorService getThreadExecutor() {
-    return mThreadExecutor;
-  }
-
-  /**
    * Private constructor.
    */
   private EvernoteSession(Context ctx,
@@ -216,10 +203,9 @@ public class EvernoteSession {
     mConsumerSecret = consumerSecret;
     mEvernoteService = evernoteService;
 
-    mAuthenticationResult = getAuthenticationResult(SessionPreferences.getPreferences(ctx));
-    mClientProducer = new ClientFactory(generateUserAgentString(ctx), ctx.getFilesDir());
-    mThreadExecutor = Executors.newSingleThreadExecutor();
-    mBootstrapManager = new BootstrapManager(mEvernoteService, mClientProducer);
+    mAuthenticationResult = getAuthenticationResultFromPref(SessionPreferences.getPreferences(ctx));
+    mClientFactory = new ClientFactory(generateUserAgentString(ctx), ctx.getFilesDir());
+    mBootstrapManager = new BootstrapManager(mEvernoteService, mClientFactory);
   }
 
   /**
@@ -235,8 +221,8 @@ public class EvernoteSession {
    *
    * @return the {@link ClientFactory} object that creates notestores, userstores, contains the useragent, and temp dir
    */
-  public ClientFactory getClientProducer() {
-    return mClientProducer;
+  public ClientFactory getClientFactory() {
+    return mClientFactory;
   }
 
 
@@ -245,7 +231,7 @@ public class EvernoteSession {
    * @return The restored AuthenticationResult, or null if the preferences
    * did not contain the required information.
    */
-  private AuthenticationResult getAuthenticationResult(SharedPreferences prefs) {
+  private AuthenticationResult getAuthenticationResultFromPref(SharedPreferences prefs) {
 
     AuthenticationResult authResult = new AuthenticationResult(prefs);
 
@@ -253,8 +239,7 @@ public class EvernoteSession {
         TextUtils.isEmpty(authResult.getAuthToken()) ||
         TextUtils.isEmpty(authResult.getNoteStoreUrl()) ||
         TextUtils.isEmpty(authResult.getWebApiUrlPrefix()) ||
-        TextUtils.isEmpty(authResult.getEvernoteHost()) ||
-        authResult.getUserId() == -1) {
+        TextUtils.isEmpty(authResult.getEvernoteHost())) {
       return null;
     }
 
@@ -285,21 +270,21 @@ public class EvernoteSession {
   }
 
   /**
-   * Deprecated - Use getClientProducer().createNoteStoreClient()
+   * Deprecated - Use getClientFactory().createNoteStoreClient()
    *
    */
   @Deprecated
   public NoteStore.Client createNoteStore() throws TTransportException {
-    return mClientProducer.createNoteStoreClient(mAuthenticationResult.getNoteStoreUrl());
+    return mClientFactory.createNoteStoreClient(mAuthenticationResult.getNoteStoreUrl());
   }
 
   /**
-   * Deprecated - Use getClientProducer().createUserStoreClient()
+   * Deprecated - Use getClientFactory().createUserStoreClient()
    *
    */
   @Deprecated
   public UserStore.Client createUserStore()  throws TTransportException {
-    return mClientProducer.createUserStoreClient(mAuthenticationResult.getEvernoteHost());
+    return mClientFactory.createUserStoreClient(mAuthenticationResult.getEvernoteHost());
   }
 
 
@@ -383,8 +368,6 @@ public class EvernoteSession {
 
     mAuthenticationResult.persist(SessionPreferences.getPreferences(ctx));
 
-    //Calling this to set business IDs
-    isBusinessUser(null);
 
     return true;
   }
@@ -398,67 +381,6 @@ public class EvernoteSession {
   }
 
 
-  /**
-   * This or {@link com.evernote.client.android.EvernoteSession#isBusinessUser()} needs to be called
-   * before Business Helper methods are accessed to set refresh the Business auth token and verify the business ID
-   *
-   * Asynchronous call
-   *
-   */
-  public void isBusinessUser(final OnClientCallback<Boolean, Exception> callback) {
-    final Handler handler = new Handler(Looper.getMainLooper());
-    mThreadExecutor.execute(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          final Boolean results = isBusinessUser();
-          handler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onResultsReceived(results);
-            }
-          });
-        } catch(final Exception ex) {
-          handler.post(new Runnable() {
-            @Override
-            public void run() {
-              if(callback != null) callback.onErrorReceived(ex);
-            }
-          });
-        }
-      }
-    });
-  }
-
-  /**
-   * This or {@link EvernoteSession#isBusinessUser(OnClientCallback)} needs to be called
-   * before Business Helper methods are accessed to set refresh the Business auth token and verify the business ID
-   *
-   * Synchronous call
-   *
-   *
-   * @return the result of a user belonging to a business account
-   */
-  public boolean isBusinessUser() {
-    AuthenticationResult authResult = getAuthenticationResult();
-
-    try {
-
-      User user = mClientProducer.createUserStoreClient().getUser(authResult.getAuthToken());
-      if(user.getAccounting().isSetBusinessId()) {
-        authResult.setBusinessId(user.getAccounting().getBusinessId());
-        return true;
-      }
-    } catch (EDAMUserException e) {
-      e.printStackTrace();
-    } catch (EDAMSystemException e) {
-      e.printStackTrace();
-    } catch (TException e) {
-      e.printStackTrace();
-    }
-
-    return false;
-  }
 
   /**
    * Clear all stored authentication information.
