@@ -38,9 +38,6 @@ import android.util.Log;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import com.evernote.client.oauth.EvernoteAuthToken;
-import com.evernote.edam.notestore.NoteStore;
-import com.evernote.edam.userstore.UserStore;
-import com.evernote.thrift.transport.TTransportException;
 
 import java.util.Locale;
 
@@ -161,6 +158,8 @@ public class EvernoteSession {
     return sInstance;
   }
 
+
+
   /**
    * Used to access the initialized EvernoteSession singleton instance.
    *
@@ -207,9 +206,7 @@ public class EvernoteSession {
   }
 
   /**
-   * Use this object to create @{link NoteStore.Client} and {@link UserStore.Client}
-   *
-   * @return the {@link ClientFactory} object that creates notestores, userstores, contains the useragent, and temp dir
+   * Use this to create {@link AsyncNoteStoreClient} and {@link AsyncUserStoreClient}
    */
   public ClientFactory getClientFactory() {
     return mClientFactory;
@@ -257,25 +254,6 @@ public class EvernoteSession {
   public AuthenticationResult getAuthenticationResult() {
     return mAuthenticationResult;
   }
-
-  /**
-   * Deprecated - Use getClientFactory().createNoteStoreClient()
-   *
-   */
-  @Deprecated
-  public NoteStore.Client createNoteStore() throws TTransportException {
-    return mClientFactory.createNoteStoreClient(mAuthenticationResult.getNoteStoreUrl());
-  }
-
-  /**
-   * Deprecated - Use getClientFactory().createUserStoreClient()
-   *
-   */
-  @Deprecated
-  public UserStore.Client createUserStore()  throws TTransportException {
-    return mClientFactory.createUserStoreClient(mAuthenticationResult.getEvernoteHost());
-  }
-
 
   /**
    * Construct a user-agent string based on the running application and

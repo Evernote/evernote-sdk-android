@@ -3,9 +3,6 @@ Evernote SDK for Android version 1.1
 
 Evernote API version 1.23
 
-Notice
-------
-This is a non-backwards compatible update.  Please `git pull` before following setup instructions.
 
 Overview
 --------
@@ -67,7 +64,7 @@ Add the Evernote SDK for Android as a dependency:
 <dependency>
 	<groupId>com.evernote</groupId>
 	<artifactId>android-sdk</artifactId>
-	<version>1.0.2</version>
+	<version>1.1</version>
 	<type>apklib</type>
 </dependency>
 ```
@@ -93,7 +90,7 @@ private static final EvernoteSession.EvernoteService EVERNOTE_SERVICE = Evernote
 When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote.
 
 ```java
-mEvernoteSession = EvernoteSession.init(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE, null);
+mEvernoteSession = EvernoteSession.getInstance(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE);
 ```
 
 ### Give the user a way to initiate authentication
@@ -103,6 +100,11 @@ In our sample app, we have a "Sign in to Evernote" button that initiates the aut
 ```java
 mEvernoteSession.authenticate(this);
 ```
+
+### Service Bootstrapping
+
+The Activity that completes the OAuth authentication automatically determines if the User is on the Evernote service or the Yinxiang service and configures the end points automatically.
+
 ### Complete authentication in `onActivityResult`
 
 You can check whether authentication was successful by watching for the Evernote OAuth Activity in `onActivityResult`. If authentication is successful, you can start using the Evernote API.
@@ -122,9 +124,11 @@ public void onActivityResult(int requestCode, int resultCode, Intent data) {
 }
 ```
 
-### Get a `NoteStore.Client` from the `EvernoteSessio`n and make Evernote API calls
+### Use the `ClientFactory` to create Async Clients
 
-After you've authenticated, the EvernoteSession will have a valid authentication token. Use the session to get a `NoteStore` or `UserStore` client object, and pass the session's authentication token when calling `NoteStore`/`UserStore` methods. See `saveImage()` in the sample application for an example of creating a new note using the API. Browse the JavaDoc at http://dev.evernote.com/documentation/reference/javadoc/
+Calling `EvernoteSession.getClientFactory()` will give you access to `createNoteStore()`, `createUserStore()`, and `createBusinessNoteStore()`. These objects return Asynchronously wrapped `Client` objects that allow you to interact with the Evernote API.
+
+After you've authenticated, the EvernoteSession will have a valid authentication token. Use the session to get an `AsyncNoteStoreClient` or `AsyncUserStoreClient` object. See `saveImage()` in the sample application for an example of creating a new note using the API. Browse the JavaDoc at http://dev.evernote.com/documentation/reference/javadoc/
 
 License
 =======
