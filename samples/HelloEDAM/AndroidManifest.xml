@@ -19,5 +19,14 @@
         <activity
                 android:name="com.evernote.client.android.EvernoteOAuthActivity"
             android:configChanges="orientation|keyboardHidden"/>
+        <activity
+            android:name=".ImagePicker"
+            android:label="@string/image_picker"
+            android:configChanges="orientation|keyboardHidden"/>
+        <activity
+            android:name=".SimpleNote"
+            android:label="@string/simple_note" />
+        <activity android:name=".ParentActivity"
+            android:configChanges="orientation|keyboardHidden"/>
     </application>
 </manifest>

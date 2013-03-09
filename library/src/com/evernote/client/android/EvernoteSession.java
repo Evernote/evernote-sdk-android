@@ -122,7 +122,7 @@ public class EvernoteSession {
     };
   }
 
-  public static final int REQUEST_CODE_OAUTH = 10101;
+  public static final int REQUEST_CODE_OAUTH = 14390;
 
   private static EvernoteSession sInstance = null;
 
