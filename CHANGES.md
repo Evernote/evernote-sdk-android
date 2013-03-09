@@ -2,8 +2,10 @@
 
 * Added automatic bootstrapping support for Yinxiang
 * Added asynchronous wrappers of UserStore.Client and NoteStore.Client
-* Added Business support and helper methods
+* Added Factory method to generate appropriate AsyncClients
+* Added Business and Linked AsyncNoteStore objects with helper methods
 * Cleaned up architecture
+* New sample code
 * Bug fixes
 
 = 1.0.2 / 2012-12-30
