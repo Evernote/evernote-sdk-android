@@ -23,7 +23,7 @@
  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.evernote.client.oauth.android;
+package com.evernote.client.android;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -32,9 +32,13 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.Window;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -43,29 +47,41 @@ import android.widget.Toast;
 import com.evernote.androidsdk.R;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.client.oauth.YinxiangApi;
-import com.evernote.edam.userstore.Constants;
+import com.evernote.edam.userstore.BootstrapInfo;
+import com.evernote.edam.userstore.BootstrapProfile;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.EvernoteApi;
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
+import java.util.ArrayList;
+
 /**
  * An Android Activity for authenticating to Evernote using OAuth.
  * Third parties should not need to use this class directly.
  *
- * TODO document how to localize strings used in the activity.
+ *
+ * class created by @tylersmithnet
  */
 public class EvernoteOAuthActivity extends Activity {
-  private static final String TAG = "EvernoteOAuthActivity";
+  private static final String LOGTAG = "EvernoteOAuthActivity";
 
-  static final String EXTRA_EVERNOTE_HOST = "EVERNOTE_HOST";
+  static final String EXTRA_EVERNOTE_SERVICE = "EVERNOTE_HOST";
   static final String EXTRA_CONSUMER_KEY = "CONSUMER_KEY";
   static final String EXTRA_CONSUMER_SECRET = "CONSUMER_SECRET";
   static final String EXTRA_REQUEST_TOKEN = "REQUEST_TOKEN";
   static final String EXTRA_REQUEST_TOKEN_SECRET = "REQUEST_TOKEN_SECRET";
+  static final String EXTRA_BOOTSTRAP_SELECTED_PROFILE_POS = "BOOTSTRAP_SELECTED_PROFILE_POS";
+  static final String EXTRA_BOOTSTRAP_SELECTED_PROFILE = "BOOTSTRAP_SELECTED_PROFILE";
+  static final String EXTRA_BOOTSTRAP_SELECTED_PROFILES = "BOOTSTRAP_SELECTED_PROFILES";
 
-  private String mEvernoteHost = null;
+  private EvernoteSession.EvernoteService mEvernoteService = null;
+
+  private BootstrapProfile mSelectedBootstrapProfile;
+  private int mSelectedBootstrapProfilePos = 0;
+  private ArrayList<BootstrapProfile> mBootstrapProfiles = new ArrayList<BootstrapProfile>();
+
   private String mConsumerKey = null;
   private String mConsumerSecret = null;
   private String mRequestToken = null;
@@ -121,48 +137,60 @@ public class EvernoteOAuthActivity extends Activity {
     setContentView(R.layout.esdk__webview);
     mActivity = this;
 
-    if (savedInstanceState != null) {
-      mEvernoteHost = savedInstanceState.getString(EXTRA_EVERNOTE_HOST);
-      mConsumerKey = savedInstanceState.getString(EXTRA_CONSUMER_KEY);
-      mConsumerSecret = savedInstanceState.getString(EXTRA_CONSUMER_SECRET);
-      mRequestToken = savedInstanceState.getString(EXTRA_REQUEST_TOKEN);
-      mRequestTokenSecret = savedInstanceState.getString(EXTRA_REQUEST_TOKEN_SECRET);
-    } else {
-      Intent intent = getIntent();
-      mEvernoteHost = intent.getStringExtra(EXTRA_EVERNOTE_HOST);
-      mConsumerKey = intent.getStringExtra(EXTRA_CONSUMER_KEY);
-      mConsumerSecret = intent.getStringExtra(EXTRA_CONSUMER_SECRET);
-    }
-
     mWebView = (WebView) findViewById(R.id.esdk__webview);
     mWebView.setWebViewClient(mWebViewClient);
     mWebView.setWebChromeClient(mWebChromeClient);
     mWebView.getSettings().setJavaScriptEnabled(true);
+
+    if (savedInstanceState != null) {
+      mEvernoteService = savedInstanceState.getParcelable(EXTRA_EVERNOTE_SERVICE);
+      mConsumerKey = savedInstanceState.getString(EXTRA_CONSUMER_KEY);
+      mConsumerSecret = savedInstanceState.getString(EXTRA_CONSUMER_SECRET);
+      mRequestToken = savedInstanceState.getString(EXTRA_REQUEST_TOKEN);
+      mRequestTokenSecret = savedInstanceState.getString(EXTRA_REQUEST_TOKEN_SECRET);
+      mSelectedBootstrapProfile = (BootstrapProfile) savedInstanceState.getSerializable(EXTRA_BOOTSTRAP_SELECTED_PROFILE);
+      mSelectedBootstrapProfilePos = savedInstanceState.getInt(EXTRA_BOOTSTRAP_SELECTED_PROFILE_POS);
+      mBootstrapProfiles = (ArrayList<BootstrapProfile>) savedInstanceState.getSerializable(EXTRA_BOOTSTRAP_SELECTED_PROFILES);
+      mWebView.restoreState(savedInstanceState);
+
+    } else {
+      Intent intent = getIntent();
+      mEvernoteService = intent.getParcelableExtra(EXTRA_EVERNOTE_SERVICE);
+      mConsumerKey = intent.getStringExtra(EXTRA_CONSUMER_KEY);
+      mConsumerSecret = intent.getStringExtra(EXTRA_CONSUMER_SECRET);
+    }
   }
 
   @Override
   protected void onResume() {
     super.onResume();
 
-    if (TextUtils.isEmpty(mEvernoteHost) ||
-        TextUtils.isEmpty(mConsumerKey) ||
+    if (TextUtils.isEmpty(mConsumerKey) ||
         TextUtils.isEmpty(mConsumerSecret)) {
       exit(false);
       return;
     }
 
-    if (mBeginAuthSyncTask == null) {
-      mBeginAuthSyncTask = new BeginAuthAsyncTask().execute();
+    if (mSelectedBootstrapProfile == null) {
+      mBeginAuthSyncTask = new BootstrapAsyncTask().execute();
     }
   }
 
+  /**
+   * Not needed because of conficChanges, but leaving in case developer does not add to manifest
+   * @param outState
+   */
   @Override
   protected void onSaveInstanceState(Bundle outState) {
-    outState.putString(EXTRA_EVERNOTE_HOST, mEvernoteHost);
+    outState.putParcelable(EXTRA_EVERNOTE_SERVICE, mEvernoteService);
     outState.putString(EXTRA_CONSUMER_KEY, mConsumerKey);
     outState.putString(EXTRA_CONSUMER_SECRET, mConsumerSecret);
     outState.putString(EXTRA_REQUEST_TOKEN, mRequestToken);
     outState.putString(EXTRA_REQUEST_TOKEN_SECRET, mRequestTokenSecret);
+    outState.putSerializable(EXTRA_BOOTSTRAP_SELECTED_PROFILE, mSelectedBootstrapProfile);
+    outState.putInt(EXTRA_BOOTSTRAP_SELECTED_PROFILE_POS, mSelectedBootstrapProfilePos);
+    outState.putSerializable(EXTRA_BOOTSTRAP_SELECTED_PROFILES, mBootstrapProfiles);
+    mWebView.saveState(outState);
 
     super.onSaveInstanceState(outState);
   }
@@ -206,16 +234,21 @@ public class EvernoteOAuthActivity extends Activity {
     OAuthService builder = null;
     @SuppressWarnings("rawtypes")
     Class apiClass = null;
+    String host = mSelectedBootstrapProfile.getSettings().getServiceHost();
 
-    if (mEvernoteHost.equals(EvernoteSession.HOST_SANDBOX)) {
+    if (host != null && !host.startsWith("http")) {
+      host = "https://" + host;
+    }
+
+    if (host.equals(EvernoteSession.HOST_SANDBOX)) {
       apiClass = EvernoteApi.Sandbox.class;
-    } else if (mEvernoteHost.equals(EvernoteSession.HOST_PRODUCTION)) {
+    } else if (host.equals(EvernoteSession.HOST_PRODUCTION)) {
       apiClass = EvernoteApi.class;
-    } else if (mEvernoteHost.equals(EvernoteSession.HOST_CHINA)) {
+    } else if (host.equals(EvernoteSession.HOST_CHINA)) {
       apiClass = YinxiangApi.class;
     } else {
       throw new IllegalArgumentException("Unsupported Evernote host: " +
-                                         mEvernoteHost);
+                                         host);
     }
     builder = new ServiceBuilder()
         .provider(apiClass)
@@ -243,10 +276,77 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
+   * On honeycomb and above this will create an actionbar with the item to switch services
+   * Below honeycomb it will create the options menu bound to a hardware key
+   * @param menu
+   * @return
+   */
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    MenuInflater inflater = getMenuInflater();
+    inflater.inflate(R.menu.esdk__oauth, menu);
+
+    return super.onCreateOptionsMenu(menu);
+  }
+
+  /**
+   * On Honeycomb and above this is called when we invalidate, this happens when the {@link ArrayList} of
+   * {@link BootstrapProfile} are updated.
+   *
+   * Below Honeycomb this is called when the user presses the menu button.
+   *
+   * This detects the number of bootstrap items and sets the UI element appropriately.
+   *
+   * @param menu
+   * @return
+   */
+  @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+    MenuItem itemSwitchService = menu.findItem(R.id.esdk__switch_service);
+
+    if(mBootstrapProfiles != null && mBootstrapProfiles.size() > 1) {
+      if(BootstrapManager.CHINA_PROFILE.equals(mSelectedBootstrapProfile.getName())) {
+        itemSwitchService.setTitle(BootstrapManager.DISPLAY_EVERNOTE_INTL);
+      } else {
+        itemSwitchService.setTitle(BootstrapManager.DISPLAY_YXBIJI);
+      }
+
+      itemSwitchService.setVisible(true);
+    } else {
+      itemSwitchService.setVisible(false);
+    }
+
+    return super.onPrepareOptionsMenu(menu);
+  }
+
+  /**
+   * This will select the next {@link BootstrapProfile} in {@link #mBootstrapProfiles} and start a new
+   * webview load request.
+   * @param item
+   * @return
+   */
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if(item.getItemId() == R.id.esdk__switch_service) {
+      if((mBeginAuthSyncTask == null || mBeginAuthSyncTask.getStatus() != AsyncTask.Status.RUNNING) &&
+          (mSelectedBootstrapProfile != null && mBootstrapProfiles != null)) {
+
+        mSelectedBootstrapProfilePos = (mSelectedBootstrapProfilePos + 1) % mBootstrapProfiles.size();
+        mBootstrapProfiles = null;
+        mSelectedBootstrapProfile = null;
+
+        mBeginAuthSyncTask = new BootstrapAsyncTask().execute();
+      }
+    }
+    return true;
+  }
+
+
+  /**
    * Get a request token from the Evernote service and send the user
    * to our WebView to authorize access.
    */
-  private class BeginAuthAsyncTask extends AsyncTask<Void, Void, String> {
+  private class BootstrapAsyncTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPreExecute() {
@@ -258,29 +358,45 @@ public class EvernoteOAuthActivity extends Activity {
     protected String doInBackground(Void... params) {
       String url = null;
       try {
-        OAuthService service = createService();
 
-        EvernoteSession session = EvernoteSession.getSession();
+        EvernoteSession session = EvernoteSession.getOpenSession();
         if (session != null) {
-          if (!session.createUserStore().checkVersion(
-              session.getUserAgentString(),
-              Constants.EDAM_VERSION_MAJOR,
-              Constants.EDAM_VERSION_MINOR)) {
-              Log.e(TAG, "Evernote API version " + Constants.EDAM_VERSION_MAJOR + "." +
-              Constants.EDAM_VERSION_MINOR + " is no longer supported!");
-            return null;
+          //Network request
+          BootstrapManager.BootstrapInfoWrapper infoWrapper = session.getBootstrapSession().getBootstrapInfo();
+
+          if (infoWrapper != null){
+            BootstrapInfo info = infoWrapper.getBootstrapInfo();
+            if(info != null) {
+              mBootstrapProfiles = (ArrayList<BootstrapProfile>) info.getProfiles();
+              if (mBootstrapProfiles != null &&
+                  mBootstrapProfiles.size() > 0 &&
+                  mSelectedBootstrapProfilePos < mBootstrapProfiles.size()){
+
+                mSelectedBootstrapProfile = mBootstrapProfiles.get(mSelectedBootstrapProfilePos);
+              }
+            }
           }
         }
 
-        Log.i(TAG, "Retrieving OAuth request token...");
+        if(mSelectedBootstrapProfile == null || TextUtils.isEmpty(mSelectedBootstrapProfile.getSettings().getServiceHost())) {
+          Log.d(LOGTAG, "Bootstrap did not return a valid host");
+          return null;
+        }
+
+        OAuthService service = createService();
+
+        Log.i(LOGTAG, "Retrieving OAuth request token...");
         Token reqToken = service.getRequestToken();
         mRequestToken = reqToken.getToken();
         mRequestTokenSecret = reqToken.getSecret();
 
-        Log.i(TAG, "Redirecting user for authorization...");
+        Log.i(LOGTAG, "Redirecting user for authorization...");
         url = service.getAuthorizationUrl(reqToken);
+      } catch(BootstrapManager.ClientUnsupportedException cue) {
+
+        return null;
       } catch (Exception ex) {
-        Log.e(TAG, "Failed to obtain OAuth request token", ex);
+        Log.e(LOGTAG, "Failed to obtain OAuth request token", ex);
       }
       return url;
     }
@@ -295,6 +411,10 @@ public class EvernoteOAuthActivity extends Activity {
       removeDialog(DIALOG_PROGRESS);
       if (!TextUtils.isEmpty(url)) {
         mWebView.loadUrl(url);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+          invalidateOptionsMenu();
+        }
       } else {
         exit(false);
       }
@@ -324,19 +444,19 @@ public class EvernoteOAuthActivity extends Activity {
         OAuthService service = createService();
         String verifierString = uri.getQueryParameter("oauth_verifier");
         if (TextUtils.isEmpty(verifierString)) {
-          Log.i(TAG, "User did not authorize access");
+          Log.i(LOGTAG, "User did not authorize access");
         } else {
           Verifier verifier = new Verifier(verifierString);
-          Log.i(TAG, "Retrieving OAuth access token...");
+          Log.i(LOGTAG, "Retrieving OAuth access token...");
           try {
             Token reqToken = new Token(mRequestToken, mRequestTokenSecret);
             authToken = new EvernoteAuthToken(service.getAccessToken(reqToken, verifier));
           } catch (Exception ex) {
-            Log.e(TAG, "Failed to obtain OAuth access token", ex);
+            Log.e(LOGTAG, "Failed to obtain OAuth access token", ex);
           }
         }
       } else {
-        Log.d(TAG, "Unable to retrieve OAuth access token, no request token");
+        Log.d(LOGTAG, "Unable to retrieve OAuth access token, no request token");
       }
 
       return authToken;
@@ -351,13 +471,13 @@ public class EvernoteOAuthActivity extends Activity {
     protected void onPostExecute(EvernoteAuthToken authToken) {
       // TODO deprecated
       removeDialog(DIALOG_PROGRESS);
-      if (EvernoteSession.getSession() == null) {
+      if (EvernoteSession.getOpenSession() == null) {
         exit(false);
         return;
       }
 
-      exit(EvernoteSession.getSession().persistAuthenticationToken(
-      getApplicationContext(), authToken));
+      exit(EvernoteSession.getOpenSession().persistAuthenticationToken(
+      getApplicationContext(), authToken, mSelectedBootstrapProfile.getSettings().getServiceHost()));
     }
   }
 

@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ListView
-        android:layout_height="0dip"
-        android:layout_weight="1"
+    <ImageView
+        android:id="@+id/image"
         android:layout_width="match_parent"
-        android:id="@+id/list" />
+        android:layout_height="match_parent"
+        android:scaleType="centerInside"
+        />
 
-    <LinearLayout
+    <LinearLayout android:id="@+id/image_button_wrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -18,21 +20,22 @@
         android:gravity="center"
         android:background="#cccccccc"
         android:padding="3dp">
-
         <Button
-            android:id="@+id/login"
+            android:id="@+id/select_button"
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:text="@string/label_login"
-            android:onClick="login"
-            android:layout_weight="1" />
+            android:text="@string/label_select_button"
+            android:onClick="startSelectImage"
+            android:layout_weight="1"/>
 
         <Button
-            android:id="@+id/logout"
+            android:id="@+id/save_button"
             android:layout_height="wrap_content"
             android:layout_width="0dp"
-            android:text="@string/label_logout"
-            android:onClick="logout"
-            android:layout_weight="1" />
+            android:text="@string/label_save_button"
+            android:onClick="saveImage"
+            android:layout_weight="1"/>
+
     </LinearLayout>
-</LinearLayout>
+
+</FrameLayout>

@@ -26,12 +26,12 @@ Modified by Evernote for use with the Evernote API.
 
 package com.evernote.client.oauth;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.scribe.exceptions.OAuthException;
 import org.scribe.model.Token;
 import org.scribe.utils.OAuthEncoder;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A Scribe AccessToken that contains Evernote-specific items from the OAuth response.
@@ -44,15 +44,15 @@ public class EvernoteAuthToken extends Token {
   private static final Pattern WEBAPI_REGEX = Pattern.compile("edam_webApiUrlPrefix=([^&]+)");
   private static final Pattern USERID_REGEX = Pattern.compile("edam_userId=([^&]+)");
 
-  private String noteStoreUrl;
-  private String webApiUrlPrefix;
-  private int userId;
+  private String mNoteStoreUrl;
+  private String mWebApiUrlPrefix;
+  private int mUserId;
 
   public EvernoteAuthToken(Token token) {
     super(token.getToken(), token.getSecret(), token.getRawResponse());
-    this.noteStoreUrl = extract(getRawResponse(), NOTESTORE_REGEX);
-    this.webApiUrlPrefix = extract(getRawResponse(), WEBAPI_REGEX);
-    this.userId = Integer.parseInt(extract(getRawResponse(), USERID_REGEX));
+    this.mNoteStoreUrl = extract(getRawResponse(), NOTESTORE_REGEX);
+    this.mWebApiUrlPrefix = extract(getRawResponse(), WEBAPI_REGEX);
+    this.mUserId = Integer.parseInt(extract(getRawResponse(), USERID_REGEX));
   }
 
   private String extract(String response, Pattern p) {
@@ -69,20 +69,21 @@ public class EvernoteAuthToken extends Token {
    * Get the Evernote web service NoteStore URL from the OAuth access token response.
    */
   public String getNoteStoreUrl() {
-    return noteStoreUrl;
+    return mNoteStoreUrl;
   }
 
   /**
    * Get the Evernote web API URL prefix from the OAuth access token response.
    */
   public String getWebApiUrlPrefix() {
-    return webApiUrlPrefix;
+    return mWebApiUrlPrefix;
   }
 
   /**
    * Get the numeric Evernote user ID from the OAuth access token response.
    */
   public int getUserId() {
-    return userId;
+    return mUserId;
   }
+
 }

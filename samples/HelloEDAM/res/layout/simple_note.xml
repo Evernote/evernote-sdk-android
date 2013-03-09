@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/text_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_marginTop="10dip"
+        android:singleLine="true"
+        android:hint="@string/title"
+        />
+
+    <EditText
+        android:id="@+id/text_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dip"
+        android:layout_weight="1"
+        android:layout_margin="10dip"
+        android:gravity="top"
+        android:hint="@string/content"
+        />
+
+    <LinearLayout android:id="@+id/image_button_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom"
+        android:gravity="center"
+        android:background="#cccccccc"
+        android:padding="3dp">
+        <Button
+            android:id="@+id/select_button"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:text="@string/label_select_notebook_button"
+            android:onClick="selectNotebook"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/save_button"
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:text="@string/label_save_button"
+            android:onClick="saveNote"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
+</LinearLayout>
