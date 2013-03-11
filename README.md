@@ -14,27 +14,48 @@ In order to use the code in this SDK, you need to obtain an API key from http://
 
 In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action
 
-The instructions below assume that you are developing your Android app in Eclipse and have the [latest Android development tools](http://developer.android.com/tools/sdk/eclipse-adt.html).
+The instructions below assume you have the latest [Android SDK](http://developer.android.com/sdk/index.html) and [API 17](http://developer.android.com/tools/revisions/platforms.html#4.2) installed. The instructions for eclipse are based on [Eclipse Juno](http://www.eclipse.org/downloads/) and [latest Android development tools](http://developer.android.com/tools/sdk/eclipse-adt.html. The instructions for Intellij are based on [Intellij IDEA 12 Community Edition](http://www.jetbrains.com/idea/download/index.html) and is our recommended IDE.
+
+
+Sample App
+----------
+The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. The sample code provides mutliple activities that show notebook listing, note creation, and resource creation in two scenarios: A plain text note creator and an image saver.
 
 Running the sample app from Eclipse
 -----------------------------------
-The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. To build and run the sample project from Eclipse:
+To build and run the sample project from Eclipse:
 
 1. Open Eclipse
 2. From the File menu, choose New and then Project...
 3. Under Android, select "Android Project from Existing Code" and click Next
 4. Click Browse
-5. Select the SDK root directory (the directory containing this README) and click Open
+5. Select the SDK root directory (the directory containing this README) and click OK
 6. Click Finish
-7. From the Package Explorer, expand the HelloEDAM project's `src` directory and open `com.evernote.android.sample.HelloEDAM.java`
-8. At the top of `HelloEDAM.java`, fill in your Evernote API consumer key and secret.
-9. Build and run the project
+7. Right click HelloEDAM, click properties, click Java Build Path, click the Projects tab,
+8. Click Add and select library, click ok to accept changes.
+9. From the Package Explorer, expand the HelloEDAM project's `src` directory and open `com.evernote.android.sample.ParentActivity.java`
+10. At the top of `ParentActivity.java`, fill in your Evernote API consumer key and secret.
+11. Build and run the project
 
-The sample application allows you to authenticate to Evernote, select an image from your device's image gallery, and then save that image into Evernote as a new note.
+Running the sample app from Intellij
+-----------------------------------
+To build and run the sample project from Intellij:
+
+1. Open Intellij
+2. From the File menu, choose Import Project...
+3. Select the SDK root directory (the directory containing this README) and click Open
+4. Select Create project from existing sources and Click Next
+5. Click Next, Next, Next, Next
+6. Select Android 4.2 Google APIs and click Next
+7. Click Finish
+8. From the Project Explorer, expand the HelloEDAM project's `src` directory and open `com.evernote.android.sample.ParentActivity.java`
+9. At the top of `ParentActivity.java`, fill in your Evernote API consumer key and secret.
+10. Build and run the project
+
 
 Using the SDK in your app
 -------------------------
-There are two ways to include the SDK in your project: by including and building the Android Library Project or by using Maven.
+There are two ways to include the SDK in your project: by including and building the Android Library Project in your IDE or by using Maven.
 
 ### Include the Android Library Project in your Eclipse workspace
 
@@ -53,6 +74,17 @@ There are two ways to include the SDK in your project: by including and building
    11. Click Add...
    12. Select Library and click OK
    13. Click OK
+   
+### Include the Android Library Project in your Intellij workspace
+
+1. Right click your project and choose Open Module Properties
+2. Select the Plus Icon (Add) at the top and choose Import Module
+3. Select the library directory and click OK   
+4. Click Next, Next, Next, Next
+5. Click Finish
+6. Click your project and select teh Dependencies tab
+7. Click the Plus Icon (Add) at the bottom and select 3 Module Dependency
+8. Select library and click OK
 
 ### Use Maven
 
@@ -124,45 +156,42 @@ public void onActivityResult(int requestCode, int resultCode, Intent data) {
 }
 ```
 
-### Use the `ClientFactory` to create Async Clients
+Use the `ClientFactory` to create Async Clients
+-----------------------------------------------
 
-The Async Wrappers provides for each note store allow access to all the synchronous methods or thrift to talk to the Evernote API in an asynchronous way using a callback interface `OnClickCallback<T>`.
+Calling `EvernoteSession.getClientFactory()` will give you access to `createNoteStore()`, `createUserStore()`, and `createBusinessNoteStore()`. These objects return Asynchronously wrapped `Client` objects that allow you to interact with the Evernote API over Thrift using a callback interface `OnClickCallback<T>`.
 
-If the underlying `Client` object is needed, access via the `getClient()` method.
+If the underlying `NoteStore.Client` or `UserStore.Client` object is needed, access via the `getClient()` method. Browse the API JavaDocs at http://dev.evernote.com/documentation/reference/javadoc/
 
 
-Create an `AsyncNoteStore` to access primary methods like `createNote(note)` and `listNotebooks()` on the users main account
+### Create an `AsyncNoteStore` to access primary methods for personal note data
 ```java
 mEvernoteSession.getClientFactory().createNoteStore();
 ```
 
 
-Create an `AsyncUserStore` to access User related methods
+### Create an `AsyncUserStore` to access User related methods
 ```java
 mEvernoteSession.getClientFactory().createUserStore();
 ```
 
 
-Create an `AsyncBusinessNoteStoreClient` to access Business Notebooks
+### Create an `AsyncBusinessNoteStoreClient` to access Business Notebooks
 ```java
 mEvernoteSession.getClientFactory().createBusinessNoteStore();
 ```
 
 
-Create an `AsyncLinkedNoteStoreClient` to access shared notebooks
+### Create an `AsyncLinkedNoteStoreClient` to access shared notebooks
 ```java
 mEvernoteSession.getClientFactory().createLinkedNoteStore(linkedNotebook);
 ```
 
 
+Using the `AsyncNoteStoreClient` to make asynchronous API calls
+---------------------------------------------------------------
 
-Calling `EvernoteSession.getClientFactory()` will give you access to `createNoteStore()`, `createUserStore()`, and `createBusinessNoteStore()`. These objects return Asynchronously wrapped `Client` objects that allow you to interact with the Evernote API.
-
-After you've authenticated, the EvernoteSession will have a valid authentication token. Use the session to get an `AsyncNoteStoreClient` or `AsyncUserStoreClient` object. See `saveImage()` in the sample application for an example of creating a new note using the API. Browse the JavaDoc at http://dev.evernote.com/documentation/reference/javadoc/
-
-### Using the `AsyncNoteStoreClient` to work with Notes, Notebooks, and more
-
-Getting List of notebooks asynchronously
+### Getting list of notebooks asynchronously
 ```java
 public void listNotebooks() throws TTransportException {
   if (mEvernoteSession.isLoggedIn()) {
@@ -186,7 +215,7 @@ public void listNotebooks() throws TTransportException {
 }
 ```
 
-Creating a note asynchronously
+### Creating a note asynchronously
 ```java
 public void createNote(String title, String content) throws TTransportException {
   if (mEvernoteSession.isLoggedIn()) {
@@ -207,8 +236,6 @@ public void createNote(String title, String content) throws TTransportException 
   }
 }
 ```
-
-
 
 ### Using the `AsyncBusinessNoteStoreClient` to Access Evernote Business data
 
@@ -255,9 +282,6 @@ new Thread(new Runnable() {
   }
 }).start();
 ```
-
-
-
 
 License
 =======
