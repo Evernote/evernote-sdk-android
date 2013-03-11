@@ -21,8 +21,7 @@ Sample App
 ----------
 The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. The sample code provides mutliple activities that show notebook listing, note creation, and resource creation in two scenarios: A plain text note creator and an image saver.
 
-Running the sample app from Eclipse
------------------------------------
+###  Running the sample app from Eclipse
 To build and run the sample project from Eclipse:
 
 1. Open Eclipse
@@ -37,8 +36,7 @@ To build and run the sample project from Eclipse:
 10. At the top of `ParentActivity.java`, fill in your Evernote API consumer key and secret.
 11. Build and run the project
 
-Running the sample app from Intellij
------------------------------------
+###  Running the sample app from Intellij
 To build and run the sample project from Intellij:
 
 1. Open Intellij
