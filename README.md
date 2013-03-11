@@ -14,7 +14,7 @@ In order to use the code in this SDK, you need to obtain an API key from http://
 
 In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action
 
-The instructions below assume you have the latest [Android SDK](http://developer.android.com/sdk/index.html) and [API 17](http://developer.android.com/tools/revisions/platforms.html#4.2) installed. The instructions for eclipse are based on [Eclipse Juno](http://www.eclipse.org/downloads/) and [latest Android development tools](http://developer.android.com/tools/sdk/eclipse-adt.html. The instructions for Intellij are based on [Intellij IDEA 12 Community Edition](http://www.jetbrains.com/idea/download/index.html) and is our recommended IDE.
+The instructions below assume you have the latest [Android SDK](http://developer.android.com/sdk/index.html) and [API 17](http://developer.android.com/tools/revisions/platforms.html#4.2) installed. The instructions for eclipse are based on [Eclipse Juno](http://www.eclipse.org/downloads/) and [latest Android development tools](http://developer.android.com/tools/sdk/eclipse-adt.html). The instructions for Intellij are based on [Intellij IDEA 12 Community Edition](http://www.jetbrains.com/idea/download/index.html) and is our recommended IDE.
 
 
 Sample App
