@@ -1,0 +1,361 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Evernote-sdk-android by evernote</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Evernote-sdk-android</h1>
+        <p>Evernote SDK for Android</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/evernote/evernote-sdk-android" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/evernote/evernote-sdk-android/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/evernote/evernote-sdk-android/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>Evernote SDK for Android version 1.1</h1>
+
+<p>Evernote API version 1.23</p>
+
+<h2>Overview</h2>
+
+<p>This SDK wraps the <a href="http://dev.evernote.com/documentation/cloud/">Evernote Cloud API </a> and provides OAuth authentication functionality. The SDK is provided as an Android Library project that can be included in your application.</p>
+
+<h2>Prerequisites</h2>
+
+<p>In order to use the code in this SDK, you need to obtain an API key from <a href="http://dev.evernote.com/documentation/cloud">http://dev.evernote.com/documentation/cloud</a>. You'll also find full API documentation on that page.</p>
+
+<p>In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at <a href="https://sandbox.evernote.com/Registration.action">https://sandbox.evernote.com/Registration.action</a></p>
+
+<p>The instructions below assume you have the latest <a href="http://developer.android.com/sdk/index.html">Android SDK</a> and <a href="http://developer.android.com/tools/revisions/platforms.html#4.2">API 17</a> installed. The instructions for eclipse are based on <a href="http://www.eclipse.org/downloads/">Eclipse Juno</a> and <a href="http://developer.android.com/tools/sdk/eclipse-adt.html">latest Android development tools</a>. The instructions for Intellij are based on <a href="http://www.jetbrains.com/idea/download/index.html">Intellij IDEA 12 Community Edition</a> and is our recommended IDE.</p>
+
+<h2>Sample App</h2>
+
+<p>The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. The sample code provides mutliple activities that show notebook listing, note creation, and resource creation in two scenarios: A plain text note creator and an image saver.</p>
+
+<h3>Running the sample app from Eclipse</h3>
+
+<p>To build and run the sample project from Eclipse:</p>
+
+<ol>
+<li>Open Eclipse</li>
+<li>From the File menu, choose New and then Project...</li>
+<li>Under Android, select "Android Project from Existing Code" and click Next</li>
+<li>Click Browse</li>
+<li>Select the SDK root directory (the directory containing this README) and click OK</li>
+<li>Click Finish</li>
+<li>Right click HelloEDAM, click properties, click Java Build Path, click the Projects tab,</li>
+<li>Click Add and select library, click ok to accept changes.</li>
+<li>From the Package Explorer, expand the HelloEDAM project's <code>src</code> directory and open <code>com.evernote.android.sample.ParentActivity.java</code>
+</li>
+<li>At the top of <code>ParentActivity.java</code>, fill in your Evernote API consumer key and secret.</li>
+<li>Build and run the project</li>
+</ol><h3>Running the sample app from Intellij</h3>
+
+<p>To build and run the sample project from Intellij:</p>
+
+<ol>
+<li>Open Intellij</li>
+<li>From the File menu, choose Import Project...</li>
+<li>Select the SDK root directory (the directory containing this README) and click Open</li>
+<li>Select Create project from existing sources and Click Next</li>
+<li>Click Next, Next, Next, Next</li>
+<li>Select Android 4.2 Google APIs and click Next</li>
+<li>Click Finish</li>
+<li>From the Project Explorer, expand the HelloEDAM project's <code>src</code> directory and open <code>com.evernote.android.sample.ParentActivity.java</code>
+</li>
+<li>At the top of <code>ParentActivity.java</code>, fill in your Evernote API consumer key and secret.</li>
+<li>Build and run the project</li>
+</ol><h2>Using the SDK in your app</h2>
+
+<p>There are two ways to include the SDK in your project: by including and building the Android Library Project in your IDE or by using Maven.</p>
+
+<h3>Include the Android Library Project in your Eclipse workspace</h3>
+
+<ol>
+<li>Import the Android Library Project
+
+<ol>
+<li>Open Eclipse</li>
+<li>From the File menu, choose New and then Project...</li>
+<li>Under Android, select "Android Project from Existing Code" and click Next</li>
+<li>Click Browse</li>
+<li>Select the library directory and click Open</li>
+<li>Click Finish</li>
+</ol>
+</li>
+<li>Add the Android Library Project as a dependency in your app
+
+<ol>
+<li>Right-click on your project and choose "Properties"</li>
+<li>In the Android section, in the Library area, click Add...</li>
+<li>Select library from the list and click OK</li>
+<li>Click Java Build Path and then select the Projects tab</li>
+<li>Click Add...</li>
+<li>Select Library and click OK</li>
+<li>Click OK</li>
+</ol>
+</li>
+</ol><h3>Include the Android Library Project in your Intellij workspace</h3>
+
+<ol>
+<li>Right click your project and choose Open Module Properties</li>
+<li>Select the Plus Icon (Add) at the top and choose Import Module</li>
+<li>Select the library directory and click OK<br>
+</li>
+<li>Click Next, Next, Next, Next</li>
+<li>Click Finish</li>
+<li>Click your project and select teh Dependencies tab</li>
+<li>Click the Plus Icon (Add) at the bottom and select 3 Module Dependency</li>
+<li>Select library and click OK</li>
+</ol><h3>Use Maven</h3>
+
+<p>If you build your app using Maven, you can simply add the Evernote SDK for Android as a dependency in your pom.xml.</p>
+
+<p>Add the Evernote SDK for Android as a dependency:</p>
+
+<div class="highlight"><pre><span class="nt">&lt;dependency&gt;</span>
+    <span class="nt">&lt;groupId&gt;</span>com.evernote<span class="nt">&lt;/groupId&gt;</span>
+    <span class="nt">&lt;artifactId&gt;</span>android-sdk<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;version&gt;</span>1.1<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;type&gt;</span>apklib<span class="nt">&lt;/type&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+
+<h3>Modify your <code>AndroidManifest.xml</code>
+</h3>
+
+<p>The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's <code>AndroidManifest.xml</code>. Simply copy and paste the following snippet into your <code>AndroidManifest.xml</code> within the application section:</p>
+
+<div class="highlight"><pre><span class="nt">&lt;activity</span> <span class="na">android:name=</span><span class="s">"com.evernote.client.android.EvernoteOAuthActivity"</span> <span class="na">android:configChanges=</span><span class="s">"orientation|keyboardHidden"</span> <span class="nt">/&gt;</span>
+</pre></div>
+
+<h3>Set up an <code>EvernoteSession</code>
+</h3>
+
+<p>Define your app credentials (key, secret, and host).  See <a href="http://dev.evernote.com/documentation/cloud/">http://dev.evernote.com/documentation/cloud/</a></p>
+
+<div class="highlight"><pre><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">CONSUMER_KEY</span> <span class="o">=</span> <span class="s">"Your consumer key"</span><span class="o">;</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">CONSUMER_SECRET</span> <span class="o">=</span> <span class="s">"Your consumer secret"</span><span class="o">;</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">EvernoteSession</span><span class="o">.</span><span class="na">EvernoteService</span> <span class="n">EVERNOTE_SERVICE</span> <span class="o">=</span> <span class="n">EvernoteSession</span><span class="o">.</span><span class="na">EvernoteService</span><span class="o">.</span><span class="na">SANDBOX</span><span class="o">;</span>
+</pre></div>
+
+<p>When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote. The EvernoteSession instance of saved statically and does not need to be passed between activities. The better option is to run getInstance(...) in your onCreate() of the Application object or your parent Activity object.</p>
+
+<div class="highlight"><pre><span class="n">mEvernoteSession</span> <span class="o">=</span> <span class="n">EvernoteSession</span><span class="o">.</span><span class="na">getInstance</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="n">CONSUMER_KEY</span><span class="o">,</span> <span class="n">CONSUMER_SECRET</span><span class="o">,</span> <span class="n">EVERNOTE_SERVICE</span><span class="o">);</span>
+</pre></div>
+
+<h3>Give the user a way to initiate authentication</h3>
+
+<p>In our sample app, we have a "Sign in to Evernote" button that initiates the authentication process. You might choose to do something similar, or you might simply initiate authentication the first time that the user tries to access Evernote-related functionality.</p>
+
+<div class="highlight"><pre><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">authenticate</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+</pre></div>
+
+<h3>Evernote and Yinxiang Biji Service Bootstrapping</h3>
+
+<p>The Activity that completes the OAuth authentication automatically determines if the User is on the Evernote service or the Yinxiang service and configures the end points automatically.</p>
+
+<h3>Complete authentication in <code>onActivityResult</code>
+</h3>
+
+<p>You can check whether authentication was successful by watching for the Evernote OAuth Activity in <code>onActivityResult</code>. If authentication is successful, you can start using the Evernote API.</p>
+
+<div class="highlight"><pre><span class="nd">@Override</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">onActivityResult</span><span class="o">(</span><span class="kt">int</span> <span class="n">requestCode</span><span class="o">,</span> <span class="kt">int</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">Intent</span> <span class="n">data</span><span class="o">)</span> <span class="o">{</span>
+  <span class="kd">super</span><span class="o">.</span><span class="na">onActivityResult</span><span class="o">(</span><span class="n">requestCode</span><span class="o">,</span> <span class="n">resultCode</span><span class="o">,</span> <span class="n">data</span><span class="o">);</span>
+  <span class="k">switch</span><span class="o">(</span><span class="n">requestCode</span><span class="o">)</span> <span class="o">{</span>
+    <span class="c1">// Update UI when oauth activity returns result</span>
+    <span class="k">case</span> <span class="n">EvernoteSession</span><span class="o">.</span><span class="na">REQUEST_CODE_OAUTH</span><span class="o">:</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">resultCode</span> <span class="o">==</span> <span class="n">Activity</span><span class="o">.</span><span class="na">RESULT_OK</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Authentication was successful, do what you need to do in your app</span>
+      <span class="o">}</span>
+      <span class="k">break</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<h2>Use the <code>ClientFactory</code> to create Async Clients</h2>
+
+<p>Calling <code>EvernoteSession.getClientFactory()</code> will give you access to <code>createNoteStore()</code>, <code>createUserStore()</code>, and <code>createBusinessNoteStore()</code>. These objects return Asynchronously wrapped <code>Client</code> objects that allow you to interact with the Evernote API over Thrift using a callback interface <code>OnClickCallback&lt;T&gt;</code>.</p>
+
+<p>If the underlying <code>NoteStore.Client</code> or <code>UserStore.Client</code> object is needed, access via the <code>getClient()</code> method. Browse the API JavaDocs at <a href="http://dev.evernote.com/documentation/reference/javadoc/">http://dev.evernote.com/documentation/reference/javadoc/</a></p>
+
+<h3>Create an <code>AsyncNoteStore</code> to access primary methods for personal note data</h3>
+
+<div class="highlight"><pre><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createNoteStore</span><span class="o">();</span>
+</pre></div>
+
+<h3>Create an <code>AsyncUserStore</code> to access User related methods</h3>
+
+<div class="highlight"><pre><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createUserStore</span><span class="o">();</span>
+</pre></div>
+
+<h3>Create an <code>AsyncBusinessNoteStoreClient</code> to access Business Notebooks</h3>
+
+<div class="highlight"><pre><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createBusinessNoteStore</span><span class="o">();</span>
+</pre></div>
+
+<h3>Create an <code>AsyncLinkedNoteStoreClient</code> to access shared notebooks</h3>
+
+<div class="highlight"><pre><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createLinkedNoteStore</span><span class="o">(</span><span class="n">linkedNotebook</span><span class="o">);</span>
+</pre></div>
+
+<h2>Using the <code>AsyncNoteStoreClient</code> to make asynchronous API calls</h2>
+
+<h3>Getting list of notebooks asynchronously</h3>
+
+<div class="highlight"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">listNotebooks</span><span class="o">()</span> <span class="kd">throws</span> <span class="n">TTransportException</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">isLoggedIn</span><span class="o">())</span> <span class="o">{</span>
+    <span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createNoteStoreClient</span><span class="o">().</span><span class="na">listNotebooks</span><span class="o">(</span><span class="k">new</span> <span class="n">OnClientCallback</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Notebook</span><span class="o">&gt;&gt;()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSuccess</span><span class="o">(</span><span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Notebook</span><span class="o">&gt;</span> <span class="n">notebooks</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">namesList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;(</span><span class="n">notebooks</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">Notebook</span> <span class="n">notebook</span> <span class="o">:</span> <span class="n">notebooks</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">namesList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">notebook</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="n">String</span> <span class="n">notebookNames</span> <span class="o">=</span> <span class="n">TextUtils</span><span class="o">.</span><span class="na">join</span><span class="o">(</span><span class="s">", "</span><span class="o">,</span> <span class="n">namesList</span><span class="o">);</span>
+        <span class="n">Toast</span><span class="o">.</span><span class="na">makeText</span><span class="o">(</span><span class="n">getApplicationContext</span><span class="o">(),</span> <span class="n">notebookNames</span> <span class="o">+</span> <span class="s">" notebooks have been retrieved"</span><span class="o">,</span> <span class="n">Toast</span><span class="o">.</span><span class="na">LENGTH_LONG</span><span class="o">).</span><span class="na">show</span><span class="o">();</span>
+      <span class="o">}</span>
+
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onException</span><span class="o">(</span><span class="n">Exception</span> <span class="n">exception</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">LOGTAG</span><span class="o">,</span> <span class="s">"Error retrieving notebooks"</span><span class="o">,</span> <span class="n">exception</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">});</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<h3>Creating a note asynchronously</h3>
+
+<div class="highlight"><pre><span class="kd">public</span> <span class="kt">void</span> <span class="nf">createNote</span><span class="o">(</span><span class="n">String</span> <span class="n">title</span><span class="o">,</span> <span class="n">String</span> <span class="n">content</span><span class="o">)</span> <span class="kd">throws</span> <span class="n">TTransportException</span> <span class="o">{</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">isLoggedIn</span><span class="o">())</span> <span class="o">{</span>
+    <span class="n">Note</span> <span class="n">note</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Note</span><span class="o">();</span>
+    <span class="n">note</span><span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="n">title</span><span class="o">);</span>
+    <span class="n">note</span><span class="o">.</span><span class="na">setContent</span><span class="o">(</span><span class="n">EvernoteUtil</span><span class="o">.</span><span class="na">NOTE_PREFIX</span> <span class="o">+</span> <span class="n">content</span> <span class="o">+</span> <span class="n">EvernoteUtil</span><span class="o">.</span><span class="na">NOTE_SUFFIX</span><span class="o">);</span>
+    <span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createNoteStoreClient</span><span class="o">().</span><span class="na">createNote</span><span class="o">(</span><span class="n">note</span><span class="o">,</span> <span class="k">new</span> <span class="n">OnClientCallback</span><span class="o">&lt;</span><span class="n">Note</span><span class="o">&gt;()</span> <span class="o">{</span>
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onSuccess</span><span class="o">(</span><span class="kd">final</span> <span class="n">Note</span> <span class="n">data</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Toast</span><span class="o">.</span><span class="na">makeText</span><span class="o">(</span><span class="n">getApplicationContext</span><span class="o">(),</span> <span class="n">data</span><span class="o">.</span><span class="na">getTitle</span><span class="o">()</span> <span class="o">+</span> <span class="s">" has been created"</span><span class="o">,</span> <span class="n">Toast</span><span class="o">.</span><span class="na">LENGTH_LONG</span><span class="o">).</span><span class="na">show</span><span class="o">();</span>
+      <span class="o">}</span>
+
+      <span class="nd">@Override</span>
+      <span class="kd">public</span> <span class="kt">void</span> <span class="nf">onException</span><span class="o">(</span><span class="n">Exception</span> <span class="n">exception</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">LOGTAG</span><span class="o">,</span> <span class="s">"Error creating note"</span><span class="o">,</span> <span class="n">exception</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">});</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<h3>Using the <code>AsyncBusinessNoteStoreClient</code> to Access Evernote Business data</h3>
+
+<ol>
+<li>Check if user is member of a business</li>
+<li>Create <code>AsyncBusinessNoteStore</code>
+</li>
+<li>Call synchronous methods from a background thread or call async methods from UI thread</li>
+</ol><p>This notestore is not long lived, the Business authentication token expires frequently and is refreshed if needed in the <code>createBusinessNoteStore()</code> method</p>
+
+<p>Example using the synchronous business methods inside a background thread to create a note in a business account</p>
+
+<div class="highlight"><pre><span class="k">new</span> <span class="nf">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+  <span class="nd">@Override</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="c1">// Is the User member of a business</span>
+      <span class="k">if</span><span class="o">(</span><span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createUserStoreClient</span><span class="o">().</span><span class="na">isBusinessUser</span><span class="o">())</span> <span class="o">{</span>
+        <span class="c1">//Create an AsyncBusinessNoteStoreClient, gets valid auth token</span>
+        <span class="n">AsyncBusinessNoteStoreClient</span> <span class="n">client</span> <span class="o">=</span> <span class="n">mEvernoteSession</span><span class="o">.</span><span class="na">getClientFactory</span><span class="o">().</span><span class="na">createBusinessNoteStoreClient</span><span class="o">();</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">LinkedNotebook</span><span class="o">&gt;</span> <span class="n">notebooks</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">listNotebooks</span><span class="o">();</span>
+        <span class="c1">//If the user has any business notebooks</span>
+        <span class="k">if</span><span class="o">(</span><span class="n">notebooks</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+          <span class="c1">//Create a note in the first one</span>
+          <span class="n">Note</span> <span class="n">note</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Note</span><span class="o">();</span>
+          <span class="n">note</span><span class="o">.</span><span class="na">setTitle</span><span class="o">(</span><span class="s">"New Note"</span><span class="o">);</span>
+          <span class="n">note</span><span class="o">.</span><span class="na">setContent</span><span class="o">(</span><span class="n">EvernoteUtil</span><span class="o">.</span><span class="na">NOTE_PREFIX</span> <span class="o">+</span> <span class="s">"Content of Note"</span> <span class="o">+</span> <span class="n">EvernoteUtil</span><span class="o">.</span><span class="na">NOTE_SUFFIX</span><span class="o">);</span>
+          <span class="kd">final</span> <span class="n">Note</span> <span class="n">createdNote</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">createNote</span><span class="o">(</span><span class="n">note</span><span class="o">,</span> <span class="n">notebooks</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="mi">0</span><span class="o">));</span>
+          <span class="c1">//Update user on UI thread</span>
+          <span class="n">runOnUiThread</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+              <span class="n">Toast</span><span class="o">.</span><span class="na">makeText</span><span class="o">(</span><span class="n">getApplicationContext</span><span class="o">(),</span> <span class="n">createdNote</span><span class="o">.</span><span class="na">getTitle</span><span class="o">()</span> <span class="o">+</span> <span class="s">" has been created."</span><span class="o">,</span> <span class="n">Toast</span><span class="o">.</span><span class="na">LENGTH_LONG</span><span class="o">).</span><span class="na">show</span><span class="o">();</span>
+            <span class="o">}</span>
+          <span class="o">});</span>
+
+        <span class="o">}</span>
+      <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+        <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="n">LOGTAG</span><span class="o">,</span> <span class="s">"Not a business User"</span><span class="o">);</span>
+      <span class="o">}</span>
+    <span class="o">}</span> <span class="k">catch</span><span class="o">(</span><span class="n">Exception</span> <span class="n">exception</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">Log</span><span class="o">.</span><span class="na">e</span><span class="o">(</span><span class="n">LOGTAG</span><span class="o">,</span> <span class="s">"Error received::"</span><span class="o">,</span> <span class="n">exception</span><span class="o">);</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}).</span><span class="na">start</span><span class="o">();</span>
+</pre></div>
+
+<h1>License</h1>
+
+<pre><code>Copyright (c) 2007-2012 by Evernote Corporation, All rights reserved.
+
+Use of the source code and binary libraries included in this package
+is permitted under the following terms:
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+    1. Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+    2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</code></pre>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/evernote">evernote</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
