@@ -350,12 +350,13 @@ public class EvernoteSession {
     }
   }
 
-
-
   /**
    * Clear all stored authentication information.
    */
-  public void logOut(Context ctx) {
+  public void logOut(Context ctx) throws InvalidAuthenticationException {
+    if(!isLoggedIn()) {
+      throw new InvalidAuthenticationException("Must not call when already logged out");
+    }
     synchronized (this) {
       mAuthenticationResult.clear(SessionPreferences.getPreferences(ctx));
       mAuthenticationResult = null;

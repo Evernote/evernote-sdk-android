@@ -28,12 +28,14 @@ package com.evernote.android.sample;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import com.evernote.client.android.EvernoteSession;
+import com.evernote.client.android.InvalidAuthenticationException;
 
 /**
  * This simple Android app demonstrates how to integrate with the
@@ -105,7 +107,7 @@ public class HelloEDAM extends ParentActivity {
     mLoginButton.setEnabled(!mEvernoteSession.isLoggedIn());
 
     //Show logout button if logged in
-    mLogoutButton.setEnabled(mEvernoteSession.isLoggedIn());
+//    mLogoutButton.setEnabled(mEvernoteSession.isLoggedIn());
 
     //disable clickable elements until logged in
     mListView.setEnabled(mEvernoteSession.isLoggedIn());
@@ -125,7 +127,11 @@ public class HelloEDAM extends ParentActivity {
    * Clears Evernote Session and logs out
    */
   public void logout(View view) {
-    mEvernoteSession.logOut(this);
+    try {
+      mEvernoteSession.logOut(this);
+    } catch (InvalidAuthenticationException e) {
+      Log.e(LOGTAG, "Tried to call logout with not logged in", e);
+    }
     updateAuthUi();
   }
 
