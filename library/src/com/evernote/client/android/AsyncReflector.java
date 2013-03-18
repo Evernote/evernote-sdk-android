@@ -22,7 +22,14 @@ class AsyncReflector {
         try {
           Class[] classes = new Class[args.length];
           for (int i = 0; i < args.length; i++) {
-            classes[i] = args[i].getClass();
+            String simpleName = args[i].getClass().getSimpleName();
+            if (simpleName.equals("Integer")) {
+              classes[i] = int.class;
+            } else if (simpleName.equals("Boolean")) {
+              classes[i] = boolean.class;
+            } else {
+              classes[i] = args[i].getClass();
+            }
           }
 
           Method method = null;
