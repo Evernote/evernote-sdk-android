@@ -26,6 +26,14 @@
         <activity
             android:name=".SimpleNote"
             android:label="@string/simple_note" />
+        <activity
+            android:name=".SearchNotes"
+            android:label="@string/search_notes">
+                <intent-filter>
+                     <action android:name="android.intent.action.SEARCH" />
+                </intent-filter>
+                <meta-data android:name="android.app.searchable" android:resource="@xml/searchable" />
+        </activity>
         <activity android:name=".ParentActivity"
             android:configChanges="orientation|keyboardHidden"/>
     </application>

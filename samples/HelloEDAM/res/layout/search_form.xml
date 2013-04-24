@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<EditText
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:hint="@string/search_hint"
+    android:id="@+id/form"
+    android:inputType="text"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:imeOptions="actionSearch"
+    android:drawableRight="@android:drawable/ic_menu_search"
+    android:maxLines="1">
+</EditText>
