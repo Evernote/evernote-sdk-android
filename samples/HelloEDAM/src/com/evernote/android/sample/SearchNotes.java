@@ -58,11 +58,12 @@ public class SearchNotes extends ParentActivity {
     private static final String LOGTAG = "SearchNotes";
 
     //Views
-    private ListView mListView;
-    private EditText mEditText;
+    private ListView mResultsListView;
+    private EditText mSearchEditText;
     private LinearLayout mSearchResultsParentLayout;
+    private SearchView mSearchView;
 
-    private ArrayList<String> notes_names;
+    private ArrayList<String> notesNames;
     private ArrayAdapter<String> mAdapter;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -75,14 +76,14 @@ public class SearchNotes extends ParentActivity {
             mSearchResultsParentLayout = (LinearLayout)findViewById(R.id.search_results_parent);
             LayoutInflater inf = getLayoutInflater();
 
-            mEditText = (EditText)inf.inflate(R.layout.search_form, null);
-            mSearchResultsParentLayout.addView(mEditText, 0);
+            mSearchEditText = (EditText)inf.inflate(R.layout.search_form, null);
+            mSearchResultsParentLayout.addView(mSearchEditText, 0);
 
-            mEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
                 public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                     if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                        findNotesByQuery(mEditText.getText().toString());
+                        findNotesByQuery(mSearchEditText.getText().toString());
                         return true;
                     }
                     return false;
@@ -91,10 +92,10 @@ public class SearchNotes extends ParentActivity {
 
         }
 
-        notes_names = new ArrayList();
-        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notes_names);
-        mListView = (ListView)findViewById(R.id.list);
-        mListView.setAdapter(mAdapter);
+        notesNames = new ArrayList();
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notesNames);
+        mResultsListView = (ListView)findViewById(R.id.list);
+        mResultsListView.setAdapter(mAdapter);
 
     }
 
@@ -102,13 +103,13 @@ public class SearchNotes extends ParentActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
-            SearchView msearchView;
+
             MenuInflater inflater = getMenuInflater();
             inflater.inflate(R.menu.options_menu, menu);
 
             SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-            msearchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-            msearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            mSearchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+            mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
             SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
                 @Override
@@ -123,7 +124,7 @@ public class SearchNotes extends ParentActivity {
                 }
             };
 
-            msearchView.setOnQueryTextListener(queryTextListener);
+            mSearchView.setOnQueryTextListener(queryTextListener);
         }
 
         return true;
@@ -159,21 +160,28 @@ public class SearchNotes extends ParentActivity {
 
                             for(NoteMetadata note : data.getNotes()) {
                                 String title = note.getTitle();
-                                mAdapter.add(title);
+                                notesNames.add(title);
                             }
+                            mAdapter.notifyDataSetChanged();
                         }
 
                         @Override
                         public void onException(Exception exception) {
-                            Log.e(LOGTAG, "Error listing notes", exception);
-                            Toast.makeText(getApplicationContext(), R.string.error_listing_notes, Toast.LENGTH_LONG).show();
-                            removeDialog(DIALOG_PROGRESS);
+                            onError(exception, "Error listing notes. ", R.string.error_listing_notes);
                         }
                     });
         } catch (TTransportException exception){
-            Log.i(LOGTAG, "Error creating notestore. " + exception);
-            Toast.makeText(getApplicationContext(), R.string.error_creating_notestore, Toast.LENGTH_LONG).show();
-            removeDialog(DIALOG_PROGRESS);
+            onError(exception, "Error creating notestore. ", R.string.error_creating_notestore);
         }
+    }
+
+    /**
+     * Show log and toast and remove a dialog on Exceptions
+     *
+     */
+    public void onError(Exception exception, String logstr, int id){
+        Log.e(LOGTAG, logstr + exception);
+        Toast.makeText(getApplicationContext(), id, Toast.LENGTH_LONG).show();
+        removeDialog(DIALOG_PROGRESS);
     }
 }
