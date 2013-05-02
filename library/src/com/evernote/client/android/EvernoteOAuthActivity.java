@@ -25,6 +25,10 @@
  */
 package com.evernote.client.android;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
@@ -75,6 +79,13 @@ public class EvernoteOAuthActivity extends Activity {
   static final String EXTRA_BOOTSTRAP_SELECTED_PROFILE_POS = "BOOTSTRAP_SELECTED_PROFILE_POS";
   static final String EXTRA_BOOTSTRAP_SELECTED_PROFILE = "BOOTSTRAP_SELECTED_PROFILE";
   static final String EXTRA_BOOTSTRAP_SELECTED_PROFILES = "BOOTSTRAP_SELECTED_PROFILES";
+  final String ACCOUNT_TYPE = "com.evernote";
+  final String AUTH_TOKEN_TYPE = "com.evernote.oauth";
+  public static final String CONSUMER_KEY = "consumer_key";
+  public static final String CONSUMER_SECRET = "consumer_secret";
+  public static final String AUTH_URL = "auth_url";
+  public static final String AUTH_CALLBACK_SCHEME = "auth_callback_url";
+  public static final String AUTH_RESULT_URL = "auth_result_url";
 
   private EvernoteSession.EvernoteService mEvernoteService = null;
 
@@ -230,11 +241,10 @@ public class EvernoteOAuthActivity extends Activity {
    * service.
    */
   @SuppressWarnings("unchecked")
-  private OAuthService createService() {
+  private OAuthService createService(String host) {
     OAuthService builder = null;
     @SuppressWarnings("rawtypes")
     Class apiClass = null;
-    String host = mSelectedBootstrapProfile.getSettings().getServiceHost();
 
     if (host != null && !host.startsWith("http")) {
       host = "https://" + host;
@@ -347,19 +357,28 @@ public class EvernoteOAuthActivity extends Activity {
    * to our WebView to authorize access.
    */
   private class BootstrapAsyncTask extends AsyncTask<Void, Void, String> {
+    Account[] accounts;
+    AccountManager accountManager;
 
     @Override
     protected void onPreExecute() {
       // TODO deprecated
       showDialog(DIALOG_PROGRESS);
+      accountManager = AccountManager.get(getApplicationContext());
     }
 
     @Override
     protected String doInBackground(Void... params) {
       String url = null;
+      String host;
       try {
 
+
         EvernoteSession session = EvernoteSession.getOpenSession();
+
+        accounts = accountManager.getAccountsByType(ACCOUNT_TYPE);
+
+
         if (session != null) {
           //Network request
           BootstrapManager.BootstrapInfoWrapper infoWrapper = session.getBootstrapSession().getBootstrapInfo();
@@ -383,7 +402,9 @@ public class EvernoteOAuthActivity extends Activity {
           return null;
         }
 
-        OAuthService service = createService();
+        host = mSelectedBootstrapProfile.getSettings().getServiceHost();
+
+        OAuthService service = createService(host);
 
         Log.i(LOGTAG, "Retrieving OAuth request token...");
         Token reqToken = service.getRequestToken();
@@ -406,11 +427,47 @@ public class EvernoteOAuthActivity extends Activity {
      * @param url The URL of the OAuth authorization web page.
      */
     @Override
-    protected void onPostExecute(String url) {
+    protected void onPostExecute(final String url) {
       // TODO deprecated
       removeDialog(DIALOG_PROGRESS);
       if (!TextUtils.isEmpty(url)) {
-        mWebView.loadUrl(url);
+        //Only allow for one bootstrap profile to guarantee consistency without back and forth from the user
+        if(accounts.length > 0 && mBootstrapProfiles.size() == 1) {
+
+          Bundle bundle = new Bundle();
+          bundle.putString(CONSUMER_KEY, mConsumerKey);
+          bundle.putString(CONSUMER_SECRET, mConsumerSecret);
+          bundle.putString(AUTH_URL, url);
+          bundle.putString(AUTH_CALLBACK_SCHEME, getCallbackScheme());
+
+          accountManager.getAuthToken(accounts[0], AUTH_TOKEN_TYPE, bundle, EvernoteOAuthActivity.this, new AccountManagerCallback<Bundle>() {
+            @Override
+            public void run(AccountManagerFuture<Bundle> future) {
+              try {
+                Bundle resultBundle = future.getResult();
+                if(resultBundle.containsKey(AccountManager.KEY_ERROR_CODE) || !resultBundle.containsKey(AUTH_RESULT_URL)) {
+                  //If our host didn't match the apps host
+                  if(resultBundle.getInt(AccountManager.KEY_ERROR_CODE, AccountManager.ERROR_CODE_CANCELED) == AccountManager.ERROR_CODE_BAD_ARGUMENTS) {
+                    Toast.makeText(getApplicationContext(), resultBundle.getString(AccountManager.KEY_ERROR_MESSAGE), Toast.LENGTH_LONG).show();
+                    mWebView.loadUrl(url);
+                    return;
+                  } else {
+                    exit(false);
+                  }
+
+                }
+                Uri uri = Uri.parse(resultBundle.getString(AUTH_RESULT_URL));
+                mCompleteAuthSyncTask = new CompleteAuthAsyncTask().execute(uri);
+              } catch (Exception e) {
+                Log.e(LOGTAG, "Failed to get Bundle from getAuthToken()", e);
+                exit(false);
+              }
+
+            }
+          }, null);
+        } else {
+          mWebView.loadUrl(url);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
           invalidateOptionsMenu();
@@ -441,7 +498,9 @@ public class EvernoteOAuthActivity extends Activity {
       Uri uri = uris[0];
 
       if (!TextUtils.isEmpty(mRequestToken)) {
-        OAuthService service = createService();
+//        String host = uri.getScheme() + "://" + uri.getHost();
+        String host = mSelectedBootstrapProfile.getSettings().getServiceHost();
+        OAuthService service = createService(host);
         String verifierString = uri.getQueryParameter("oauth_verifier");
         if (TextUtils.isEmpty(verifierString)) {
           Log.i(LOGTAG, "User did not authorize access");
