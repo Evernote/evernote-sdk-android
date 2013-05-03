@@ -67,6 +67,8 @@ public class HelloEDAM extends ParentActivity {
         case 1:
           startActivity(new Intent(getApplicationContext(), SimpleNote.class));
           break;
+        case 2:
+          startActivity(new Intent(getApplicationContext(), SearchNotes.class));
       }
     }
   };
