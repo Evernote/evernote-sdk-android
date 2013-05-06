@@ -41,7 +41,6 @@ import com.evernote.edam.notestore.NotesMetadataResultSpec;
 import com.evernote.edam.type.NoteSortOrder;
 import com.evernote.thrift.transport.TTransportException;
 import java.util.ArrayList;
-import java.lang.String;
 /**
  * This sample shows how to search Evernote notebooks.
  * <p/>

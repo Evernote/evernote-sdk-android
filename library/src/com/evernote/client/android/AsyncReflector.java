@@ -17,16 +17,16 @@ class AsyncReflector {
   /**
    * List of primitives to convert from autoboxed method calls
    */
-  public final static Map<Class<?>, Class<?>> sPrimitiveMap = new HashMap<Class<?>, Class<?>>();
+  public final static Map<Class<?>, Class<?>> PRIMITIVE_MAP = new HashMap<Class<?>, Class<?>>();
   static {
-    sPrimitiveMap.put(Boolean.class, boolean.class);
-    sPrimitiveMap.put(Byte.class, byte.class);
-    sPrimitiveMap.put(Short.class, short.class);
-    sPrimitiveMap.put(Character.class, char.class);
-    sPrimitiveMap.put(Integer.class, int.class);
-    sPrimitiveMap.put(Long.class, long.class);
-    sPrimitiveMap.put(Float.class, float.class);
-    sPrimitiveMap.put(Double.class, double.class);
+    PRIMITIVE_MAP.put(Boolean.class, boolean.class);
+    PRIMITIVE_MAP.put(Byte.class, byte.class);
+    PRIMITIVE_MAP.put(Short.class, short.class);
+    PRIMITIVE_MAP.put(Character.class, char.class);
+    PRIMITIVE_MAP.put(Integer.class, int.class);
+    PRIMITIVE_MAP.put(Long.class, long.class);
+    PRIMITIVE_MAP.put(Float.class, float.class);
+    PRIMITIVE_MAP.put(Double.class, double.class);
   }
 
   /**
@@ -44,8 +44,8 @@ class AsyncReflector {
           Class[] classes = new Class[args.length];
           for (int i = 0; i < args.length; i++) {
             //Convert Autoboxed primitives to actual primitives (ex: Integer.class to int.class)
-            if(sPrimitiveMap.containsKey(args[i].getClass())) {
-              classes[i] = sPrimitiveMap.get(args[i].getClass());
+            if(PRIMITIVE_MAP.containsKey(args[i].getClass())) {
+              classes[i] = PRIMITIVE_MAP.get(args[i].getClass());
             } else {
               classes[i] = args[i].getClass();
             }
