@@ -1,3 +1,8 @@
+= 1.1.1 / 2013-5-6
+
+* Updated to evernote-api 1.24
+* Added sample code for search
+
 = 1.1 / 2013-2-20
 
 * Added automatic bootstrapping support for Yinxiang
