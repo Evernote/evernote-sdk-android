@@ -133,7 +133,7 @@ public class AsyncLinkedNoteStoreClient {
    * @param callback
    */
   public void listNotebooksAsync(final OnClientCallback<List<LinkedNotebook>> callback) {
-    AsyncReflector.execute(getAsyncPersonalClient(), callback, "listNotebooks", getAuthenticationToken());
+    AsyncReflector.execute(getAsyncPersonalClient().getClient(), callback, "listNotebooks", getAuthenticationToken());
   }
 
   /**
