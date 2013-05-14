@@ -62,7 +62,7 @@ public class AsyncLinkedNoteStoreClient {
 
   AsyncLinkedNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken, ClientFactory clientFactory) throws TTransportException {
     mLinkedStoreClient = new AsyncNoteStoreClient(iprot, oprot, authenticationToken);
-    mMainNoteStoreClient = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient();
+    mMainNoteStoreClient = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClientImpl();
     mAuthToken = authenticationToken;
     mClientFactory = clientFactory;
   }
