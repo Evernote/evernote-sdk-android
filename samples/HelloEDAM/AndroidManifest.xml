@@ -36,5 +36,8 @@
         </activity>
         <activity android:name=".ParentActivity"
             android:configChanges="orientation|keyboardHidden"/>
+        <activity
+                android:name=".ShareNotes"
+                android:label="@string/share_notes" />
     </application>
 </manifest>

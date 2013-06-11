@@ -790,7 +790,7 @@ public class AsyncNoteStoreClient {
    * @see NoteStore.Client#shareNote(String, String)
    */
   public void shareNote(String guid, OnClientCallback<String> callback) {
-    AsyncReflector.execute(mClient, callback, "shareNote", mAuthenticationToken);
+    AsyncReflector.execute(mClient, callback, "shareNote", mAuthenticationToken, guid);
   }
 
   /**
@@ -800,7 +800,7 @@ public class AsyncNoteStoreClient {
    * @see NoteStore.Client#stopSharingNote(String, String)
    */
   public void stopSharingNote(String guid, OnClientCallback<Void> callback) {
-    AsyncReflector.execute(mClient, callback, "stopSharingNote", mAuthenticationToken);
+    AsyncReflector.execute(mClient, callback, "stopSharingNote", mAuthenticationToken, guid);
   }
 
   /**
