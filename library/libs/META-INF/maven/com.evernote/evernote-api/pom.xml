@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.evernote</groupId>
+  <artifactId>evernote-api</artifactId>
+  <packaging>jar</packaging>
+  <name>Evernote Web Service API</name>
+  <version>1.23</version>
+  <description></description>
+  <url>http://dev.evernote.com</url>
+  <licenses>
+    <license>
+      <name>Evernote SDK License Agreement</name>
+      <url>https://github.com/evernote/evernote-sdk-java/blob/master/LICENSE</url>
+      <distribution>repo</distribution>
+      <comments></comments>
+    </license>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>Portions of the Evernote SDK are based on the Apache Thrift project, http://thrift.apache.org.</comments>
+    </license>
+  </licenses>
+  <scm>
+    <connection>scm:git:git@github.com:evernote/evernote-sdk-java.git</connection>
+    <developerConnection>scm:git:git@github.com:evernote/evernote-sdk-java.git</developerConnection>
+    <url>git@github.com:evernote/evernote-sdk-java.git</url>
+  </scm>
+  <developers>
+    <developer>
+      <id>shitchings</id>
+      <name>Seth Hitchings</name>
+      <email>shitchings@evernote.com</email>
+    </developer>
+  </developers>
+  <issueManagement>
+    <url>https://github.com/evernote/evernote-sdk-java/issues</url>
+    <system>GitHub Issues</system>
+  </issueManagement>
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>2.4</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.0</version>
+        <configuration>
+          <source>1.5</source>
+          <target>1.5</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <show>public</show>
+          <nohelp>true</nohelp>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadoc</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <groupId>org.apache.maven.plugins</groupId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

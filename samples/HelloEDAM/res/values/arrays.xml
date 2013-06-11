@@ -4,5 +4,6 @@
         <item>@string/esdk__image_picker</item>
         <item>@string/esdk__simple_note</item>
         <item>@string/esdk__search_notes</item>
+        <item>@string/esdk__share_notes</item>
     </string-array>
 </resources>

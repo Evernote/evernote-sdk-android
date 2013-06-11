@@ -3,6 +3,7 @@
     <string name="app_name">HelloEDAM</string>
     <string name="err_creating_note">Error creating new Evernote note</string>
     <string name="msg_image_saved">Image saved to Evernote</string>
+    <string name="msg_note_required">There are no notes to share in your account. Please create one first.</string>
     <string name="label_app_title">Evernote EDAM Android Demo</string>
     <string name="label_select_button">Select Image</string>
     <string name="label_message">No image selected</string>
@@ -18,19 +19,26 @@
     <string name="esdk__image_picker">Image Picker</string>
     <string name="esdk__simple_note">Simple Note</string>
     <string name="esdk__search_notes">Search notes</string>
+    <string name="esdk__share_notes">Share notes</string>
     <string name="label_select_notebook_button">Select Notebook</string>
     <string name="title">Note Title</string>
     <string name="content">Note Content</string>
     <string name="empty_content_error">Note title and content cannot be empty</string>
     <string name="note_saved">Note saved to Evernote</string>
+    <string name="note_shared">Shared Note URL is copied to Clipboard as follows:</string>
+    <string name="note_unshared">Stopped sharing Note</string>
     <string name="notes_searched">Searching notes has finished</string>
     <string name="ok">Ok</string>
     <string name="simple_note">Simplenote</string>
     <string name="image_picker">Image Picker</string>
     <string name="search_notes">Search Notes</string>
+    <string name="share_notes">Share Notes</string>
     <string name="search_hint">Search notes</string>
+    <string name="label_howtoshare">Please click a button to change shared status of each note.</string>
     <string name="error_listing_notebooks">Error listing notebooks</string>
     <string name="error_creating_notestore">Error creating notestore</string>
     <string name="error_saving_note">Error saving note</string>
+    <string name="error_sharing_note">Error sharing note</string>
+    <string name="error_stop_sharing_note">Error stop sharing note</string>
     <string name="error_listing_notes">Error listing note</string>
 </resources>
