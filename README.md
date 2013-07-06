@@ -1,7 +1,7 @@
-Evernote SDK for Android version 1.1.1
+Evernote SDK for Android version 1.1.2
 ====================================
 
-Evernote API version 1.24
+Evernote API version 1.25
 
 
 Overview
@@ -72,12 +72,12 @@ There are two ways to include the SDK in your project: by including and building
    11. Click Add...
    12. Select Library and click OK
    13. Click OK
-   
+
 ### Include the Android Library Project in your Intellij workspace
 
 1. Right click your project and choose Open Module Properties
 2. Select the Plus Icon (Add) at the top and choose Import Module
-3. Select the library directory and click OK   
+3. Select the library directory and click OK
 4. Click Next, Next, Next, Next
 5. Click Finish
 6. Click your project and select teh Dependencies tab
