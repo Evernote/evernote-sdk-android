@@ -94,7 +94,7 @@ Add the Evernote SDK for Android as a dependency:
 <dependency>
 	<groupId>com.evernote</groupId>
 	<artifactId>android-sdk</artifactId>
-	<version>1.1.1</version>
+	<version>1.1.2</version>
 	<type>apklib</type>
 </dependency>
 ```
