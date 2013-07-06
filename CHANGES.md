@@ -1,3 +1,7 @@
+= 1.1.2 / 2013-7-6
+
+* Updated to evernote-api 1.25
+
 = 1.1.1 / 2013-5-6
 
 * Updated to evernote-api 1.24

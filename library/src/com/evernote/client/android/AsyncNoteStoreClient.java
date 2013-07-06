@@ -25,9 +25,13 @@
  */
 package com.evernote.client.android;
 
+import com.evernote.edam.error.EDAMNotFoundException;
+import com.evernote.edam.error.EDAMSystemException;
+import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.*;
 import com.evernote.edam.type.*;
 import com.evernote.edam.userstore.AuthenticationResult;
+import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TProtocol;
 
 import java.util.List;
@@ -809,8 +813,8 @@ public class AsyncNoteStoreClient {
    * @param {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#authenticateToSharedNote(String, String)
    */
-  public void authenticateToSharedNote(String guid, String noteKey, OnClientCallback<AuthenticationResult> callback) {
-    AsyncReflector.execute(mClient, callback, "authenticateToSharedNote", mAuthenticationToken, guid, noteKey);
+  public void authenticateToSharedNote(String guid, String noteKey, String authToken, OnClientCallback<AuthenticationResult> callback) {
+    AsyncReflector.execute(mClient, callback, "authenticateToSharedNote", guid, noteKey, authToken);
   }
 
   /**
@@ -822,5 +826,19 @@ public class AsyncNoteStoreClient {
   public void findRelated(RelatedQuery query, RelatedResultSpec resultSpec, OnClientCallback<RelatedResult> callback) {
     AsyncReflector.execute(mClient, callback, "findRelated", mAuthenticationToken, query, resultSpec);
   }
+
+  /**
+   * Asynchronous wrapper
+   *
+   * @see NoteStore.Client#setSharedNotebookRecipientSettings(String, long,
+   *      SharedNotebookRecipientSettings)
+   */
+  public void setSharedNotebookRecipientSettings(final long sharedNotebookId,
+      final SharedNotebookRecipientSettings recipientSettings, OnClientCallback<Integer> callback)
+      throws EDAMUserException, EDAMNotFoundException, EDAMSystemException,
+      TException {
+    AsyncReflector.execute(mClient, callback, "setSharedNotebookRecipientSettings", mAuthenticationToken, sharedNotebookId, recipientSettings);
+  }
+
 
 }
