@@ -48,9 +48,9 @@ public class SharingListAdapter extends ArrayAdapter<SharingListData> {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, final ViewGroup parent) {
         ViewHolder holder;
-        WithButtonListView list = (WithButtonListView)parent;
+        ListView list = (ListView)parent;
 
         SharingListData item = getItem(position);
 
@@ -67,9 +67,15 @@ public class SharingListAdapter extends ArrayAdapter<SharingListData> {
         }
 
         holder.titleView.setText(item.getTitleData());;
-        holder.flagButton.setText(item.getSharedFlag()? "unshare" : "share");
+        holder.flagButton.setText(item.getSharedFlag() ? "unshare" : "share");
         holder.flagButton.setTag(position);
-        holder.flagButton.setOnClickListener(list);
+        holder.flagButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int pos = (Integer)v.getTag();
+                ((ListView)parent).performItemClick(v, pos, (long)0);
+            }
+        });
 
         return convertView;
     }
