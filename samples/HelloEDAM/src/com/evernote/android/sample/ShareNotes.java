@@ -59,23 +59,14 @@ public class ShareNotes extends ParentActivity{
 
     private static final String LOGTAG = "ShareNotes";
 
-    //Views
-    private ListView mNotesListView;
-    private Button mButton;
-
     //Data
     private List<SharingListData> notesObjects;
     private SharingListAdapter mAdapter;
 
-    String mguid;
-    String murlprefix;
-    Boolean mshared_flag;
-    int mposition;
-
-
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.share_notes);
+        ListView mNotesListView;
 
         // Show user's top 10 latest notes
         notesObjects = new ArrayList<SharingListData>();
@@ -88,23 +79,27 @@ public class ShareNotes extends ParentActivity{
 
         // Set a listener called when each item clicked
         mNotesListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            String mGuid, mUrlPrefix;
+            Boolean mSharedFlag;
+            int mPosition;
+
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                mposition = position;
-                mguid = notesObjects.get(mposition).getNoteGuidData();
-                mshared_flag = notesObjects.get(mposition).getSharedFlag();
-                murlprefix = mEvernoteSession.getAuthenticationResult().getWebApiUrlPrefix();
+                mPosition = position;
+                mGuid = notesObjects.get(mPosition).getNoteGuidData();
+                mSharedFlag = notesObjects.get(mPosition).getSharedFlag();
+                mUrlPrefix = mEvernoteSession.getAuthenticationResult().getWebApiUrlPrefix();
 
                 showDialog(DIALOG_PROGRESS);
-                if(!mshared_flag) {
+                if(!mSharedFlag) {
                     try{
                         // If a selected note isn't shared, share it, getting a shared note URL,
                         // and send it to clipboard.
-                        mEvernoteSession.getClientFactory().createNoteStoreClient().shareNote(mguid, new OnClientCallback<String>() {
+                        mEvernoteSession.getClientFactory().createNoteStoreClient().shareNote(mGuid, new OnClientCallback<String>() {
                             @Override
                             public void onSuccess(String sharekey) {
-                                notesObjects.get(mposition).setSharedFlag(true);
-                                String note_url = murlprefix + String.format("sh/%s/%s", mguid, sharekey);
+                                notesObjects.get(mPosition).setSharedFlag(true);
+                                String note_url = mUrlPrefix + String.format("sh/%s/%s", mGuid, sharekey);
                                 copyToClipboard(note_url);
 
                                 Toast.makeText(getApplicationContext(), getString(R.string.note_shared) + " " + note_url, Toast.LENGTH_LONG).show();
@@ -127,10 +122,10 @@ public class ShareNotes extends ParentActivity{
                 else {
                     try{
                         // If a selected note is shared, unshare it.
-                        mEvernoteSession.getClientFactory().createNoteStoreClient().stopSharingNote(mguid, new OnClientCallback<Void>() {
+                        mEvernoteSession.getClientFactory().createNoteStoreClient().stopSharingNote(mGuid, new OnClientCallback<Void>() {
                             @Override
                             public void onSuccess(Void data) {
-                                notesObjects.get(mposition).setSharedFlag(false);
+                                notesObjects.get(mPosition).setSharedFlag(false);
 
                                 Toast.makeText(getApplicationContext(), getString(R.string.note_unshared), Toast.LENGTH_LONG).show();
                                 removeDialog(DIALOG_PROGRESS);

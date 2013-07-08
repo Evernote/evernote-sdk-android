@@ -40,33 +40,41 @@ import android.widget.*;
 import java.util.List;
 
 public class SharingListAdapter extends ArrayAdapter<SharingListData> {
-    private LayoutInflater mlayoutInflater;
+    private LayoutInflater mLayoutInflater;
 
     public SharingListAdapter(Context context, int textViewResourceId, List<SharingListData> objects) {
         super(context, textViewResourceId, objects);
-        mlayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        mLayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        ViewHolder holder;
         WithButtonListView list = (WithButtonListView)parent;
 
         SharingListData item = getItem(position);
 
-        if (null == convertView) {
-            convertView = mlayoutInflater.inflate(R.layout.share_note_row, null);
+        if (convertView == null) {
+            convertView = mLayoutInflater.inflate(R.layout.share_note_row, null);
+
+            holder = new ViewHolder();
+            holder.titleView = (TextView)convertView.findViewById(R.id.note_title);
+            holder.flagButton = (Button) convertView.findViewById(R.id.share_button);
+
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder)convertView.getTag();
         }
 
-        TextView titleView;
-        titleView = (TextView) convertView.findViewById(R.id.note_title);
-        titleView.setText(item.getTitleData());
-
-        Button flagButton;
-        flagButton = (Button) convertView.findViewById(R.id.share_button);
-        flagButton.setText(item.getSharedFlag()? "unshare" : "share");
-        flagButton.setTag(position);
-        flagButton.setOnClickListener(list);
+        holder.titleView.setText(item.getTitleData());;
+        holder.flagButton.setText(item.getSharedFlag()? "unshare" : "share");
+        holder.flagButton.setTag(position);
+        holder.flagButton.setOnClickListener(list);
 
         return convertView;
+    }
+    static class ViewHolder {
+        TextView titleView;
+        Button flagButton;
     }
 }

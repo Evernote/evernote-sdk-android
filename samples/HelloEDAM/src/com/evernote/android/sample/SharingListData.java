@@ -31,31 +31,31 @@ package com.evernote.android.sample;
  */
 
 public class SharingListData {
-    private String note_title;
-    private String note_guid;
-    private boolean shared_flag;
+    private String noteTitle;
+    private String noteGuid;
+    private boolean sharedFlag;
 
     public void setTitleData(String title) {
-        note_title = title;
+        noteTitle = title;
     }
 
     public String getTitleData() {
-        return note_title;
+        return noteTitle;
     }
 
     public void setNoteGuidData(String guid) {
-        note_guid = guid;
+        noteGuid = guid;
     }
 
     public String getNoteGuidData() {
-        return note_guid;
+        return noteGuid;
     }
 
     public void setSharedFlag(boolean flag) {
-        shared_flag = flag;
+        sharedFlag = flag;
     }
 
     public boolean getSharedFlag() {
-        return shared_flag;
+        return sharedFlag;
     }
 }
