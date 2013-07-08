@@ -12,7 +12,7 @@
         android:layout_height="24dp"
         android:singleLine="false"
             />
-    <com.evernote.android.sample.WithButtonListView
+    <ListView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
