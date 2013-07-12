@@ -117,20 +117,20 @@ public class AsyncUserStoreClient {
    * Asynchronous wrapper
    *
    * @param {@link OnClientCallback} providing an interface to the calling code
-   * @see UserStore.Client#authenticate(String, String, String, String)
+   * @see UserStore.Client#authenticate(String, String, String, String, boolean)
    */
-  public void authenticate(final String username, final String password, final String consumerKey, final String consumerSecret, final OnClientCallback<AuthenticationResult> callback) {
-    AsyncReflector.execute(mClient, callback, "authenticate", username, password, consumerKey, consumerSecret);
+  public void authenticate(final String username, final String password, final String consumerKey, final String consumerSecret, boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
+    AsyncReflector.execute(mClient, callback, "authenticate", username, password, consumerKey, consumerSecret, supportsTwoFactor);
   }
 
   /**
    * Asynchronous wrapper
    *
    * @param {@link OnClientCallback} providing an interface to the calling code
-   * @see UserStore.Client#authenticateLongSession(String, String, String, String, String, String)
+   * @see UserStore.Client#authenticateLongSession(String, String, String, String, String, String, boolean)
    */
-  public void authenticateLongSession(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier, final String deviceDescription, final OnClientCallback<AuthenticationResult> callback) {
-    AsyncReflector.execute(mClient, callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription);
+  public void authenticateLongSession(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier, final String deviceDescription, final boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
+    AsyncReflector.execute(mClient, callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription, supportsTwoFactor);
   }
 
   /**
@@ -191,6 +191,28 @@ public class AsyncUserStoreClient {
    */
   public void getNoteStoreUrl(final OnClientCallback<String> callback) {
     AsyncReflector.execute(mClient, callback, "getNoteStoreUrl", mAuthenticationToken);
+  }
+
+  /**
+   * Asynchronous wrapper
+   *
+   * @see UserStore.Client#revokeLongSession(String)
+   */
+  public void revokeLongSession(final OnClientCallback<Void> callback) throws EDAMUserException,
+      EDAMSystemException, TException {
+    AsyncReflector.execute(mClient, callback, "revokeLongSession", mAuthenticationToken);
+  }
+
+  /**
+   * Asynchronous wrapper
+   *
+   * @see UserStore.Client#completeTwoFactorAuthentication(String, String,
+   *      String, String)
+   */
+  public void completeTwoFactorAuthentication(final String oneTimeCode, final String deviceIdentifier,
+                                              final String deviceDescription, final OnClientCallback<AuthenticationResult> callback) throws EDAMUserException,
+      EDAMSystemException, TException {
+    AsyncReflector.execute(mClient, callback, "completeTwoFactorAuthentication", mAuthenticationToken, oneTimeCode, deviceIdentifier, deviceDescription);
   }
 }
 
