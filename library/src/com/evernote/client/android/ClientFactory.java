@@ -36,6 +36,7 @@ import com.evernote.thrift.protocol.TBinaryProtocol;
 import com.evernote.thrift.transport.TTransportException;
 
 import java.io.File;
+import java.lang.reflect.Proxy;
 import java.util.Map;
 
 /**
@@ -77,7 +78,7 @@ public class ClientFactory {
    * @throws TTransportException if an error occurs setting up the
    * connection to the Evernote service.
    */
-  public AsyncNoteStoreClient createNoteStoreClient() throws TTransportException {
+  public AsyncNoteStoreClient createNoteStoreClientImpl() throws TTransportException {
     if(EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
       throw new IllegalStateException();
     }
@@ -86,6 +87,20 @@ public class ClientFactory {
         new TEvernoteHttpClient(EvernoteSession.getOpenSession().getAuthenticationResult().getNoteStoreUrl(), mUserAgent, mTempDir);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
     return new AsyncNoteStoreClient(protocol, protocol, EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken());
+  }
+
+  public IAsyncNoteStore createNoteStoreClient() throws TTransportException {
+     if (EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
+        throw new IllegalStateException();
+     }
+
+     TEvernoteHttpClient transport =
+             new TEvernoteHttpClient(EvernoteSession.getOpenSession().getAuthenticationResult().getNoteStoreUrl(), mUserAgent, mTempDir);
+     TBinaryProtocol protocol = new TBinaryProtocol(transport);
+     AsyncInvocationHandler handler =
+             new AsyncInvocationHandler(protocol, protocol, EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken());
+    return (IAsyncNoteStore) Proxy.newProxyInstance(IAsyncNoteStore.class.getClassLoader(),
+            new Class<?>[]{IAsyncNoteStore.class}, handler);
   }
 
   /**
