@@ -63,6 +63,22 @@ public class SimpleNote extends ParentActivity {
 
   private String mSelectedNotebookGuid;
 
+  // Callback used as a result of creating a note in a normal notebook or a linked notebook
+  private OnClientCallback<Note> mNoteCreateCallback = new OnClientCallback<Note>() {
+    @Override
+    public void onSuccess(Note note) {
+      Toast.makeText(getApplicationContext(), R.string.note_saved, Toast.LENGTH_LONG).show();
+      removeDialog(DIALOG_PROGRESS);
+    }
+
+    @Override
+    public void onException(Exception exception) {
+      Log.e(LOGTAG, "Error saving note", exception);
+      Toast.makeText(getApplicationContext(), R.string.error_saving_note, Toast.LENGTH_LONG).show();
+      removeDialog(DIALOG_PROGRESS);
+    }
+  };
+
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.simple_note);
@@ -81,6 +97,7 @@ public class SimpleNote extends ParentActivity {
     String content = mEditTextContent.getText().toString();
     if (TextUtils.isEmpty(title) || TextUtils.isEmpty(content)) {
       Toast.makeText(getApplicationContext(), R.string.empty_content_error, Toast.LENGTH_LONG).show();
+      return;
     }
 
     Note note = new Note();
@@ -89,38 +106,33 @@ public class SimpleNote extends ParentActivity {
     //TODO: line breaks need to be converted to render in ENML
     note.setContent(EvernoteUtil.NOTE_PREFIX + content + EvernoteUtil.NOTE_SUFFIX);
 
-    //If User has selected a notebook guid, assign it now
-    if (!TextUtils.isEmpty(mSelectedNotebookGuid)) {
-      note.setNotebookGuid(mSelectedNotebookGuid);
+    if(!mEvernoteSession.getAuthenticationResult().isAppLinkedNotebook()) {
+      //If User has selected a notebook guid, assign it now
+      if (!TextUtils.isEmpty(mSelectedNotebookGuid)) {
+        note.setNotebookGuid(mSelectedNotebookGuid);
+      }
+      showDialog(DIALOG_PROGRESS);
+      try {
+        mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, mNoteCreateCallback);
+      } catch (TTransportException exception) {
+        Log.e(LOGTAG, "Error creating notestore", exception);
+        Toast.makeText(getApplicationContext(), R.string.error_creating_notestore, Toast.LENGTH_LONG).show();
+        removeDialog(DIALOG_PROGRESS);
+      }
+    } else {
+      super.createNoteInAppLinkedNotebook(note, mNoteCreateCallback);
     }
-    showDialog(DIALOG_PROGRESS);
-    try {
-      mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, new OnClientCallback<Note>() {
-        @Override
-        public void onSuccess(Note data) {
-          Toast.makeText(getApplicationContext(), R.string.note_saved, Toast.LENGTH_LONG).show();
-          removeDialog(DIALOG_PROGRESS);
-        }
-
-        @Override
-        public void onException(Exception exception) {
-          Log.e(LOGTAG, "Error saving note", exception);
-          Toast.makeText(getApplicationContext(), R.string.error_saving_note, Toast.LENGTH_LONG).show();
-          removeDialog(DIALOG_PROGRESS);
-        }
-      });
-    } catch (TTransportException exception) {
-      Log.e(LOGTAG, "Error creating notestore", exception);
-      Toast.makeText(getApplicationContext(), R.string.error_creating_notestore, Toast.LENGTH_LONG).show();
-      removeDialog(DIALOG_PROGRESS);
-    }
-
   }
+
 
   /**
    * Select notebook, create AlertDialog to pick notebook guid
    */
   public void selectNotebook(View view) {
+    if(mEvernoteSession.isAppLinkedNotebook()) {
+      Toast.makeText(getApplicationContext(), getString(R.string.CANT_LIST_APP_LNB), Toast.LENGTH_LONG).show();
+      return;
+    }
 
     try {
       mEvernoteSession.getClientFactory().createNoteStoreClient().listNotebooks(new OnClientCallback<List<Notebook>>() {

@@ -72,6 +72,7 @@ public class EvernoteOAuthActivity extends Activity {
   static final String EXTRA_CONSUMER_SECRET = "CONSUMER_SECRET";
   static final String EXTRA_REQUEST_TOKEN = "REQUEST_TOKEN";
   static final String EXTRA_REQUEST_TOKEN_SECRET = "REQUEST_TOKEN_SECRET";
+  static final String EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS = "SUPPORT_APP_LINKED_NOTEBOOKS";
   static final String EXTRA_BOOTSTRAP_SELECTED_PROFILE_POS = "BOOTSTRAP_SELECTED_PROFILE_POS";
   static final String EXTRA_BOOTSTRAP_SELECTED_PROFILE = "BOOTSTRAP_SELECTED_PROFILE";
   static final String EXTRA_BOOTSTRAP_SELECTED_PROFILES = "BOOTSTRAP_SELECTED_PROFILES";
@@ -86,6 +87,7 @@ public class EvernoteOAuthActivity extends Activity {
   private String mConsumerSecret = null;
   private String mRequestToken = null;
   private String mRequestTokenSecret = null;
+  private boolean mSupportAppLinkedNotebooks = false;
 
   private final int DIALOG_PROGRESS = 101;
 
@@ -148,6 +150,7 @@ public class EvernoteOAuthActivity extends Activity {
       mConsumerSecret = savedInstanceState.getString(EXTRA_CONSUMER_SECRET);
       mRequestToken = savedInstanceState.getString(EXTRA_REQUEST_TOKEN);
       mRequestTokenSecret = savedInstanceState.getString(EXTRA_REQUEST_TOKEN_SECRET);
+      mSupportAppLinkedNotebooks = savedInstanceState.getBoolean(EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS);
       mSelectedBootstrapProfile = (BootstrapProfile) savedInstanceState.getSerializable(EXTRA_BOOTSTRAP_SELECTED_PROFILE);
       mSelectedBootstrapProfilePos = savedInstanceState.getInt(EXTRA_BOOTSTRAP_SELECTED_PROFILE_POS);
       mBootstrapProfiles = (ArrayList<BootstrapProfile>) savedInstanceState.getSerializable(EXTRA_BOOTSTRAP_SELECTED_PROFILES);
@@ -158,6 +161,7 @@ public class EvernoteOAuthActivity extends Activity {
       mEvernoteService = intent.getParcelableExtra(EXTRA_EVERNOTE_SERVICE);
       mConsumerKey = intent.getStringExtra(EXTRA_CONSUMER_KEY);
       mConsumerSecret = intent.getStringExtra(EXTRA_CONSUMER_SECRET);
+      mSupportAppLinkedNotebooks = intent.getBooleanExtra(EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS, false);
     }
   }
 
@@ -185,6 +189,7 @@ public class EvernoteOAuthActivity extends Activity {
     outState.putParcelable(EXTRA_EVERNOTE_SERVICE, mEvernoteService);
     outState.putString(EXTRA_CONSUMER_KEY, mConsumerKey);
     outState.putString(EXTRA_CONSUMER_SECRET, mConsumerSecret);
+    outState.putBoolean(EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS, mSupportAppLinkedNotebooks);
     outState.putString(EXTRA_REQUEST_TOKEN, mRequestToken);
     outState.putString(EXTRA_REQUEST_TOKEN_SECRET, mRequestTokenSecret);
     outState.putSerializable(EXTRA_BOOTSTRAP_SELECTED_PROFILE, mSelectedBootstrapProfile);
@@ -392,6 +397,9 @@ public class EvernoteOAuthActivity extends Activity {
 
         Log.i(LOGTAG, "Redirecting user for authorization...");
         url = service.getAuthorizationUrl(reqToken);
+        if(mSupportAppLinkedNotebooks) {
+          url += "&supportLinkedSandbox=true";
+        }
       } catch(BootstrapManager.ClientUnsupportedException cue) {
 
         return null;
@@ -443,6 +451,10 @@ public class EvernoteOAuthActivity extends Activity {
       if (!TextUtils.isEmpty(mRequestToken)) {
         OAuthService service = createService();
         String verifierString = uri.getQueryParameter("oauth_verifier");
+        String appLnbString = uri.getQueryParameter("sandbox_lnb");
+        boolean isAppLinkedNotebook = appLnbString != null &&
+            appLnbString.equalsIgnoreCase("true");
+
         if (TextUtils.isEmpty(verifierString)) {
           Log.i(LOGTAG, "User did not authorize access");
         } else {
@@ -450,7 +462,9 @@ public class EvernoteOAuthActivity extends Activity {
           Log.i(LOGTAG, "Retrieving OAuth access token...");
           try {
             Token reqToken = new Token(mRequestToken, mRequestTokenSecret);
-            authToken = new EvernoteAuthToken(service.getAccessToken(reqToken, verifier));
+            authToken = new EvernoteAuthToken(service.getAccessToken(reqToken, verifier),
+                isAppLinkedNotebook);
+
           } catch (Exception ex) {
             Log.e(LOGTAG, "Failed to obtain OAuth access token", ex);
           }

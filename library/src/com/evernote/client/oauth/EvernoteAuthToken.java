@@ -47,13 +47,17 @@ public class EvernoteAuthToken extends Token {
   private String mNoteStoreUrl;
   private String mWebApiUrlPrefix;
   private int mUserId;
+  private boolean mAppLinkedNotebook;
 
-  public EvernoteAuthToken(Token token) {
+
+  public EvernoteAuthToken(Token token, boolean appLinkedNotebook) {
     super(token.getToken(), token.getSecret(), token.getRawResponse());
     this.mNoteStoreUrl = extract(getRawResponse(), NOTESTORE_REGEX);
     this.mWebApiUrlPrefix = extract(getRawResponse(), WEBAPI_REGEX);
     this.mUserId = Integer.parseInt(extract(getRawResponse(), USERID_REGEX));
+    this.mAppLinkedNotebook = appLinkedNotebook;
   }
+
 
   private String extract(String response, Pattern p) {
     Matcher matcher = p.matcher(response);
@@ -85,5 +89,11 @@ public class EvernoteAuthToken extends Token {
   public int getUserId() {
     return mUserId;
   }
+
+  /**
+   * Indicates whether this account is limited to accessing a single notebook, and
+   * that notebook is a linked notebook
+   */
+  public boolean isAppLinkedNotebook() { return mAppLinkedNotebook; }
 
 }

@@ -30,14 +30,18 @@ import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.*;
 import android.view.inputmethod.EditorInfo;
 import android.widget.*;
+
+import com.evernote.client.android.AsyncLinkedNoteStoreClient;
 import com.evernote.client.android.OnClientCallback;
 import com.evernote.edam.notestore.NoteFilter;
 import com.evernote.edam.notestore.NoteMetadata;
 import com.evernote.edam.notestore.NotesMetadataList;
 import com.evernote.edam.notestore.NotesMetadataResultSpec;
+import com.evernote.edam.type.LinkedNotebook;
 import com.evernote.edam.type.NoteSortOrder;
 import com.evernote.thrift.transport.TTransportException;
 import java.util.ArrayList;
@@ -101,32 +105,32 @@ public class SearchNotes extends ParentActivity {
     // If User uses Android OS version 3.0 or later, implement a search form by SearchView on ActionBar
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB){
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 
-            MenuInflater inflater = getMenuInflater();
-            inflater.inflate(R.menu.options_menu, menu);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
 
-            SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-            mSearchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-            mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        mSearchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
-            SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-                @Override
-                public boolean onQueryTextChange(String newText) {
-                    return true;
-                }
+        SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+          @Override
+          public boolean onQueryTextChange(String newText) {
+            return true;
+          }
 
-                @Override
-                public boolean onQueryTextSubmit(String query) {
-                    findNotesByQuery(query);
-                    return true;
-                }
-            };
+          @Override
+          public boolean onQueryTextSubmit(String query) {
+            findNotesByQuery(query);
+            return true;
+          }
+        };
 
-            mSearchView.setOnQueryTextListener(queryTextListener);
-        }
+        mSearchView.setOnQueryTextListener(queryTextListener);
+      }
 
-        return true;
+      return true;
     }
 
     /**
@@ -137,38 +141,59 @@ public class SearchNotes extends ParentActivity {
      *
      */
     public void findNotesByQuery(String query) {
-        int offset = 0;
-        int pageSize = 10;
+        final int offset = 0;
+        final int pageSize = 10;
 
-        NoteFilter filter = new NoteFilter();
+        final NoteFilter filter = new NoteFilter();
         filter.setOrder(NoteSortOrder.UPDATED.getValue());
         filter.setWords(query);
-        NotesMetadataResultSpec spec = new NotesMetadataResultSpec();
+        final NotesMetadataResultSpec spec = new NotesMetadataResultSpec();
         spec.setIncludeTitle(true);
 
         mAdapter.clear();
 
         showDialog(DIALOG_PROGRESS);
         try{
+          // Callback invoked asynchronously from the notes search.  Factored out here
+          // so that it can be reused for a local or linked notebook search below
+          final OnClientCallback<NotesMetadataList> callback = new OnClientCallback<NotesMetadataList>() {
+            @Override
+            public void onSuccess(NotesMetadataList data) {
+              Toast.makeText(getApplicationContext(), R.string.notes_searched, Toast.LENGTH_LONG).show();
+              removeDialog(DIALOG_PROGRESS);
+
+              for (NoteMetadata note : data.getNotes()) {
+                String title = note.getTitle();
+                notesNames.add(title);
+              }
+              mAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onException(Exception exception) {
+              onError(exception, "Error listing notes. ", R.string.error_listing_notes);
+            }
+          };
+
+
+          if(!mEvernoteSession.isAppLinkedNotebook()) {
+            // Normal, local notebook search
             mEvernoteSession.getClientFactory().createNoteStoreClient()
-                    .findNotesMetadata(filter, offset, pageSize, spec, new OnClientCallback<NotesMetadataList>() {
-                        @Override
-                        public void onSuccess(NotesMetadataList data) {
-                            Toast.makeText(getApplicationContext(), R.string.notes_searched, Toast.LENGTH_LONG).show();
-                            removeDialog(DIALOG_PROGRESS);
+                .findNotesMetadata(filter, offset, pageSize, spec, callback);
+          } else {
+            // Linked notebook search
+            super.invokeOnAppLinkedNotebook(new OnClientCallback<Pair<AsyncLinkedNoteStoreClient, LinkedNotebook>>() {
+              @Override
+              public void onSuccess(Pair<AsyncLinkedNoteStoreClient, LinkedNotebook> pair) {
+                pair.first.findNotesMetadataAsync(filter, offset, pageSize, spec, callback);
+              }
 
-                            for(NoteMetadata note : data.getNotes()) {
-                                String title = note.getTitle();
-                                notesNames.add(title);
-                            }
-                            mAdapter.notifyDataSetChanged();
-                        }
-
-                        @Override
-                        public void onException(Exception exception) {
-                            onError(exception, "Error listing notes. ", R.string.error_listing_notes);
-                        }
-                    });
+              @Override
+              public void onException(Exception exception) {
+                callback.onException(exception);
+              }
+            });
+          }
         } catch (TTransportException exception){
             onError(exception, "Error creating notestore. ", R.string.error_creating_notestore);
         }

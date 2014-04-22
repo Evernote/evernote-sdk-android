@@ -72,6 +72,22 @@ public class ImagePicker extends ParentActivity {
   // Activity result request codes
   private static final int SELECT_IMAGE = 1;
 
+  // Invoked once a note image has been created or it failed
+  private OnClientCallback<Note> mCreateImageCallback = new OnClientCallback<Note>() {
+    @Override
+    public void onSuccess(Note data) {
+      removeDialog(DIALOG_PROGRESS);
+      Toast.makeText(getApplicationContext(), R.string.msg_image_saved, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onException(Exception exception) {
+      Log.e(LOGTAG, "Error saving note", exception);
+      Toast.makeText(getApplicationContext(), R.string.error_saving_note, Toast.LENGTH_LONG).show();
+      removeDialog(DIALOG_PROGRESS);
+    }
+  };
+
   // The path to and MIME type of the currently selected image from the gallery
   private class ImageData {
     public Bitmap imageBitmap;
@@ -201,24 +217,15 @@ public class ImagePicker extends ParentActivity {
 
         note.setContent(content);
 
-        // Create the note on the server. The returned Note object
-        // will contain server-generated attributes such as the note's
-        // unique ID (GUID), the Resource's GUID, and the creation and update time.
+        if(!mEvernoteSession.getAuthenticationResult().isAppLinkedNotebook()) {
+          // Create the note on the server. The returned Note object
+          // will contain server-generated attributes such as the note's
+          // unique ID (GUID), the Resource's GUID, and the creation and update time.
 
-        mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, new OnClientCallback<Note>() {
-          @Override
-          public void onSuccess(Note data) {
-            removeDialog(DIALOG_PROGRESS);
-            Toast.makeText(getApplicationContext(), R.string.msg_image_saved, Toast.LENGTH_LONG).show();
-          }
-
-          @Override
-          public void onException(Exception exception) {
-            Log.e(LOGTAG, "Error saving note", exception);
-            Toast.makeText(getApplicationContext(), R.string.error_saving_note, Toast.LENGTH_LONG).show();
-            removeDialog(DIALOG_PROGRESS);
-          }
-        });
+          mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, mCreateImageCallback);
+        } else {
+          super.createNoteInAppLinkedNotebook(note, mCreateImageCallback);
+        }
       } catch (Exception ex) {
         Log.e(LOGTAG, "Error creating notestore", ex);
         Toast.makeText(getApplicationContext(), R.string.error_creating_notestore, Toast.LENGTH_LONG).show();

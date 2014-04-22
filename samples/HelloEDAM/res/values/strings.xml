@@ -33,4 +33,7 @@
     <string name="error_creating_notestore">Error creating notestore</string>
     <string name="error_saving_note">Error saving note</string>
     <string name="error_listing_notes">Error listing note</string>
+    <string name="CANNOT_GET_LINKED_NOTEBOOK">Cannot get linked notebook</string>
+    <string name="CANT_LIST_APP_LNB">Can\'t select notebook: account can only access one linked notebook</string>
+    <string name="ERROR_GETTING_LINKED_NOTEBOOK">Error getting linked notebook</string>
 </resources>

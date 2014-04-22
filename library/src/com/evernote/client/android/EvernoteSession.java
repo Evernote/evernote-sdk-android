@@ -132,6 +132,7 @@ public class EvernoteSession {
   private BootstrapManager mBootstrapManager;
   private ClientFactory mClientFactory;
   private AuthenticationResult mAuthenticationResult;
+  private boolean mSupportAppLinkedNotebooks;
 
   /**
    * Use to acquire a singleton instance of the EvernoteSession for authentication.
@@ -144,6 +145,8 @@ public class EvernoteSession {
    * @param evernoteService The enum of the Evernote service instance that you wish
    * to use. Development and testing is typically performed against {@link EvernoteService#SANDBOX}.
    * The production Evernote service is {@link EvernoteService#HOST_PRODUCTION}.
+   * @param supportAppLinkedNotebooks true if you want to allow linked notebooks for
+   * applications which can only access a single notebook.
    *
    * @return The EvernoteSession singleton instance.
    * @throws IllegalArgumentException
@@ -151,9 +154,10 @@ public class EvernoteSession {
    public static EvernoteSession getInstance(Context ctx,
                                      String consumerKey,
                                      String consumerSecret,
-                                     EvernoteService evernoteService) throws IllegalArgumentException{
+                                     EvernoteService evernoteService,
+                                     boolean supportAppLinkedNotebooks) throws IllegalArgumentException{
     if (sInstance == null) {
-      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteService);
+      sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteService, supportAppLinkedNotebooks);
     }
     return sInstance;
   }
@@ -164,7 +168,7 @@ public class EvernoteSession {
    * Used to access the initialized EvernoteSession singleton instance.
    *
    * @return The previously initialized EvernoteSession instance,
-   * or null if {@link #getInstance(android.content.Context, String, String, com.evernote.client.android.EvernoteSession.EvernoteService)}
+   * or null if {@link #getInstance(android.content.Context, String, String, com.evernote.client.android.EvernoteSession.EvernoteService, boolean)}
    * has not been called yet.
    */
   static EvernoteSession getOpenSession() {
@@ -178,7 +182,8 @@ public class EvernoteSession {
   private EvernoteSession(Context ctx,
                           String consumerKey,
                           String consumerSecret,
-                          EvernoteService evernoteService) throws IllegalArgumentException {
+                          EvernoteService evernoteService,
+                          boolean supportAppLinkedNotebooks) throws IllegalArgumentException {
 
     if( ctx == null ||
         TextUtils.isEmpty(consumerKey) ||
@@ -190,6 +195,7 @@ public class EvernoteSession {
     mConsumerKey = consumerKey;
     mConsumerSecret = consumerSecret;
     mEvernoteService = evernoteService;
+    mSupportAppLinkedNotebooks = supportAppLinkedNotebooks;
     synchronized (this) {
       mAuthenticationResult = getAuthenticationResultFromPref(SessionPreferences.getPreferences(ctx));
     }
@@ -300,6 +306,7 @@ public class EvernoteSession {
     intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_SERVICE, (Parcelable) mEvernoteService);
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mConsumerKey);
     intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mConsumerSecret);
+    intent.putExtra(EvernoteOAuthActivity.EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS, mSupportAppLinkedNotebooks);
 
     if (ctx instanceof Activity) {
       //If this is being called from an activity, an activity can register for the result code
@@ -332,7 +339,8 @@ public class EvernoteSession {
               authToken.getNoteStoreUrl(),
               authToken.getWebApiUrlPrefix(),
               evernoteHost,
-              authToken.getUserId());
+              authToken.getUserId(),
+              authToken.isAppLinkedNotebook());
 
       mAuthenticationResult.persist(SessionPreferences.getPreferences(ctx));
     }
@@ -348,6 +356,10 @@ public class EvernoteSession {
     synchronized (this) {
       return mAuthenticationResult != null;
     }
+  }
+
+  public boolean isAppLinkedNotebook() {
+    return mAuthenticationResult.isAppLinkedNotebook();
   }
 
   /**

@@ -37,13 +37,15 @@ import com.evernote.edam.type.User;
  */
 public class AuthenticationResult {
 
-  private static final String LOGTAG = "AuthenticatonResult";
+  private static final String LOGTAG = "AuthenticationResult";
 
   private String mAuthToken;
   private String mNoteStoreUrl;
   private String mWebApiUrlPrefix;
   private String mEvernoteHost;
   private int mUserId;
+
+  private boolean mAppLinkedNotebook;
 
   private String mBusinessNoteStoreUrl;
   private String mBusinessAuthToken;
@@ -63,15 +65,18 @@ public class AuthenticationResult {
    * @param webApiUrlPrefix The URL of misc. Evernote web APIs for the authenticated user.
    * @param evernoteHost the Evernote Web URL provided from the bootstrap process
    * @param userId The numeric ID of the Evernote user.
+   * @param appLinkedNotebook whether this account can only access a single notebook which is
+   *                              a linked notebook
    *
    */
 
-  public AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, String evernoteHost, int userId) {
+  public AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, String evernoteHost, int userId, boolean appLinkedNotebook) {
     this.mAuthToken = authToken;
     this.mNoteStoreUrl = noteStoreUrl;
     this.mWebApiUrlPrefix = webApiUrlPrefix;
     this.mEvernoteHost = evernoteHost;
     this.mUserId = userId;
+    this.mAppLinkedNotebook = appLinkedNotebook;
   }
 
   void persist(SharedPreferences pref) {
@@ -83,6 +88,7 @@ public class AuthenticationResult {
     editor.putString(SessionPreferences.KEY_WEBAPIURLPREFIX, mWebApiUrlPrefix);
     editor.putString(SessionPreferences.KEY_EVERNOTEHOST, mEvernoteHost);
     editor.putInt(SessionPreferences.KEY_USERID, mUserId);
+    editor.putBoolean(SessionPreferences.KEY_APPLINKEDNOTEBOOK, mAppLinkedNotebook);
 
     SessionPreferences.save(editor);
   }
@@ -94,6 +100,7 @@ public class AuthenticationResult {
     mWebApiUrlPrefix = pref.getString(SessionPreferences.KEY_WEBAPIURLPREFIX, null);
     mEvernoteHost = pref.getString(SessionPreferences.KEY_EVERNOTEHOST, null);
     mUserId = pref.getInt(SessionPreferences.KEY_USERID, -1);
+    mAppLinkedNotebook = pref.getBoolean(SessionPreferences.KEY_APPLINKEDNOTEBOOK, false);
   }
 
   void clear(SharedPreferences pref) {
@@ -105,6 +112,7 @@ public class AuthenticationResult {
     editor.remove(SessionPreferences.KEY_WEBAPIURLPREFIX);
     editor.remove(SessionPreferences.KEY_EVERNOTEHOST);
     editor.remove(SessionPreferences.KEY_USERID);
+    editor.remove(SessionPreferences.KEY_APPLINKEDNOTEBOOK);
 
     SessionPreferences.save(editor);
   }
@@ -146,6 +154,13 @@ public class AuthenticationResult {
   public int getUserId() {
     return mUserId;
   }
+
+  /**
+   * @return Indicates whether this account is limited to accessing a single notebook, and
+   * that notebook is a linked notebook
+   */
+  public boolean isAppLinkedNotebook() { return mAppLinkedNotebook; }
+
 
   /**
    * @return the URL that will be used to access the BusinessNoteStore service.

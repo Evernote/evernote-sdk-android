@@ -28,6 +28,9 @@ package com.evernote.client.android;
 import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
+import com.evernote.edam.notestore.NoteFilter;
+import com.evernote.edam.notestore.NotesMetadataList;
+import com.evernote.edam.notestore.NotesMetadataResultSpec;
 import com.evernote.edam.type.LinkedNotebook;
 import com.evernote.edam.type.Note;
 import com.evernote.edam.type.Notebook;
@@ -118,7 +121,6 @@ public class AsyncLinkedNoteStoreClient {
    *
    */
   public Note createNote(Note note, LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
-
     SharedNotebook sharedNotebook = getAsyncClient().getClient().getSharedNotebookByAuth(getAuthenticationToken());
     note.setNotebookGuid(sharedNotebook.getNotebookGuid());
     return getAsyncClient().getClient().createNote(getAuthenticationToken(), note);
@@ -250,4 +252,33 @@ public class AsyncLinkedNoteStoreClient {
     Notebook notebook = getCorrespondingNotebook(linkedNotebook);
     return !notebook.getRestrictions().isNoCreateNotes();
   }
+
+  /**
+   * Helper method to find notes in a linked notebook asynchronously
+   *
+   * @see {@link com.evernote.edam.notestore.NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, com.evernote.edam.notestore.NotesMetadataResultSpec)}
+   *
+   */
+
+  public void findNotesMetadataAsync(NoteFilter filter,
+                                      int offset,
+                                      int maxNotes,
+                                      NotesMetadataResultSpec resultSpec,
+                                      OnClientCallback<NotesMetadataList> callback) {
+    AsyncReflector.execute(this, callback, "findNotesMetadata", filter, offset, maxNotes, resultSpec);
+  }
+
+  /**
+   * Helper method to find notes in a linked notebook
+   *
+   * @see {@link com.evernote.edam.notestore.NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, com.evernote.edam.notestore.NotesMetadataResultSpec)}
+   *
+   */
+  public NotesMetadataList findNotesMetadata(NoteFilter filter,
+                                             int offset,
+                                             int maxNotes,
+                                             NotesMetadataResultSpec resultSpec) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    return getAsyncClient().getClient().findNotesMetadata(getAuthenticationToken(), filter, offset, maxNotes, resultSpec);
+  }
+
 }
