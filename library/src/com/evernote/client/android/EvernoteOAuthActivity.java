@@ -452,8 +452,7 @@ public class EvernoteOAuthActivity extends Activity {
         OAuthService service = createService();
         String verifierString = uri.getQueryParameter("oauth_verifier");
         String appLnbString = uri.getQueryParameter("sandbox_lnb");
-        boolean isAppLinkedNotebook = appLnbString != null &&
-            appLnbString.equalsIgnoreCase("true");
+        boolean isAppLinkedNotebook = "true".equalsIgnoreCase(appLnbString);
 
         if (TextUtils.isEmpty(verifierString)) {
           Log.i(LOGTAG, "User did not authorize access");
