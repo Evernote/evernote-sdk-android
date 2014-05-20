@@ -32,16 +32,6 @@
 
     <developers>
         <developer>
-            <name>Ty Smith</name>
-            <email>tsmith@evernote.com</email>
-            <id>tylersmithnet</id>
-            <url>http://tysmith.me</url>
-            <timezone>-5</timezone>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
             <name>Seth Hitchings</name>
             <email>seth@evernote.com</email>
             <id>sethhitch</id>
