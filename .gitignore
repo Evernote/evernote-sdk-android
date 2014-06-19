@@ -7,6 +7,9 @@ gen
 target
 out
 
+# Java class files
+*.class
+
 #Eclipse
 .project
 .classpath

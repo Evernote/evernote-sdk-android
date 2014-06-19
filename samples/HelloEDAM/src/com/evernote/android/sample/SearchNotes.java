@@ -48,7 +48,7 @@ import java.util.ArrayList;
 /**
  * This sample shows how to search Evernote notebooks.
  * <p/>
- * class created by @
+ * class created by @akagin_
  */
 public class SearchNotes extends ParentActivity {
 
