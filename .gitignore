@@ -27,3 +27,7 @@ gen-external-apklibs
 local.properties
 build.xml
 proguard-project.txt
+
+#Gradle
+build
+.gradle
