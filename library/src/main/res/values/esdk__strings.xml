@@ -6,5 +6,6 @@
     <string name="esdk__err_protocol_version">Incomatible EDAM client protocol version</string>
     <string name="esdk__err_authentication">Error authenticating to Evernote</string>
     <string name="esdk__err_api_setup">Error intializing Evernote API</string>
-    <string name="esdk__loading">Loading...</string>
+    <string name="esdk__loading">Loading…</string>
+    <string name="esdk_switch_service">Switch Service</string>
 </resources>

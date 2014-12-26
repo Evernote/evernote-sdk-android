@@ -3,6 +3,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/esdk__switch_service"
-        android:showAsAction="always"
-        android:title="Switch Service" />
+        android:showAsAction="ifRoom"
+        android:title="@string/esdk_switch_service" />
 </menu>

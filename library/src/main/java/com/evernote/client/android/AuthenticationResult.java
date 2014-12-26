@@ -81,16 +81,14 @@ public class AuthenticationResult {
 
   void persist(SharedPreferences pref) {
     Log.d(LOGTAG, "persisting Authentication results to SharedPreference");
-    SharedPreferences.Editor editor = pref.edit();
-
-    editor.putString(SessionPreferences.KEY_AUTHTOKEN, mAuthToken);
-    editor.putString(SessionPreferences.KEY_NOTESTOREURL, mNoteStoreUrl);
-    editor.putString(SessionPreferences.KEY_WEBAPIURLPREFIX, mWebApiUrlPrefix);
-    editor.putString(SessionPreferences.KEY_EVERNOTEHOST, mEvernoteHost);
-    editor.putInt(SessionPreferences.KEY_USERID, mUserId);
-    editor.putBoolean(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK, mIsAppLinkedNotebook);
-
-    SessionPreferences.save(editor);
+    pref.edit()
+        .putString(SessionPreferences.KEY_AUTHTOKEN, mAuthToken)
+        .putString(SessionPreferences.KEY_NOTESTOREURL, mNoteStoreUrl)
+        .putString(SessionPreferences.KEY_WEBAPIURLPREFIX, mWebApiUrlPrefix)
+        .putString(SessionPreferences.KEY_EVERNOTEHOST, mEvernoteHost)
+        .putInt(SessionPreferences.KEY_USERID, mUserId)
+        .putBoolean(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK, mIsAppLinkedNotebook)
+        .apply();
   }
 
   void restore(SharedPreferences pref) {
@@ -105,16 +103,14 @@ public class AuthenticationResult {
 
   void clear(SharedPreferences pref) {
     Log.d(LOGTAG, "clearing Authentication results from SharedPreference");
-    SharedPreferences.Editor editor = pref.edit();
-
-    editor.remove(SessionPreferences.KEY_AUTHTOKEN);
-    editor.remove(SessionPreferences.KEY_NOTESTOREURL);
-    editor.remove(SessionPreferences.KEY_WEBAPIURLPREFIX);
-    editor.remove(SessionPreferences.KEY_EVERNOTEHOST);
-    editor.remove(SessionPreferences.KEY_USERID);
-    editor.remove(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK);
-
-    SessionPreferences.save(editor);
+    pref.edit()
+        .remove(SessionPreferences.KEY_AUTHTOKEN)
+        .remove(SessionPreferences.KEY_NOTESTOREURL)
+        .remove(SessionPreferences.KEY_WEBAPIURLPREFIX)
+        .remove(SessionPreferences.KEY_EVERNOTEHOST)
+        .remove(SessionPreferences.KEY_USERID)
+        .remove(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK)
+        .apply();
   }
 
 

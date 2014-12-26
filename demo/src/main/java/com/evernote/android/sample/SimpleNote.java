@@ -160,7 +160,7 @@ public class SimpleNote extends ParentActivity {
                   mSelectedPos = which;
                 }
               })
-              .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+              .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   if (mSelectedPos > -1) {

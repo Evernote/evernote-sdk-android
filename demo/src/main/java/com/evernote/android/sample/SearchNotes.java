@@ -25,6 +25,7 @@
  */
 package com.evernote.android.sample;
 
+import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Build;
@@ -69,6 +70,7 @@ public class SearchNotes extends ParentActivity {
     private ArrayList<String> notesNames;
     private ArrayAdapter<String> mAdapter;
 
+    @SuppressLint("InflateParams")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search_notes);
