@@ -1,11 +1,9 @@
-#OSX
-.DS_Store
-
 #Android generated
 bin
 gen
 target
 out
+build
 
 #Eclipse
 .project
@@ -16,14 +14,22 @@ out
 .idea
 *.iml
 classes
-
-#Maven
-target
-release.properties
-pom.xml.*
+*.ipr
+*.iws
 gen-external-apklibs
 
-#Command line
-local.properties
+#Maven
+release.properties
+pom.xml.*
+
+#Ant
 build.xml
+ant.properties
+local.properties
+
+#Command line
 proguard-project.txt
+.DS_Store
+.tmp
+.gradle
+gradle.properties
