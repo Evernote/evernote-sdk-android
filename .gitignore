@@ -27,9 +27,10 @@ build.xml
 ant.properties
 local.properties
 
+#Gradle
+.gradle
+
 #Command line
 proguard-project.txt
 .DS_Store
 .tmp
-.gradle
-gradle.properties

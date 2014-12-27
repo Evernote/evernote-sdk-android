@@ -1,0 +1,111 @@
+apply plugin: 'maven-publish'
+
+final VERSION_NAME = '1.1.3-SNAPSHOT'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId 'com.evernote'
+            artifactId 'android-sdk'
+            //noinspection GroovyAssignabilityCheck
+            version VERSION_NAME
+
+            artifact file("build/outputs/aar/library-release.aar")
+
+            artifact androidSourcesJar {
+                classifier "sources"
+            }
+            artifact androidJavadocsJar {
+                classifier "javadoc"
+            }
+
+            pom.withXml {
+                asNode().appendNode('name', 'Android-Evernote SDK')
+                asNode().appendNode('description', 'Android library to access the Evernote API.')
+                asNode().appendNode('url', 'https://github.com/evernote/evernote-sdk-android')
+                asNode().appendNode('inceptionYear', '2011')
+
+                def scmNode = asNode().appendNode('scm')
+                scmNode.appendNode('url', 'http://github.com/Evernote/evernote-sdk-android/')
+                scmNode.appendNode('connection', 'scm:git:git://github.com/Evernote/evernote-sdk-android.git')
+                scmNode.appendNode('developerConnection', 'scm:git:git@github.com:Evernote/evernote-sdk-android.git')
+
+                def developersNode = asNode().appendNode('developers')
+                addDeveloper(developersNode, 'Ty Smith', 'tsmith@evernote.com', 'tylersmithnet', 'http://tysmith.me', '-5', 'developer')
+                addDeveloper(developersNode, 'Seth Hitchings', 'seth@evernote.com', 'sethhitch', null, '-5', 'developer')
+                addDeveloper(developersNode, 'Ralf Wondratschek', 'rwondratschek@evernote.com', 'rwondratschek', 'http://vrallev.net', '+1', 'developer')
+
+                def licenseNode = asNode().appendNode('licenses').appendNode('license')
+                licenseNode.appendNode('name', 'Evernote SDK License Agreement')
+                licenseNode.appendNode('url', 'https://github.com/evernote/evernote-sdk-android/blob/master/README.md')
+                licenseNode.appendNode('distribution', 'repo')
+
+                def organizationNode = asNode().appendNode('organization')
+                organizationNode.appendNode('name', 'Evernote')
+                organizationNode.appendNode('url', 'http://evernote.com')
+
+                def issueManagementNode = asNode().appendNode('issueManagement')
+                issueManagementNode.appendNode('system', 'GitHub Issues')
+                issueManagementNode.appendNode('url', 'https://github.com/Evernote/evernote-sdk-android/issues')
+
+                def dependenciesNode = asNode().appendNode('dependencies')
+                configurations.compile.allDependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                }
+                configurations.provided.allDependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                    dependencyNode.appendNode('scope', 'provided')
+                }
+
+
+            }
+        }
+    }
+
+    /*
+    repositories {
+        maven {
+            // change to point to your repo, e.g. http://my.org/repo
+            url "$buildDir/repo"
+        }
+    }
+    */
+}
+
+@SuppressWarnings("GroovyUnusedDeclaration")
+def addDeveloper(developers, name, email, id, url, timezone, role) {
+    def devNode = developers.appendNode('developer')
+    devNode.appendNode('name', name)
+    devNode.appendNode('email', email)
+    devNode.appendNode('id', id)
+    if (url) {
+        devNode.appendNode('url', url)
+    }
+    devNode.appendNode('timezone', timezone)
+
+    devNode.appendNode('roles').appendNode('role', role)
+}
+
+task androidJavadocs(type: Javadoc) {
+    failOnError = false
+    source = android.sourceSets.main.java.sourceFiles
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = 'javadoc'
+    //basename = artifact_id
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    //basename = artifact_id
+    from android.sourceSets.main.java.sourceFiles
+}
