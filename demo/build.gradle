@@ -1,25 +1,37 @@
 apply plugin: 'com.android.application'
+apply from: '../build-config/gradle-quality.gradle'
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion Integer.parseInt(project.ANDROID_COMPILE_SDK_VERSION)
+    buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
 
     defaultConfig {
+//        project.plugins.getPlugin('').
+
         applicationId "com.evernote.android.sample"
 
-        minSdkVersion 14
-        targetSdkVersion 21
+        minSdkVersion Integer.parseInt(project.ANDROID_MIN_SDK)
+        targetSdkVersion Integer.parseInt(project.ANDROID_TARGET_SDK_VERSION)
 
-        versionCode 1
-        versionName "1.0.1"
+        versionName project.VERSION_NAME
+        versionCode Integer.parseInt(project.VERSION_CODE)
     }
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
         targetCompatibility JavaVersion.VERSION_1_7
     }
+
+    lintOptions {
+        abortOnError true
+
+        htmlOutput file("$project.buildDir/reports/lint/lint.html")
+        xmlOutput file("$project.buildDir/reports/lint/lint.xml")
+    }
 }
 
 dependencies {
     compile project(':library')
+
+    compile project.DEPENDENCY_SUPPORT_LIBRARY
 }

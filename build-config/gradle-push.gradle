@@ -1,7 +1,5 @@
 apply plugin: 'maven-publish'
 
-final VERSION_NAME = '1.1.3-SNAPSHOT'
-
 publishing {
     publications {
         maven(MavenPublication) {

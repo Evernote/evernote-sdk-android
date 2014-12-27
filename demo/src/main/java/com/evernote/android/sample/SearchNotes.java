@@ -51,6 +51,7 @@ import java.util.ArrayList;
  * <p/>
  * class created by @
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class SearchNotes extends ParentActivity {
 
     /**
@@ -97,8 +98,8 @@ public class SearchNotes extends ParentActivity {
 
         }
 
-        notesNames = new ArrayList();
-        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, notesNames);
+        notesNames = new ArrayList<>();
+        mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, notesNames);
         mResultsListView = (ListView)findViewById(R.id.list);
         mResultsListView.setAdapter(mAdapter);
 
@@ -142,6 +143,7 @@ public class SearchNotes extends ParentActivity {
      * display their titles on ListView in order of most recently updated.
      *
      */
+    @SuppressWarnings("deprecation")
     public void findNotesByQuery(String query) {
         final int offset = 0;
         final int pageSize = 10;
@@ -205,6 +207,7 @@ public class SearchNotes extends ParentActivity {
      * Show log and toast and remove a dialog on Exceptions
      *
      */
+    @SuppressWarnings("deprecation")
     public void onError(Exception exception, String logstr, int id){
         Log.e(LOGTAG, logstr + exception);
         Toast.makeText(getApplicationContext(), id, Toast.LENGTH_LONG).show();
