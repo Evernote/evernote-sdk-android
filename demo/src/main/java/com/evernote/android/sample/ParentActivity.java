@@ -61,7 +61,7 @@ public class ParentActivity extends Activity {
 
   // Your Evernote API key. See http://dev.evernote.com/documentation/cloud/
   // Please obfuscate your code to help keep these values secret.
-  private static final String CONSUMER_KEY = "You consumer key";
+  private static final String CONSUMER_KEY = "Your consumer key";
   private static final String CONSUMER_SECRET = "Your consumer secret";
 
     // Initial development is done on Evernote's testing service, the sandbox.
@@ -86,8 +86,24 @@ public class ParentActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+    String consumerKey;
+    if ("Your consumer key".equals(CONSUMER_KEY)) {
+      consumerKey = BuildConfig.EVERNOTE_CONSUMER_KEY;
+    } else {
+      // isn't the default value anymore
+      consumerKey = CONSUMER_KEY;
+    }
+
+    String consumerSecret;
+    if ("Your consumer secret".equals(CONSUMER_SECRET)) {
+      consumerSecret = BuildConfig.EVERNOTE_CONSUMER_SECRET;
+    } else {
+      // isn't the default value anymore
+      consumerSecret = CONSUMER_SECRET;
+    }
+
     //Set up the Evernote Singleton Session
-    mEvernoteSession = EvernoteSession.getInstance(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE, SUPPORT_APP_LINKED_NOTEBOOKS);
+    mEvernoteSession = EvernoteSession.getInstance(this, consumerKey, consumerSecret, EVERNOTE_SERVICE, SUPPORT_APP_LINKED_NOTEBOOKS);
   }
 
   // using createDialog, could use Fragments instead
