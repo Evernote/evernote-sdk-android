@@ -1,109 +1,151 @@
-apply plugin: 'maven-publish'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId 'com.evernote'
-            artifactId 'android-sdk'
-            //noinspection GroovyAssignabilityCheck
-            version VERSION_NAME
+def isReleaseBuild() {
+    return VERSION_NAME.contains("SNAPSHOT") == false
+}
 
-            artifact file("build/outputs/aar/library-release.aar")
+def isLocal() {
+    return hasProperty('local') ? Boolean.parseBoolean(getProperty('local')) : true;
+}
 
-            artifact androidSourcesJar {
-                classifier "sources"
-            }
-            artifact androidJavadocsJar {
-                classifier "javadoc"
-            }
+def getReleaseRepositoryUrl() {
+    if (isLocal()) {
+        return hasProperty('RELEASE_REPOSITORY_LOCAL') ? RELEASE_REPOSITORY_LOCAL : "file://${System.env.HOME}/.m2/repository"
+    } else {
+        return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+    }
+}
 
-            pom.withXml {
-                asNode().appendNode('name', 'Android-Evernote SDK')
-                asNode().appendNode('description', 'Android library to access the Evernote API.')
-                asNode().appendNode('url', 'https://github.com/evernote/evernote-sdk-android')
-                asNode().appendNode('inceptionYear', '2011')
+def getSnapshotRepositoryUrl() {
+    if (isLocal()) {
+        return hasProperty('SNAPSHOT_REPOSITORY_LOCAL') ? SNAPSHOT_REPOSITORY_LOCAL : "file://${System.env.HOME}/.m2/repository"
+    } else {
+        return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL : "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+}
 
-                def scmNode = asNode().appendNode('scm')
-                scmNode.appendNode('url', 'http://github.com/Evernote/evernote-sdk-android/')
-                scmNode.appendNode('connection', 'scm:git:git://github.com/Evernote/evernote-sdk-android.git')
-                scmNode.appendNode('developerConnection', 'scm:git:git@github.com:Evernote/evernote-sdk-android.git')
+def getRepositoryUsername() {
+    return hasProperty('SONATYPE_USERNAME') ? SONATYPE_USERNAME : ""
+}
 
-                def developersNode = asNode().appendNode('developers')
-                addDeveloper(developersNode, 'Ty Smith', 'tsmith@evernote.com', 'tylersmithnet', 'http://tysmith.me', '-5', 'developer')
-                addDeveloper(developersNode, 'Seth Hitchings', 'seth@evernote.com', 'sethhitch', null, '-5', 'developer')
-                addDeveloper(developersNode, 'Ralf Wondratschek', 'rwondratschek@evernote.com', 'rwondratschek', 'http://vrallev.net', '+1', 'developer')
+def getRepositoryPassword() {
+    return hasProperty('SONATYPE_PASSWORD') ? SONATYPE_PASSWORD : ""
+}
 
-                def licenseNode = asNode().appendNode('licenses').appendNode('license')
-                licenseNode.appendNode('name', 'Evernote SDK License Agreement')
-                licenseNode.appendNode('url', 'https://github.com/evernote/evernote-sdk-android/blob/master/README.md')
-                licenseNode.appendNode('distribution', 'repo')
+afterEvaluate { project ->
+    uploadArchives {
+        //noinspection GradleMisplacedStatement
+        repositories {
+            mavenDeployer {
+                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
-                def organizationNode = asNode().appendNode('organization')
-                organizationNode.appendNode('name', 'Evernote')
-                organizationNode.appendNode('url', 'http://evernote.com')
+                pom.groupId = 'com.evernote'
+                pom.artifactId = 'android-sdk'
+                pom.version = VERSION_NAME
 
-                def issueManagementNode = asNode().appendNode('issueManagement')
-                issueManagementNode.appendNode('system', 'GitHub Issues')
-                issueManagementNode.appendNode('url', 'https://github.com/Evernote/evernote-sdk-android/issues')
-
-                def dependenciesNode = asNode().appendNode('dependencies')
-                configurations.compile.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
+                repository(url: getReleaseRepositoryUrl()) {
+                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
                 }
-                configurations.provided.allDependencies.each {
-                    def dependencyNode = dependenciesNode.appendNode('dependency')
-                    dependencyNode.appendNode('groupId', it.group)
-                    dependencyNode.appendNode('artifactId', it.name)
-                    dependencyNode.appendNode('version', it.version)
-                    dependencyNode.appendNode('scope', 'provided')
+                snapshotRepository(url: getSnapshotRepositoryUrl()) {
+                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
                 }
 
+                pom.project {
+                    name 'Android-Evernote SDK'
+                    packaging 'aar'
+                    description 'Android library to access the Evernote API.'
+                    url 'https://github.com/evernote/evernote-sdk-android'
+                    inceptionYear '2011'
 
+                    scm {
+                        url 'http://github.com/Evernote/evernote-sdk-android/'
+                        connection 'scm:git:git://github.com/Evernote/evernote-sdk-android.git'
+                        developerConnection 'scm:git:git@github.com:Evernote/evernote-sdk-android.git'
+                    }
+
+                    developers {
+                        developer {
+                            name 'Ty Smith'
+                            email 'tsmith@evernote.com'
+                            id 'tylersmithnet'
+                            url 'http://tysmith.me'
+                            timezone '-5'
+                            roles {
+                                role 'developer'
+                            }
+                        }
+
+                        developer {
+                            name 'Seth Hitchings'
+                            email 'seth@evernote.com'
+                            id 'sethhitch'
+                            timezone '-5'
+                            roles {
+                                role 'developer'
+                            }
+                        }
+
+                        developer {
+                            name 'Ralf Wondratschek'
+                            email 'rwondratschek@evernote.com'
+                            id 'rwondratschek'
+                            url 'http://vrallev.net'
+                            timezone '+1'
+                            roles {
+                                role 'developer'
+                            }
+                        }
+                    }
+
+                    licenses {
+                        license {
+                            name 'Evernote SDK License Agreement'
+                            url 'https://github.com/evernote/evernote-sdk-android/blob/master/README.md'
+                            distribution 'repo'
+                        }
+                    }
+
+                    organization {
+                        name 'Evernote'
+                        url 'http://evernote.com'
+                    }
+
+                    issueManagement {
+                        system 'GitHub Issues'
+                        url 'https://github.com/Evernote/evernote-sdk-android/issues'
+                    }
+                }
             }
         }
     }
 
-    /*
-    repositories {
-        maven {
-            // change to point to your repo, e.g. http://my.org/repo
-            url "$buildDir/repo"
-        }
+    signing {
+        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
+        sign configurations.archives
     }
-    */
-}
 
-@SuppressWarnings("GroovyUnusedDeclaration")
-def addDeveloper(developers, name, email, id, url, timezone, role) {
-    def devNode = developers.appendNode('developer')
-    devNode.appendNode('name', name)
-    devNode.appendNode('email', email)
-    devNode.appendNode('id', id)
-    if (url) {
-        devNode.appendNode('url', url)
+    task androidJavadocs2(type: Javadoc) {
+        failOnError = false
+        source = android.sourceSets.main.java.sourceFiles
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
     }
-    devNode.appendNode('timezone', timezone)
 
-    devNode.appendNode('roles').appendNode('role', role)
-}
+    task androidJavadocsJar2(type: Jar, dependsOn: androidJavadocs2) {
+        classifier = 'javadoc'
+        //basename = artifact_id
+        from androidJavadocs2.destinationDir
+    }
 
-task androidJavadocs(type: Javadoc) {
-    failOnError = false
-    source = android.sourceSets.main.java.sourceFiles
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
+    task androidSourcesJar2(type: Jar) {
+        classifier = 'sources'
+        //basename = artifact_id
+        from android.sourceSets.main.java.sourceFiles
+    }
 
-task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-    classifier = 'javadoc'
-    //basename = artifact_id
-    from androidJavadocs.destinationDir
-}
-
-task androidSourcesJar(type: Jar) {
-    classifier = 'sources'
-    //basename = artifact_id
-    from android.sourceSets.main.java.sourceFiles
+    artifacts {
+        //archives packageReleaseJar
+        archives androidSourcesJar2
+        archives androidJavadocsJar2
+    }
 }
