@@ -3,9 +3,9 @@ package com.evernote.client.android;
 /**
  * Exception used when an operation is called that requires a valid session without one.
  */
-public class InvalidAuthenticationException extends Exception{
+public class InvalidAuthenticationException extends Exception {
   /**
-   * Constructor that takes a message
+   * Constructor that takes a message.
    * @param message
    */
   public InvalidAuthenticationException(String message) {
@@ -13,7 +13,7 @@ public class InvalidAuthenticationException extends Exception{
   }
 
   /**
-   * Constructor that takes message and throwable
+   * Constructor that takes message and throwable.
    * @param message
    * @param throwable
    */

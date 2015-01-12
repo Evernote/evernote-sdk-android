@@ -51,21 +51,20 @@ public class BootstrapManager {
   private static final String LOGTAG = "EvernoteSession";
 
   /**
-   * List of locales that match china
+   * List of locales that match china.
    */
-  private static List<Locale> sChinaLocales = Arrays.asList(new Locale[]{
-      Locale.TRADITIONAL_CHINESE,
+  private static List<Locale> sChinaLocales = Arrays.asList(Locale.TRADITIONAL_CHINESE,
       Locale.CHINESE,
       Locale.CHINA,
-      Locale.SIMPLIFIED_CHINESE});
+      Locale.SIMPLIFIED_CHINESE);
 
   /**
-   * Server matched name for BootstrapProfile that matches china
+   * Server matched name for BootstrapProfile that matches china.
    */
   public static final String CHINA_PROFILE = "Evernote-China";
 
   /**
-   * Display names for Yinxiang and Evernote
+   * Display names for Yinxiang and Evernote.
    */
   public static final String DISPLAY_YXBIJI = "印象笔记";
   public static final String DISPLAY_EVERNOTE = "Evernote";
@@ -78,19 +77,19 @@ public class BootstrapManager {
   private String mBootstrapServerUsed;
 
   /**
-   * private constructor
+   * private constructor.
    */
-  private BootstrapManager() {};
+  private BootstrapManager() { }
 
   /**
-   * package-scope constructor
+   * package-scope constructor.
    */
   BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer) {
     this(service, producer, Locale.getDefault());
   }
 
   /**
-   * package-scope constructor
+   * package-scope constructor.
    *
    * @param service {@link com.evernote.client.android.EvernoteSession.EvernoteService#PRODUCTION} when using
    * production and {@link com.evernote.client.android.EvernoteSession.EvernoteService#SANDBOX} when using sandbox
@@ -102,7 +101,7 @@ public class BootstrapManager {
     mClientProducer = producer;
 
     mBootstrapServerUrls.clear();
-    switch(service) {
+    switch (service) {
       case PRODUCTION:
         if (sChinaLocales.contains(mLocale)) {
           mBootstrapServerUrls.add(EvernoteSession.HOST_CHINA);
@@ -117,7 +116,7 @@ public class BootstrapManager {
   }
 
   /**
-   * Initialized the User Store to check for supported version of the API
+   * Initialized the User Store to check for supported version of the API.
    *
    * @throws ClientUnsupportedException on unsupported version
    * @throws Exception on generic errors
@@ -159,7 +158,7 @@ public class BootstrapManager {
   }
 
   /**
-   * Makes a web request to get the latest bootstrap information
+   * Makes a web request to get the latest bootstrap information.
    * This is a requirement during the oauth process
    *
    * @return {@link BootstrapInfoWrapper}
@@ -187,7 +186,7 @@ public class BootstrapManager {
   }
 
   /**
-   * Log the {@link BootstrapProfile} list
+   * Log the {@link BootstrapProfile} list.
    * @param bsInfo
    */
   void printBootstrapInfo(BootstrapInfo bsInfo) {
@@ -205,7 +204,7 @@ public class BootstrapManager {
   }
 
   /**
-   * Wrapper class to hold the Evernote API server URL and the {@link BootstrapProfile} object
+   * Wrapper class to hold the Evernote API server URL and the {@link BootstrapProfile} object.
    */
   static class BootstrapInfoWrapper {
     private String mServerUrl;

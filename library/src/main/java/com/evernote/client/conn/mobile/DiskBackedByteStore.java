@@ -25,7 +25,15 @@
  */
 package com.evernote.client.conn.mobile;
 
-import java.io.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Implements an OutputStream that stores data to a temporary file on disk.
@@ -39,7 +47,7 @@ public class DiskBackedByteStore extends OutputStream {
   protected File file;
 
   /**
-   * The maximum amount of memory to use before writing to disk
+   * The maximum amount of memory to use before writing to disk.
    */
   protected int maxMemory;
 
@@ -114,7 +122,7 @@ public class DiskBackedByteStore extends OutputStream {
     }
   }
 
-  protected void swapToDisk() throws FileNotFoundException, IOException {
+  protected void swapToDisk() throws IOException {
     // Swap in disk
     fileoutputStream = new FileOutputStream(file);
     byteArray.writeTo(fileoutputStream);

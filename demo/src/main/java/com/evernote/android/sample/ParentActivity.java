@@ -81,7 +81,7 @@ public class ParentActivity extends Activity {
    */
 
   protected EvernoteSession mEvernoteSession;
-  protected final int DIALOG_PROGRESS = 101;
+  protected static final int DIALOG_PROGRESS = 101;
 
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);

@@ -52,9 +52,9 @@ import java.util.List;
  *
  * @author @tylersmithnet
  */
-public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient{
+public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient {
   /**
-   * Reference to your personal note store
+   * Reference to your personal note store.
    */
 
   AsyncBusinessNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken, ClientFactory clientFactory) throws TTransportException {
@@ -62,7 +62,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient{
   }
 
   /**
-   * Helper method to create a note synchronously in a business notebook
+   * Helper method to create a note synchronously in a business notebook.
    *
    * @param note
    * @param linkedNotebook
@@ -88,7 +88,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient{
   }
 
   /**
-   * Helper method to list business notebooks synchronously
+   * Helper method to list business notebooks synchronously.
    *
    * @return
    * @throws EDAMUserException
@@ -109,7 +109,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient{
   }
 
   /**
-   * Create Business Notebook from a Notebook
+   * Create Business Notebook from a Notebook.
    *
    * Synchronous call
    *
@@ -121,7 +121,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient{
   }
 
   /**
-   * Providing a LinkedNotebook referencing a Business notebook, perform a delete
+   * Providing a LinkedNotebook referencing a Business notebook, perform a delete.
    *
    * Synchronous call
    *
@@ -139,7 +139,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient{
   }
 
   /**
-   * Will return the {@link Notebook} associated with the {@link LinkedNotebook} from the business account
+   * Will return the {@link Notebook} associated with the {@link LinkedNotebook} from the business account.
    *
    * Synchronous call
    *

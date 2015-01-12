@@ -56,12 +56,12 @@ public class ClientFactory {
 
 
   /**
-   * Private constructor
+   * Private constructor.
    */
-  private ClientFactory() {}
+  private ClientFactory() { }
 
   /**
-   * This should always be requested through an {@link com.evernote.client.android.EvernoteSession}
+   * This should always be requested through an {@link com.evernote.client.android.EvernoteSession}.
    */
   ClientFactory(String userAgent, File tempDir) {
     mUserAgent = userAgent;
@@ -78,7 +78,7 @@ public class ClientFactory {
    * connection to the Evernote service.
    */
   public AsyncNoteStoreClient createNoteStoreClient() throws TTransportException {
-    if(EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
+    if (EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
       throw new IllegalStateException();
     }
 
@@ -115,8 +115,8 @@ public class ClientFactory {
     com.evernote.client.android.AuthenticationResult authResult =
         EvernoteSession.getOpenSession().getAuthenticationResult();
 
-    if(authResult.getBusinessAuthToken() == null ||
-        authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
+    if (authResult.getBusinessAuthToken() == null
+        || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
 
       AuthenticationResult businessAuthResult = createUserStoreClient().getClient().authenticateToBusiness(authResult.getAuthToken());
 
@@ -134,7 +134,7 @@ public class ClientFactory {
 
 
   /**
-   * Creates a LinkedNoteStoreClient from a {@link LinkedNotebook} asynchronously
+   * Creates a LinkedNoteStoreClient from a {@link LinkedNotebook} asynchronously.
    *
    * @param notebook
    * @param callback
@@ -144,7 +144,7 @@ public class ClientFactory {
   }
 
   /**
-   * Creates a LinkedNoteStoreClient from a {@link LinkedNotebook} synchronously
+   * Creates a LinkedNoteStoreClient from a {@link LinkedNotebook} synchronously.
    *
    * @param linkedNotebook
    */
@@ -172,8 +172,8 @@ public class ClientFactory {
    * connection to the Evernote service.
    *
    */
-  public AsyncUserStoreClient createUserStoreClient()  throws IllegalStateException, TTransportException {
-    if(EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
+  public AsyncUserStoreClient createUserStoreClient() throws TTransportException {
+    if (EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
       throw new IllegalStateException();
     }
     return createUserStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getEvernoteHost());
@@ -237,7 +237,7 @@ public class ClientFactory {
     }
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
     String authToken = null;
-    if(EvernoteSession.getOpenSession().isLoggedIn()) {
+    if (EvernoteSession.getOpenSession().isLoggedIn()) {
       authToken = EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken();
     }
 
@@ -260,14 +260,14 @@ public class ClientFactory {
 
 
   /**
-   * The user agent defined for the connection
+   * The user agent defined for the connection.
    */
   public String getUserAgent() {
     return mUserAgent;
   }
 
   /**
-   * Set a custom UserAgent String for the client connection
+   * Set a custom UserAgent String for the client connection.
    *
    * @param mUserAgent
    */
@@ -284,7 +284,7 @@ public class ClientFactory {
   }
 
   /**
-   * Allows custom headers to be defined for the Client connection
+   * Allows custom headers to be defined for the Client connection.
    *
    * @param mCustomHeaders
    */
@@ -294,7 +294,7 @@ public class ClientFactory {
 
   /**
    * a temporary directory in which large outgoing Thrift messages will
-   * be cached to disk before they are sent
+   * be cached to disk before they are sent.
    */
   public File getTempDir() {
     return mTempDir;
@@ -302,7 +302,7 @@ public class ClientFactory {
 
   /**
    * sets the temporary directory in which large outgoing Thrift messages will
-   * be cached to disk before they are sent
+   * be cached to disk before they are sent.
    *
    * @param mTempDir
    */

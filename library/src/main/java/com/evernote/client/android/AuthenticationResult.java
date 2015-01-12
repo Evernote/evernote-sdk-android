@@ -155,7 +155,9 @@ public class AuthenticationResult {
    * @return Indicates whether this account is limited to accessing a single notebook, and
    * that notebook is a linked notebook
    */
-  public boolean isAppLinkedNotebook() { return mIsAppLinkedNotebook; }
+  public boolean isAppLinkedNotebook() {
+    return mIsAppLinkedNotebook;
+  }
 
 
   /**
@@ -166,35 +168,35 @@ public class AuthenticationResult {
   }
 
   /**
-   * Set the BusinessNoteStore Url
+   * Set the BusinessNoteStore Url.
    */
   void setBusinessNoteStoreUrl(String businessNoteStoreUrl) {
     this.mBusinessNoteStoreUrl = businessNoteStoreUrl;
   }
 
   /**
-   * @return the {@link User} that references the business account user object
+   * @return the {@link User} that references the business account user object.
    */
   public User getBusinessUser() {
     return mBusinessUser;
   }
 
   /**
-   * Set the BusinessNoteStore Url
+   * Set the BusinessNoteStore Url.
    */
   void setBusinessUser(User user) {
     this.mBusinessUser = user;
   }
 
   /**
-   * @return the Business Auth token
+   * @return the Business Auth token.
    */
   public String getBusinessAuthToken() {
     return mBusinessAuthToken;
   }
 
   /**
-   * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch)
+   * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch).
    */
   void setBusinessAuthToken(String authToken) {
     this.mBusinessAuthToken = authToken;
@@ -208,7 +210,7 @@ public class AuthenticationResult {
   }
 
   /**
-   * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch)
+   * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch).
    */
   void setBusinessAuthTokenExpiration(long businessAuthTokenExpiration) {
     this.mBusinessAuthTokenExpiration = businessAuthTokenExpiration;

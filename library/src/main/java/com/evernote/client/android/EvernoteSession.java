@@ -79,7 +79,7 @@ import java.util.Locale;
  *
  * class created by @tylersmithnet
  */
-public class EvernoteSession {
+public final class EvernoteSession {
 
   private static final String LOGTAG = "EvernoteSession";
 
@@ -155,7 +155,7 @@ public class EvernoteSession {
                                      String consumerKey,
                                      String consumerSecret,
                                      EvernoteService evernoteService,
-                                     boolean supportAppLinkedNotebooks) throws IllegalArgumentException{
+                                     boolean supportAppLinkedNotebooks) {
     if (sInstance == null) {
       sInstance = new EvernoteSession(ctx, consumerKey, consumerSecret, evernoteService, supportAppLinkedNotebooks);
     }
@@ -183,12 +183,9 @@ public class EvernoteSession {
                           String consumerKey,
                           String consumerSecret,
                           EvernoteService evernoteService,
-                          boolean supportAppLinkedNotebooks) throws IllegalArgumentException {
+                          boolean supportAppLinkedNotebooks) {
 
-    if( ctx == null ||
-        TextUtils.isEmpty(consumerKey) ||
-        TextUtils.isEmpty(consumerSecret) ||
-        evernoteService == null) {
+    if (ctx == null || TextUtils.isEmpty(consumerKey) || TextUtils.isEmpty(consumerSecret) || evernoteService == null) {
       throw new IllegalArgumentException("Parameters canot be null or empty");
     }
 
@@ -212,7 +209,7 @@ public class EvernoteSession {
   }
 
   /**
-   * Use this to create {@link AsyncNoteStoreClient} and {@link AsyncUserStoreClient}
+   * Use this to create {@link AsyncNoteStoreClient} and {@link AsyncUserStoreClient}.
    */
   public ClientFactory getClientFactory() {
     return mClientFactory;
@@ -227,11 +224,8 @@ public class EvernoteSession {
   private AuthenticationResult getAuthenticationResultFromPref(SharedPreferences prefs) {
     AuthenticationResult authResult = new AuthenticationResult(prefs);
 
-    if (TextUtils.isEmpty(authResult.getEvernoteHost()) ||
-        TextUtils.isEmpty(authResult.getAuthToken()) ||
-        TextUtils.isEmpty(authResult.getNoteStoreUrl()) ||
-        TextUtils.isEmpty(authResult.getWebApiUrlPrefix()) ||
-        TextUtils.isEmpty(authResult.getEvernoteHost())) {
+    if (TextUtils.isEmpty(authResult.getEvernoteHost()) || TextUtils.isEmpty(authResult.getAuthToken()) || TextUtils.isEmpty(authResult.getNoteStoreUrl())
+        || TextUtils.isEmpty(authResult.getWebApiUrlPrefix()) || TextUtils.isEmpty(authResult.getEvernoteHost())) {
       return null;
     }
 
@@ -273,24 +267,23 @@ public class EvernoteSession {
     String packageName = null;
     int packageVersion = 0;
     try {
-      packageName= ctx.getPackageName();
+      packageName = ctx.getPackageName();
       packageVersion = ctx.getPackageManager().getPackageInfo(packageName, 0).versionCode;
 
     } catch (PackageManager.NameNotFoundException e) {
       Log.e(LOGTAG, e.getMessage());
     }
 
-    String userAgent = packageName+ " Android/" +packageVersion;
+    String userAgent = packageName + " Android/" + packageVersion;
 
     Locale locale = java.util.Locale.getDefault();
     if (locale == null) {
-      userAgent += " ("+Locale.US+");";
+      userAgent += " (" + Locale.US + ");";
     } else {
-      userAgent += " (" + locale.toString()+ "); ";
+      userAgent += " (" + locale.toString() + "); ";
     }
-    userAgent += "Android/"+Build.VERSION.RELEASE+"; ";
-    userAgent +=
-        Build.MODEL + "/" + Build.VERSION.SDK_INT + ";";
+    userAgent += "Android/" + Build.VERSION.RELEASE + "; ";
+    userAgent += Build.MODEL + "/" + Build.VERSION.SDK_INT + ";";
     return userAgent;
   }
 
@@ -310,7 +303,7 @@ public class EvernoteSession {
 
     if (ctx instanceof Activity) {
       //If this is being called from an activity, an activity can register for the result code
-      ((Activity)ctx).startActivityForResult(intent, REQUEST_CODE_OAUTH);
+      ((Activity) ctx).startActivityForResult(intent, REQUEST_CODE_OAUTH);
     } else {
       //If this is being called from a service, the refresh will be handled manually
       intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -366,7 +359,7 @@ public class EvernoteSession {
    * Clear all stored authentication information.
    */
   public void logOut(Context ctx) throws InvalidAuthenticationException {
-    if(!isLoggedIn()) {
+    if (!isLoggedIn()) {
       throw new InvalidAuthenticationException("Must not call when already logged out");
     }
     synchronized (this) {

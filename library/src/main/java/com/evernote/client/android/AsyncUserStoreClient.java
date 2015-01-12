@@ -38,11 +38,12 @@ import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TProtocol;
 
 /**
- * An Async wrapper for {@link UserStore.Client}
+ * An Async wrapper for {@link UserStore.Client}.
  * Use these methods with a {@link OnClientCallback} to get make network requests
  *
  * @author @tylersmithnet
  */
+@SuppressWarnings("UnusedDeclaration")
 public class AsyncUserStoreClient {
 
   private final String mAuthenticationToken;
@@ -59,7 +60,7 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * If direct access to the Note Store is needed, all of these calls are synchronous
+   * If direct access to the Note Store is needed, all of these calls are synchronous.
    * @return {@link UserStore.Client}
    */
   public UserStore.Client getClient() {
@@ -74,18 +75,14 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   *
-   * Asynchronous call
-   *
+   * Asynchronous call.
    */
   public void isBusinessUserAsync(final OnClientCallback<Boolean> callback) {
     AsyncReflector.execute(this, callback, "isBusinessUser");
   }
 
   /**
-   *
-   * Synchronous call
-   *
+   * Synchronous call.
    *
    * @return the result of a user belonging to a business account
    */
@@ -94,9 +91,9 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#checkVersion(String, short, short)
    */
   public void checkVersion(final String clientName, final short edamVersionMajor, final short edamVersionMinor, final OnClientCallback<Boolean> callback) {
@@ -104,9 +101,9 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getBootstrapInfo(String)
    */
   public void getBootstrapInfo(final String locale, final OnClientCallback<BootstrapInfo> callback) {
@@ -114,29 +111,31 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#authenticate(String, String, String, String, boolean)
    */
-  public void authenticate(final String username, final String password, final String consumerKey, final String consumerSecret, boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
+  public void authenticate(final String username, final String password, final String consumerKey, final String consumerSecret,
+                           boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
     AsyncReflector.execute(mClient, callback, "authenticate", username, password, consumerKey, consumerSecret, supportsTwoFactor);
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#authenticateLongSession(String, String, String, String, String, String, boolean)
    */
-  public void authenticateLongSession(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier, final String deviceDescription, final boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
+  public void authenticateLongSession(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier,
+                                      final String deviceDescription, final boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
     AsyncReflector.execute(mClient, callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription, supportsTwoFactor);
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#authenticateToBusiness(String)
    */
   public void authenticateToBusiness(final String authenticationToken, final OnClientCallback<AuthenticationResult> callback) {
@@ -144,9 +143,9 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#refreshAuthentication(String)
    */
   public void refreshAuthentication(final String authenticationToken, final OnClientCallback<AuthenticationResult> callback) {
@@ -154,9 +153,9 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getUser(String)
    */
   public void getUser(final OnClientCallback<User> callback) {
@@ -164,9 +163,9 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getPublicUserInfo(String)
    */
   public void getPublicUserInfo(final String username, final OnClientCallback<PublicUserInfo> callback) {
@@ -174,9 +173,9 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getPremiumInfo(String)
    */
   public void getPremiumInfo(final OnClientCallback<PremiumInfo> callback) {
@@ -184,9 +183,9 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getNoteStoreUrl(String)
    */
   public void getNoteStoreUrl(final OnClientCallback<String> callback) {
@@ -194,7 +193,7 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
    * @see UserStore.Client#revokeLongSession(String)
    */
@@ -204,7 +203,7 @@ public class AsyncUserStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
    * @see UserStore.Client#completeTwoFactorAuthentication(String, String,
    *      String, String)

@@ -64,8 +64,8 @@ public class EvernoteAuthToken extends Token {
     if (matcher.find() && matcher.groupCount() >= 1) {
       return OAuthEncoder.decode(matcher.group(1));
     } else {
-      throw new OAuthException("Response body is incorrect. " +
-          "Can't extract token and secret from this: '" + response + "'", null);
+      throw new OAuthException("Response body is incorrect. "
+          + "Can't extract token and secret from this: '" + response + "'", null);
     }
   }
 
@@ -92,8 +92,10 @@ public class EvernoteAuthToken extends Token {
 
   /**
    * Indicates whether this account is limited to accessing a single notebook, and
-   * that notebook is a linked notebook
+   * that notebook is a linked notebook.
    */
-  public boolean isAppLinkedNotebook() { return mAppLinkedNotebook; }
+  public boolean isAppLinkedNotebook() {
+    return mAppLinkedNotebook;
+  }
 
 }

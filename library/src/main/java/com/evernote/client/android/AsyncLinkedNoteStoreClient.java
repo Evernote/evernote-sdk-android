@@ -56,7 +56,7 @@ import java.util.List;
  */
 public class AsyncLinkedNoteStoreClient {
   /**
-   * References users main note store
+   * References users main note store.
    */
   private AsyncNoteStoreClient mMainNoteStoreClient;
   private AsyncNoteStoreClient mLinkedStoreClient;
@@ -71,7 +71,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Returns the {@link AsyncNoteStoreClient} object that has been instantiated to the appropriate shard
+   * Returns the {@link AsyncNoteStoreClient} object that has been instantiated to the appropriate shard.
    * @return
    */
   public AsyncNoteStoreClient getAsyncClient() {
@@ -95,7 +95,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Helper method to create a note asynchronously in a linked/business notebook
+   * Helper method to create a note asynchronously in a linked/business notebook.
    *
    * @param note
    * @param linkedNotebook
@@ -107,7 +107,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Helper method to create a note synchronously in a linked notebook
+   * Helper method to create a note synchronously in a linked notebook.
    *
    * @param note
    * @param linkedNotebook
@@ -128,7 +128,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Helper method to list linked/business notebooks asynchronously
+   * Helper method to list linked/business notebooks asynchronously.
    *
    * @see {@link com.evernote.edam.notestore.NoteStore.Client#listLinkedNotebooks(String)}
    *
@@ -139,7 +139,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Helper method to list linked notebooks synchronously
+   * Helper method to list linked notebooks synchronously.
    *
    * @see {@link com.evernote.edam.notestore.NoteStore.Client#listLinkedNotebooks(String)}
    *
@@ -149,7 +149,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Create Linked Notebook from a Notebook
+   * Create Linked Notebook from a Notebook.
    *
    * Asynchronous call
    *
@@ -160,7 +160,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Create Linked Notebook from a Notebook
+   * Create Linked Notebook from a Notebook.
    *
    * Synchronous call
    *
@@ -181,7 +181,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Providing a LinkedNotebook referencing a linked/business account, perform a delete
+   * Providing a LinkedNotebook referencing a linked/business account, perform a delete.
    *
    * Asynchronous call
    * @param callback
@@ -191,7 +191,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Providing a LinkedNotebook referencing a linked account, perform a delete
+   * Providing a LinkedNotebook referencing a linked account, perform a delete.
    *
    * Synchronous call
    *
@@ -207,7 +207,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Will return the {@link Notebook} associated with the {@link LinkedNotebook} from the linked/business account
+   * Will return the {@link Notebook} associated with the {@link LinkedNotebook} from the linked/business account.
    *
    * Asynchronous call
    *
@@ -219,7 +219,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Will return the {@link com.evernote.edam.type.Notebook} associated with the {@link com.evernote.edam.type.LinkedNotebook} from the linked account
+   * Will return the {@link com.evernote.edam.type.Notebook} associated with the {@link com.evernote.edam.type.LinkedNotebook} from the linked account.
    *
    * Synchronous call
    *
@@ -231,7 +231,7 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Checks writable permissions of {@link LinkedNotebook} on Linked/business account
+   * Checks writable permissions of {@link LinkedNotebook} on Linked/business account.
    *
    * Asynchronous call
    *
@@ -242,7 +242,7 @@ public class AsyncLinkedNoteStoreClient {
     AsyncReflector.execute(this, callback, "isLinkedNotebookWritable", linkedNotebook);
   }
   /**
-   * Checks writable permissions of {@link LinkedNotebook} on Linked account
+   * Checks writable permissions of {@link LinkedNotebook} on Linked account.
    *
    * Synchronous call
    *
@@ -254,9 +254,9 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Helper method to find notes in a linked notebook asynchronously
+   * Helper method to find notes in a linked notebook asynchronously.
    *
-   * @see {@link com.evernote.edam.notestore.NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, com.evernote.edam.notestore.NotesMetadataResultSpec)}
+   * @see {@link com.evernote.edam.notestore.NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, NotesMetadataResultSpec)}
    *
    */
 
@@ -269,9 +269,9 @@ public class AsyncLinkedNoteStoreClient {
   }
 
   /**
-   * Helper method to find notes in a linked notebook
+   * Helper method to find notes in a linked notebook.
    *
-   * @see {@link com.evernote.edam.notestore.NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, com.evernote.edam.notestore.NotesMetadataResultSpec)}
+   * @see {@link com.evernote.edam.notestore.NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, NotesMetadataResultSpec)}
    *
    */
   public NotesMetadataList findNotesMetadata(NoteFilter filter,

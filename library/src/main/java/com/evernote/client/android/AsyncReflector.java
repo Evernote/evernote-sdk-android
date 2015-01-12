@@ -10,14 +10,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Class that uses reflection to asynchronously wrap Client methods
+ * Class that uses reflection to asynchronously wrap Client methods.
  */
-class AsyncReflector {
+/*package*/ final class AsyncReflector {
+
+  private AsyncReflector() {
+
+  }
 
   /**
-   * List of primitives to convert from autoboxed method calls
+   * List of primitives to convert from autoboxed method calls.
    */
-  public final static Map<Class<?>, Class<?>> PRIMITIVE_MAP = new HashMap<Class<?>, Class<?>>();
+  public static final Map<Class<?>, Class<?>> PRIMITIVE_MAP = new HashMap<Class<?>, Class<?>>();
   static {
     PRIMITIVE_MAP.put(Boolean.class, boolean.class);
     PRIMITIVE_MAP.put(Byte.class, byte.class);
@@ -30,11 +34,12 @@ class AsyncReflector {
   }
 
   /**
-   * Singled threaded Executor for async work
+   * Singled threaded Executor for async work.
    */
   private static ExecutorService sThreadExecutor = Executors.newSingleThreadExecutor();
+
   /**
-   * Reflection to run Asynchronous methods
+   * Reflection to run Asynchronous methods.
    */
   static <T> void execute(final Object receiver, final OnClientCallback<T> callback, final String function, final Object... args) {
     final Handler handler = new Handler(Looper.getMainLooper());
@@ -44,7 +49,7 @@ class AsyncReflector {
           Class[] classes = new Class[args.length];
           for (int i = 0; i < args.length; i++) {
             //Convert Autoboxed primitives to actual primitives (ex: Integer.class to int.class)
-            if(PRIMITIVE_MAP.containsKey(args[i].getClass())) {
+            if (PRIMITIVE_MAP.containsKey(args[i].getClass())) {
               classes[i] = PRIMITIVE_MAP.get(args[i].getClass());
             } else {
               classes[i] = args[i].getClass();
@@ -52,9 +57,9 @@ class AsyncReflector {
           }
 
           Method method = null;
-          if(receiver instanceof Class) {
+          if (receiver instanceof Class) {
             //Can receive a class if using for static methods
-            method = ((Class)receiver).getMethod(function, classes);
+            method = ((Class) receiver).getMethod(function, classes);
           } else {
             //used for instance methods
             method = receiver.getClass().getMethod(function, classes);
@@ -65,7 +70,7 @@ class AsyncReflector {
           handler.post(new Runnable() {
             @Override
             public void run() {
-              if(callback != null) callback.onSuccess(answer);
+              if (callback != null) callback.onSuccess(answer);
             }
           });
 
@@ -73,7 +78,7 @@ class AsyncReflector {
           handler.post(new Runnable() {
             @Override
             public void run() {
-              if(callback != null) callback.onException(ex);
+              if (callback != null) callback.onException(ex);
             }
           });
         }

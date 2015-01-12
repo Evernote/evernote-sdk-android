@@ -32,11 +32,15 @@ import android.os.Build;
 
 /**
  *
- * A class to manage Evernote Session specific preferences
+ * A class to manage Evernote Session specific preferences.
  *
  * @author @tylersmithnet
  */
-class SessionPreferences {
+final class SessionPreferences {
+
+  private SessionPreferences() {
+
+  }
 
   // Keys for values persisted in our shared preferences
   static final String KEY_AUTHTOKEN = "evernote.mAuthToken";
@@ -58,8 +62,8 @@ class SessionPreferences {
   }
 
   /**
-   * Saves {@link SharedPreferences.Editor} using a non-blocking method on Gingerbread and up
-   * Saves {@link SharedPreferences.Editor} using a blocking method below Gingerbread
+   * Saves {@link SharedPreferences.Editor} using a non-blocking method on Gingerbread and up.
+   * Saves {@link SharedPreferences.Editor} using a blocking method below Gingerbread.
    */
   @TargetApi(9)
   static void save(SharedPreferences.Editor editor) {

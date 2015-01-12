@@ -37,20 +37,17 @@ public class YinxiangApi extends EvernoteApi {
   private static final String YINXIANG_URL = "https://app.yinxiang.com";
 
   @Override
-  public String getRequestTokenEndpoint()
-  {
+  public String getRequestTokenEndpoint() {
     return YINXIANG_URL + "/oauth";
   }
 
   @Override
-  public String getAccessTokenEndpoint()
-  {
+  public String getAccessTokenEndpoint() {
     return YINXIANG_URL + "/oauth";
   }
 
   @Override
-  public String getAuthorizationUrl(Token requestToken)
-  {
+  public String getAuthorizationUrl(Token requestToken) {
     return String.format(YINXIANG_URL + "/OAuth.action?oauth_token=%s", requestToken.getToken());
   }
 }

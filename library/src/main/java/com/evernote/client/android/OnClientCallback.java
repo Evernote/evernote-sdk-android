@@ -26,7 +26,7 @@
 package com.evernote.client.android;
 
 /**
- * This class must be implemented to use the {@link AsyncNoteStoreClient} and the {@link AsyncUserStoreClient}
+ * This class must be implemented to use the {@link AsyncNoteStoreClient} and the {@link AsyncUserStoreClient}.
  */
 public abstract class OnClientCallback<T> {
 

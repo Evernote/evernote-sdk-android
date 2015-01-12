@@ -32,24 +32,26 @@ import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class EvernoteUtil {
+public final class EvernoteUtil {
+
+  private EvernoteUtil() {
+
+  }
 
   /**
    * The ENML preamble to every Evernote note.
    * Note content goes between <en-note> and </en-note>
    */
   public static final String NOTE_PREFIX =
-      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-          "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" +
-          "<en-note>";
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "<!DOCTYPE en-note SYSTEM \"http://xml.evernote.com/pub/enml2.dtd\">" + "<en-note>";
 
   /**
-   * The ENML postamble to every Evernote note
+   * The ENML postamble to every Evernote note.
    */
   public static final String NOTE_SUFFIX = "</en-note>";
 
   /**
-   * One-way hashing function used for providing a checksum of EDAM data
+   * One-way hashing function used for providing a checksum of EDAM data.
    */
   private static final String EDAM_HASH_ALGORITHM = "MD5";
 
@@ -57,8 +59,7 @@ public class EvernoteUtil {
    * Create an ENML &lt;en-media&gt; tag for the specified Resource object.
    */
   public static String createEnMediaTag(Resource resource) {
-    return "<en-media hash=\"" + bytesToHex(resource.getData().getBodyHash()) +
-        "\" type=\"" + resource.getMime() + "\"/>";
+    return "<en-media hash=\"" + bytesToHex(resource.getData().getBodyHash()) + "\" type=\"" + resource.getMime() + "\"/>";
   }
 
   /**

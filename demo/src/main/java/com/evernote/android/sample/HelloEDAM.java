@@ -60,7 +60,7 @@ public class HelloEDAM extends ParentActivity {
   private AdapterView.OnItemClickListener mItemClickListener = new AdapterView.OnItemClickListener() {
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-      switch(position) {
+      switch (position) {
         case 0:
           startActivity(new Intent(getApplicationContext(), ImagePicker.class));
           break;

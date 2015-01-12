@@ -32,9 +32,18 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
-import android.view.*;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.inputmethod.EditorInfo;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.SearchView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.evernote.client.android.AsyncLinkedNoteStoreClient;
 import com.evernote.client.android.OnClientCallback;
@@ -45,6 +54,7 @@ import com.evernote.edam.notestore.NotesMetadataResultSpec;
 import com.evernote.edam.type.LinkedNotebook;
 import com.evernote.edam.type.NoteSortOrder;
 import com.evernote.thrift.transport.TTransportException;
+
 import java.util.ArrayList;
 /**
  * This sample shows how to search Evernote notebooks.
@@ -77,12 +87,12 @@ public class SearchNotes extends ParentActivity {
         setContentView(R.layout.search_notes);
 
         // If User uses Android OS version 2.3 or earlier, implement a search form by editText
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB){
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
 
-            mSearchResultsParentLayout = (LinearLayout)findViewById(R.id.search_results_parent);
+            mSearchResultsParentLayout = (LinearLayout) findViewById(R.id.search_results_parent);
             LayoutInflater inf = getLayoutInflater();
 
-            mSearchEditText = (EditText)inf.inflate(R.layout.search_form, null);
+            mSearchEditText = (EditText) inf.inflate(R.layout.search_form, null);
             mSearchResultsParentLayout.addView(mSearchEditText, 0);
 
             mSearchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -100,7 +110,7 @@ public class SearchNotes extends ParentActivity {
 
         notesNames = new ArrayList<>();
         mAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, notesNames);
-        mResultsListView = (ListView)findViewById(R.id.list);
+        mResultsListView = (ListView) findViewById(R.id.list);
         mResultsListView.setAdapter(mAdapter);
 
     }
@@ -138,7 +148,9 @@ public class SearchNotes extends ParentActivity {
 
     /**
      * Called when the user taps the "Search" key in the IME.
-     * </p>
+     *
+     * <br>
+     *
      * Search from all user's notebooks up to 10 notes,
      * display their titles on ListView in order of most recently updated.
      *
@@ -157,7 +169,7 @@ public class SearchNotes extends ParentActivity {
         mAdapter.clear();
 
         showDialog(DIALOG_PROGRESS);
-        try{
+        try {
           // Callback invoked asynchronously from the notes search.  Factored out here
           // so that it can be reused for a local or linked notebook search below
           final OnClientCallback<NotesMetadataList> callback = new OnClientCallback<NotesMetadataList>() {
@@ -180,7 +192,7 @@ public class SearchNotes extends ParentActivity {
           };
 
 
-          if(!mEvernoteSession.isAppLinkedNotebook()) {
+          if (!mEvernoteSession.isAppLinkedNotebook()) {
             // Normal, local notebook search
             mEvernoteSession.getClientFactory().createNoteStoreClient()
                 .findNotesMetadata(filter, offset, pageSize, spec, callback);
@@ -198,17 +210,17 @@ public class SearchNotes extends ParentActivity {
               }
             });
           }
-        } catch (TTransportException exception){
+        } catch (TTransportException exception) {
             onError(exception, "Error creating notestore. ", R.string.error_creating_notestore);
         }
     }
 
     /**
-     * Show log and toast and remove a dialog on Exceptions
+     * Show log and toast and remove a dialog on Exceptions.
      *
      */
     @SuppressWarnings("deprecation")
-    public void onError(Exception exception, String logstr, int id){
+    public void onError(Exception exception, String logstr, int id) {
         Log.e(LOGTAG, logstr + exception);
         Toast.makeText(getApplicationContext(), id, Toast.LENGTH_LONG).show();
         removeDialog(DIALOG_PROGRESS);

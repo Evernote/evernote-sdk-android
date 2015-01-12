@@ -28,8 +28,31 @@ package com.evernote.client.android;
 import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
-import com.evernote.edam.notestore.*;
-import com.evernote.edam.type.*;
+import com.evernote.edam.notestore.ClientUsageMetrics;
+import com.evernote.edam.notestore.NoteCollectionCounts;
+import com.evernote.edam.notestore.NoteEmailParameters;
+import com.evernote.edam.notestore.NoteFilter;
+import com.evernote.edam.notestore.NoteList;
+import com.evernote.edam.notestore.NoteStore;
+import com.evernote.edam.notestore.NoteVersionId;
+import com.evernote.edam.notestore.NotesMetadataList;
+import com.evernote.edam.notestore.NotesMetadataResultSpec;
+import com.evernote.edam.notestore.RelatedQuery;
+import com.evernote.edam.notestore.RelatedResult;
+import com.evernote.edam.notestore.RelatedResultSpec;
+import com.evernote.edam.notestore.SyncChunk;
+import com.evernote.edam.notestore.SyncChunkFilter;
+import com.evernote.edam.notestore.SyncState;
+import com.evernote.edam.type.LazyMap;
+import com.evernote.edam.type.LinkedNotebook;
+import com.evernote.edam.type.Note;
+import com.evernote.edam.type.Notebook;
+import com.evernote.edam.type.Resource;
+import com.evernote.edam.type.ResourceAttributes;
+import com.evernote.edam.type.SavedSearch;
+import com.evernote.edam.type.SharedNotebook;
+import com.evernote.edam.type.SharedNotebookRecipientSettings;
+import com.evernote.edam.type.Tag;
 import com.evernote.edam.userstore.AuthenticationResult;
 import com.evernote.thrift.TException;
 import com.evernote.thrift.protocol.TProtocol;
@@ -37,11 +60,12 @@ import com.evernote.thrift.protocol.TProtocol;
 import java.util.List;
 
 /**
- * An Async wrapper for {@link NoteStore.Client}
- * Use these methods with a {@link OnClientCallback} to get make network requests
+ * An Async wrapper for {@link NoteStore.Client}.
+ * Use these methods with a {@link OnClientCallback} to get make network requests.
  *
  * @author @tylersmithnet
  */
+@SuppressWarnings("UnusedDeclaration")
 public class AsyncNoteStoreClient {
 
   protected String mAuthenticationToken;
@@ -58,7 +82,7 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * If direct access to the Note Store is needed, all of these calls are synchronous
+   * If direct access to the Note Store is needed, all of these calls are synchronous.
    * @return {@link NoteStore.Client}
    */
   public NoteStore.Client getClient() {
@@ -76,14 +100,14 @@ public class AsyncNoteStoreClient {
     mAuthenticationToken = authenticationToken;
   }
 
-  /**
-   * Async wrappers for NoteStore.Client Methods
+  /*
+   * Async wrappers for NoteStore.Client Methods.
    */
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code.
    * @see NoteStore.Client#getSyncState(String)
    */
   public void getSyncState(OnClientCallback<SyncState> callback) {
@@ -91,9 +115,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client##getSyncStateWithMetrics(com.evernote.edam.notestore.ClientUsageMetrics, OnClientCallback)
    */
   public void getSyncStateWithMetrics(ClientUsageMetrics clientMetrics, OnClientCallback<SyncState> callback) {
@@ -102,9 +126,9 @@ public class AsyncNoteStoreClient {
 
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getSyncChunk(String, int, int, boolean)
    */
   public void getSyncChunk(int afterUSN, int maxEntries, boolean fullSyncOnly, OnClientCallback<SyncChunk> callback) {
@@ -113,9 +137,9 @@ public class AsyncNoteStoreClient {
 
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getFilteredSyncChunk(String, int, int, com.evernote.edam.notestore.SyncChunkFilter)
    */
   public void getFilteredSyncChunk(int afterUSN, int maxEntries, SyncChunkFilter filter, OnClientCallback<SyncChunk> callback) {
@@ -123,9 +147,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getLinkedNotebookSyncState(String, com.evernote.edam.type.LinkedNotebook)
    */
   public void getLinkedNotebookSyncState(LinkedNotebook linkedNotebook, OnClientCallback<SyncState> callback) {
@@ -134,9 +158,9 @@ public class AsyncNoteStoreClient {
 
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getLinkedNotebookSyncChunk(String, com.evernote.edam.type.LinkedNotebook, int, int, boolean)
    */
   public void getLinkedNotebookSyncChunk(LinkedNotebook linkedNotebook, int afterUSN, int maxEntries, boolean fullSyncOnly, OnClientCallback<SyncChunk> callback) {
@@ -144,9 +168,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#listNotebooks(String)
    */
   public void listNotebooks(OnClientCallback<List<Notebook>> callback) {
@@ -154,9 +178,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNotebook(String, String)
    */
   public void getNotebook(String guid, OnClientCallback<Notebook> callback) {
@@ -164,9 +188,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getDefaultNotebook(String)
    */
   public void getDefaultNotebook(OnClientCallback<Notebook> callback) {
@@ -174,9 +198,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#createNotebook(String, com.evernote.edam.type.Notebook)
    */
   public void createNotebook(Notebook notebook, OnClientCallback<Notebook> callback) {
@@ -184,9 +208,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#updateNotebook(String, com.evernote.edam.type.Notebook)
    */
   public void updateNotebook(Notebook notebook, OnClientCallback<Integer> callback) {
@@ -194,9 +218,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeNotebook(String, String)
    */
   public void expungeNotebook(String guid, OnClientCallback<Integer> callback) {
@@ -204,9 +228,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#listTags(String)
    */
   public void listTags(OnClientCallback<List<Tag>> callback) {
@@ -214,9 +238,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#listTagsByNotebook(String, String)
    */
   public void listTagsByNotebook(String notebookGuid, OnClientCallback<List<Tag>> callback) {
@@ -224,9 +248,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getTag(String, String)
    */
   public void getTag(String guid, OnClientCallback<Tag> callback) {
@@ -234,9 +258,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#createTag(String, com.evernote.edam.type.Tag)
    */
   public void createTag(Tag tag, OnClientCallback<Tag> callback) {
@@ -244,9 +268,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#updateTag(String, com.evernote.edam.type.Tag)
    */
   public void updateTag(Tag tag, OnClientCallback<Integer> callback) {
@@ -254,9 +278,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#untagAll(String, String)
    */
   public void untagAll(String guid, OnClientCallback<Integer> callback) {
@@ -264,9 +288,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeTag(String, String)
    */
   public void expungeTag(String guid, OnClientCallback<Integer> callback) {
@@ -274,9 +298,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#listSearches(String)
    */
   public void listSearches(OnClientCallback<List<SavedSearch>> callback) {
@@ -284,9 +308,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getSearch(String, String)
    */
   public void getSearch(String guid, OnClientCallback<SavedSearch> callback) {
@@ -294,9 +318,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#createSearch(String, com.evernote.edam.type.SavedSearch)
    */
   public void createSearch(SavedSearch search, OnClientCallback<SavedSearch> callback) {
@@ -305,9 +329,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#updateSearch(String, com.evernote.edam.type.SavedSearch)
    */
   public void updateSearch(SavedSearch search, OnClientCallback<Integer> callback) {
@@ -315,9 +339,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeSearch(String, String)
    */
   public void expungeSearch(String guid, OnClientCallback<Integer> callback) {
@@ -325,9 +349,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#findNotes(String, com.evernote.edam.notestore.NoteFilter, int, int)
    */
   public void findNotes(NoteFilter filter, int offset, int maxNotes, OnClientCallback<NoteList> callback) {
@@ -335,9 +359,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#findNoteOffset(String, com.evernote.edam.notestore.NoteFilter, String)
    */
   public void findNoteOffset(NoteFilter filter, String guid, OnClientCallback<Integer> callback) {
@@ -345,9 +369,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, com.evernote.edam.notestore.NotesMetadataResultSpec)
    */
   public void findNotesMetadata(NoteFilter filter, int offset, int maxNotes, NotesMetadataResultSpec resultSpec, OnClientCallback<NotesMetadataList> callback) {
@@ -355,9 +379,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#findNoteCounts(String, com.evernote.edam.notestore.NoteFilter, boolean)
    */
   public void findNoteCounts(NoteFilter filter, boolean withTrash, OnClientCallback<NoteCollectionCounts> callback) {
@@ -365,19 +389,20 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNote(String, String, boolean, boolean, boolean, boolean)
    */
-  public void getNote(String guid, boolean withContent, boolean withResourcesData, boolean withResourcesRecognition, boolean withResourcesAlternateData, OnClientCallback<Note> callback) {
+  public void getNote(String guid, boolean withContent, boolean withResourcesData, boolean withResourcesRecognition,
+                      boolean withResourcesAlternateData, OnClientCallback<Note> callback) {
     AsyncReflector.execute(mClient, callback, "getNote", mAuthenticationToken, guid, withContent, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNoteApplicationData(String, String)
    */
   public void getNoteApplicationData(String guid, OnClientCallback<LazyMap> callback) {
@@ -385,9 +410,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNoteApplicationDataEntry(String, String, String)
    */
   public void getNoteApplicationDataEntry(String guid, String key, OnClientCallback<String> callback) {
@@ -395,9 +420,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#setNoteApplicationDataEntry(String, String, String, String)
    */
   public void setNoteApplicationDataEntry(String guid, String key, String value, OnClientCallback<Integer> callback) {
@@ -405,9 +430,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#unsetNoteApplicationDataEntry(String, String, String)
    */
   public void unsetNoteApplicationDataEntry(String guid, String key, OnClientCallback<Integer> callback) {
@@ -415,9 +440,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNoteContent(String, String)
    */
   public void getNoteContent(String guid, OnClientCallback<String> callback) {
@@ -425,9 +450,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNoteSearchText(String, String, boolean, boolean)
    */
   public void getNoteSearchText(String guid, boolean noteOnly, boolean tokenizeForIndexing, OnClientCallback<String> callback) {
@@ -435,9 +460,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceSearchText(String, String)
    */
   public void getResourceSearchText(String guid, OnClientCallback<String> callback) {
@@ -445,9 +470,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNoteTagNames(String, String)
    */
   public void getNoteTagNames(String guid, OnClientCallback<List<String>> callback) {
@@ -455,9 +480,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#createNote(String, com.evernote.edam.type.Note)
    */
   public void createNote(Note note, OnClientCallback<Note> callback) {
@@ -465,9 +490,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#updateNote(String, com.evernote.edam.type.Note)
    */
   public void updateNote(Note note, OnClientCallback<Note> callback) {
@@ -475,9 +500,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#deleteNote(String, String)
    */
   public void deleteNote(String guid, OnClientCallback<Integer> callback) {
@@ -485,9 +510,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeNote(String, String)
    */
   public void expungeNote(String guid, OnClientCallback<Integer> callback) {
@@ -495,9 +520,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeNotes(String, java.util.List)
    */
   public void expungeNotes(List<String> noteGuids, OnClientCallback<Integer> callback) {
@@ -506,9 +531,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeInactiveNotes(String)
    */
   public void expungeInactiveNotes(OnClientCallback<Integer> callback) {
@@ -516,9 +541,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#copyNote(String, String, String)
    */
   public void copyNote(String noteGuid, String toNotebookGuid, OnClientCallback<Note> callback) {
@@ -526,9 +551,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#listNoteVersions(String, String)
    */
   public void listNoteVersions(String noteGuid, OnClientCallback<List<NoteVersionId>> callback) {
@@ -536,30 +561,33 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getNoteVersion(String, String, int, boolean, boolean, boolean)
    */
-  public void getNoteVersion(String noteGuid, int updateSequenceNum, boolean withResourcesData, boolean withResourcesRecognition, boolean withResourcesAlternateData, OnClientCallback<Note> callback) {
-    AsyncReflector.execute(mClient, callback, "getNoteVersion", mAuthenticationToken, noteGuid, updateSequenceNum, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
+  public void getNoteVersion(String noteGuid, int updateSequenceNum, boolean withResourcesData, boolean withResourcesRecognition,
+                             boolean withResourcesAlternateData, OnClientCallback<Note> callback) {
+    AsyncReflector.execute(mClient, callback, "getNoteVersion", mAuthenticationToken, noteGuid, updateSequenceNum, withResourcesData, withResourcesRecognition,
+        withResourcesAlternateData);
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResource(String, String, boolean, boolean, boolean, boolean)
    */
-  public void getResource(String guid, boolean withData, boolean withRecognition, boolean withAttributes, boolean withAlternateData, OnClientCallback<Resource> callback) {
+  public void getResource(String guid, boolean withData, boolean withRecognition, boolean withAttributes, boolean withAlternateData,
+                          OnClientCallback<Resource> callback) {
     AsyncReflector.execute(mClient, callback, "getResource", mAuthenticationToken, guid, withData, withRecognition, withAttributes, withAlternateData)
     ;
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceApplicationData(String, String)
    */
   public void getResourceApplicationData(String guid, OnClientCallback<LazyMap> callback) {
@@ -567,9 +595,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceApplicationDataEntry(String, String, String)
    */
   public void getResourceApplicationDataEntry(String guid, String key, OnClientCallback<String> callback) {
@@ -577,9 +605,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#setResourceApplicationDataEntry(String, String, String, String)
    */
   public void setResourceApplicationDataEntry(String guid, String key, String value, OnClientCallback<Integer> callback) {
@@ -587,9 +615,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#unsetResourceApplicationDataEntry(String, String, String)
    */
   public void unsetResourceApplicationDataEntry(String guid, String key, OnClientCallback<Integer> callback) {
@@ -597,9 +625,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#updateResource(String, com.evernote.edam.type.Resource)
    */
   public void updateResource(Resource resource, OnClientCallback<Integer> callback) {
@@ -607,9 +635,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceData(String, String)
    */
   public void getResourceData(String guid, OnClientCallback<byte[]> callback) {
@@ -617,9 +645,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceByHash(String, String, byte[], boolean, boolean, boolean)
    */
   public void getResourceByHash(String noteGuid, byte[] contentHash, boolean withData, boolean withRecognition, boolean withAlternateData, OnClientCallback<Resource> callback) {
@@ -627,9 +655,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceRecognition(String, String)
    */
   public void getResourceRecognition(String guid, OnClientCallback<byte[]> callback) {
@@ -637,9 +665,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceAlternateData(String, String)
    */
   public void getResourceAlternateData(String guid, OnClientCallback<byte[]> callback) {
@@ -648,9 +676,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceAttributes(String, String)
    */
   public void getResourceAttributes(String guid, OnClientCallback<ResourceAttributes> callback) {
@@ -658,9 +686,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getPublicNotebook(int, String)
    */
   public void getPublicNotebook(int userId, String publicUri, OnClientCallback<Notebook> callback) {
@@ -668,9 +696,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#createSharedNotebook(String, com.evernote.edam.type.SharedNotebook)
    */
   public void createSharedNotebook(SharedNotebook sharedNotebook, OnClientCallback<SharedNotebook> callback) {
@@ -678,9 +706,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#updateSharedNotebook(String, com.evernote.edam.type.SharedNotebook)
    */
   public void updateSharedNotebook(SharedNotebook sharedNotebook, OnClientCallback<Integer> callback) {
@@ -688,9 +716,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#sendMessageToSharedNotebookMembers(String, String, String, java.util.List)
    */
   public void sendMessageToSharedNotebookMembers(String notebookGuid, String messageText, List<String> recipients, OnClientCallback<Integer> callback) {
@@ -698,9 +726,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#listSharedNotebooks(String)
    */
   public void listSharedNotebooks(OnClientCallback<List<SharedNotebook>> callback) {
@@ -708,9 +736,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeSharedNotebooks(String, java.util.List)
    */
   public void expungeSharedNotebooks(List<Long> sharedNotebookIds, OnClientCallback<Integer> callback) {
@@ -718,9 +746,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#createLinkedNotebook(String, com.evernote.edam.type.LinkedNotebook)
    */
   public void createLinkedNotebook(LinkedNotebook linkedNotebook, OnClientCallback<LinkedNotebook> callback) {
@@ -728,9 +756,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#updateLinkedNotebook(String, com.evernote.edam.type.LinkedNotebook)
    */
   public void updateLinkedNotebook(LinkedNotebook linkedNotebook, OnClientCallback<Integer> callback) {
@@ -738,9 +766,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#listLinkedNotebooks(String)
    */
   public void listLinkedNotebooks(OnClientCallback<List<LinkedNotebook>> callback) {
@@ -748,9 +776,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#expungeLinkedNotebook(String, String)
    */
   public void expungeLinkedNotebook(String guid, OnClientCallback<Integer> callback) {
@@ -758,9 +786,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#authenticateToSharedNotebook(String, String)
    */
   public void authenticateToSharedNotebook(String shareKey, OnClientCallback<AuthenticationResult> callback) {
@@ -768,9 +796,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getSharedNotebookByAuth(String)
    */
   public void getSharedNotebookByAuth(OnClientCallback<SharedNotebook> callback) {
@@ -778,9 +806,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#emailNote(String, com.evernote.edam.notestore.NoteEmailParameters)
    */
   public void emailNote(NoteEmailParameters parameters, OnClientCallback<Void> callback) {
@@ -788,9 +816,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#shareNote(String, String)
    */
   public void shareNote(String guid, OnClientCallback<String> callback) {
@@ -798,9 +826,9 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#stopSharingNote(String, String)
    */
   public void stopSharingNote(String guid, OnClientCallback<Void> callback) {
@@ -808,19 +836,19 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
-   * @see NoteStore.Client#authenticateToSharedNote(String, String)
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
+   * @see NoteStore.Client#authenticateToSharedNote(String, String, String)
    */
   public void authenticateToSharedNote(String guid, String noteKey, String authToken, OnClientCallback<AuthenticationResult> callback) {
     AsyncReflector.execute(mClient, callback, "authenticateToSharedNote", guid, noteKey, authToken);
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
-   * @param {@link OnClientCallback} providing an interface to the calling code
+   * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#findRelated(String, com.evernote.edam.notestore.RelatedQuery, com.evernote.edam.notestore.RelatedResultSpec)
    */
   public void findRelated(RelatedQuery query, RelatedResultSpec resultSpec, OnClientCallback<RelatedResult> callback) {
@@ -828,7 +856,7 @@ public class AsyncNoteStoreClient {
   }
 
   /**
-   * Asynchronous wrapper
+   * Asynchronous wrapper.
    *
    * @see NoteStore.Client#setSharedNotebookRecipientSettings(String, long,
    *      SharedNotebookRecipientSettings)

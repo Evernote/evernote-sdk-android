@@ -90,7 +90,7 @@ public class SimpleNote extends ParentActivity {
   }
 
   /**
-   * Saves text field content as note to selected notebook, or default notebook if no notebook select
+   * Saves text field content as note to selected notebook, or default notebook if no notebook select.
    */
   public void saveNote(View view) {
     String title = mEditTextTitle.getText().toString();
@@ -106,7 +106,7 @@ public class SimpleNote extends ParentActivity {
     //TODO: line breaks need to be converted to render in ENML
     note.setContent(EvernoteUtil.NOTE_PREFIX + content + EvernoteUtil.NOTE_SUFFIX);
 
-    if(!mEvernoteSession.getAuthenticationResult().isAppLinkedNotebook()) {
+    if (!mEvernoteSession.getAuthenticationResult().isAppLinkedNotebook()) {
       //If User has selected a notebook guid, assign it now
       if (!TextUtils.isEmpty(mSelectedNotebookGuid)) {
         note.setNotebookGuid(mSelectedNotebookGuid);
@@ -126,10 +126,10 @@ public class SimpleNote extends ParentActivity {
 
 
   /**
-   * Select notebook, create AlertDialog to pick notebook guid
+   * Select notebook, create AlertDialog to pick notebook guid.
    */
   public void selectNotebook(View view) {
-    if(mEvernoteSession.isAppLinkedNotebook()) {
+    if (mEvernoteSession.isAppLinkedNotebook()) {
       Toast.makeText(getApplicationContext(), getString(R.string.CANT_LIST_APP_LNB), Toast.LENGTH_LONG).show();
       return;
     }

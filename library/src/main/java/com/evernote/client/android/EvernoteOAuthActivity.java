@@ -89,7 +89,7 @@ public class EvernoteOAuthActivity extends Activity {
   private String mRequestTokenSecret = null;
   private boolean mSupportAppLinkedNotebooks = false;
 
-  private final int DIALOG_PROGRESS = 101;
+  private static final int DIALOG_PROGRESS = 101;
 
   private Activity mActivity;
 
@@ -99,7 +99,7 @@ public class EvernoteOAuthActivity extends Activity {
   private AsyncTask mCompleteAuthSyncTask = null;
 
   /**
-   * Overrides the callback URL and authenticate
+   * Overrides the callback URL and authenticate.
    */
   private WebViewClient mWebViewClient = new WebViewClient() {
 
@@ -117,7 +117,7 @@ public class EvernoteOAuthActivity extends Activity {
   };
 
   /**
-   * Allows for showing progress
+   * Allows for showing progress.
    */
   private WebChromeClient mWebChromeClient = new WebChromeClient() {
     @Override
@@ -169,8 +169,7 @@ public class EvernoteOAuthActivity extends Activity {
   protected void onResume() {
     super.onResume();
 
-    if (TextUtils.isEmpty(mConsumerKey) ||
-        TextUtils.isEmpty(mConsumerSecret)) {
+    if (TextUtils.isEmpty(mConsumerKey) || TextUtils.isEmpty(mConsumerSecret)) {
       exit(false);
       return;
     }
@@ -181,7 +180,7 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * Not needed because of conficChanges, but leaving in case developer does not add to manifest
+   * Not needed because of conficChanges, but leaving in case developer does not add to manifest.
    * @param outState
    */
   @Override
@@ -212,9 +211,9 @@ public class EvernoteOAuthActivity extends Activity {
 
   @Override
   protected void onPrepareDialog(int id, Dialog dialog) {
-    switch(id) {
+    switch (id) {
       case DIALOG_PROGRESS:
-        ((ProgressDialog)dialog).setIndeterminate(true);
+        ((ProgressDialog) dialog).setIndeterminate(true);
         dialog.setCancelable(false);
         ((ProgressDialog) dialog).setMessage(getString(R.string.esdk__loading));
     }
@@ -252,8 +251,7 @@ public class EvernoteOAuthActivity extends Activity {
     } else if (host.equals(EvernoteSession.HOST_CHINA)) {
       apiClass = YinxiangApi.class;
     } else {
-      throw new IllegalArgumentException("Unsupported Evernote host: " +
-                                         host);
+      throw new IllegalArgumentException("Unsupported Evernote host: " + host);
     }
     builder = new ServiceBuilder()
         .provider(apiClass)
@@ -281,7 +279,7 @@ public class EvernoteOAuthActivity extends Activity {
   }
 
   /**
-   * On honeycomb and above this will create an actionbar with the item to switch services
+   * On honeycomb and above this will create an actionbar with the item to switch services.
    * Below honeycomb it will create the options menu bound to a hardware key
    * @param menu
    * @return
@@ -309,8 +307,8 @@ public class EvernoteOAuthActivity extends Activity {
   public boolean onPrepareOptionsMenu(Menu menu) {
     MenuItem itemSwitchService = menu.findItem(R.id.esdk__switch_service);
 
-    if(mBootstrapProfiles != null && mBootstrapProfiles.size() > 1) {
-      if(BootstrapManager.CHINA_PROFILE.equals(mSelectedBootstrapProfile.getName())) {
+    if (mBootstrapProfiles != null && mBootstrapProfiles.size() > 1) {
+      if (BootstrapManager.CHINA_PROFILE.equals(mSelectedBootstrapProfile.getName())) {
         itemSwitchService.setTitle(BootstrapManager.DISPLAY_EVERNOTE_INTL);
       } else {
         itemSwitchService.setTitle(BootstrapManager.DISPLAY_YXBIJI);
@@ -332,9 +330,9 @@ public class EvernoteOAuthActivity extends Activity {
    */
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    if(item.getItemId() == R.id.esdk__switch_service) {
-      if((mBeginAuthSyncTask == null || mBeginAuthSyncTask.getStatus() != AsyncTask.Status.RUNNING) &&
-          (mSelectedBootstrapProfile != null && mBootstrapProfiles != null)) {
+    if (item.getItemId() == R.id.esdk__switch_service) {
+      if ((mBeginAuthSyncTask == null || mBeginAuthSyncTask.getStatus() != AsyncTask.Status.RUNNING)
+          && (mSelectedBootstrapProfile != null && mBootstrapProfiles != null)) {
 
         mSelectedBootstrapProfilePos = (mSelectedBootstrapProfilePos + 1) % mBootstrapProfiles.size();
         mBootstrapProfiles = null;
@@ -369,13 +367,11 @@ public class EvernoteOAuthActivity extends Activity {
           //Network request
           BootstrapManager.BootstrapInfoWrapper infoWrapper = session.getBootstrapSession().getBootstrapInfo();
 
-          if (infoWrapper != null){
+          if (infoWrapper != null) {
             BootstrapInfo info = infoWrapper.getBootstrapInfo();
-            if(info != null) {
+            if (info != null) {
               mBootstrapProfiles = (ArrayList<BootstrapProfile>) info.getProfiles();
-              if (mBootstrapProfiles != null &&
-                  mBootstrapProfiles.size() > 0 &&
-                  mSelectedBootstrapProfilePos < mBootstrapProfiles.size()){
+              if (mBootstrapProfiles != null && mBootstrapProfiles.size() > 0 && mSelectedBootstrapProfilePos < mBootstrapProfiles.size()) {
 
                 mSelectedBootstrapProfile = mBootstrapProfiles.get(mSelectedBootstrapProfilePos);
               }
@@ -383,7 +379,7 @@ public class EvernoteOAuthActivity extends Activity {
           }
         }
 
-        if(mSelectedBootstrapProfile == null || TextUtils.isEmpty(mSelectedBootstrapProfile.getSettings().getServiceHost())) {
+        if (mSelectedBootstrapProfile == null || TextUtils.isEmpty(mSelectedBootstrapProfile.getSettings().getServiceHost())) {
           Log.d(LOGTAG, "Bootstrap did not return a valid host");
           return null;
         }
@@ -397,10 +393,10 @@ public class EvernoteOAuthActivity extends Activity {
 
         Log.i(LOGTAG, "Redirecting user for authorization...");
         url = service.getAuthorizationUrl(reqToken);
-        if(mSupportAppLinkedNotebooks) {
+        if (mSupportAppLinkedNotebooks) {
           url += "&supportLinkedSandbox=true";
         }
-      } catch(BootstrapManager.ClientUnsupportedException cue) {
+      } catch (BootstrapManager.ClientUnsupportedException cue) {
 
         return null;
       } catch (Exception ex) {

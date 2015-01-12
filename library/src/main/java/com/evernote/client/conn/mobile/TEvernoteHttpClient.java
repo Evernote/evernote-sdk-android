@@ -60,11 +60,11 @@ public class TEvernoteHttpClient extends TTransport {
    * Keep requests in RAM if they are less than 512kb.
    */
   private static final int MEMORY_BUFFER_SIZE = 512 * 1024;
-  private URL url_ = null;
+  private URL url = null;
   private String userAgent = null;
-  private final DiskBackedByteStore requestBuffer_;
-  private InputStream inputStream_ = null;
-  private Map<String, String> customHeaders_ = null;
+  private final DiskBackedByteStore requestBuffer;
+  private InputStream inputStream = null;
+  private Map<String, String> customHeaders = null;
   private HttpRequestBase request = null;
   private HttpParams httpParameters = new BasicHttpParams();
 
@@ -74,7 +74,7 @@ public class TEvernoteHttpClient extends TTransport {
    * @param url       The Thrift server URL, for example, https://www.evernote.com/edam/user.
    * @param userAgent The User-Agent string to send, which should identify the
    *                  client application.
-   * @param tempPath  A temp directory where Thrift messages should be cached
+   * @param tempDir  A temp directory where Thrift messages should be cached
    *                  before they're sent.
    * @throws TTransportException If an error occurs creating the temporary
    *                             file that will be used to cache Thrift messages to disk before sending.
@@ -86,8 +86,8 @@ public class TEvernoteHttpClient extends TTransport {
 
     this.userAgent = userAgent;
     try {
-      url_ = new URL(url);
-      requestBuffer_ =
+      this.url = new URL(url);
+      requestBuffer =
           new DiskBackedByteStore(tempDir, "http", MEMORY_BUFFER_SIZE);
     } catch (IOException iox) {
       throw new TTransportException(iox);
@@ -103,27 +103,27 @@ public class TEvernoteHttpClient extends TTransport {
   }
 
   public void setCustomHeaders(Map<String, String> headers) {
-    customHeaders_ = headers;
+    customHeaders = headers;
   }
 
   public void setCustomHeader(String key, String value) {
-    if (customHeaders_ == null) {
-      customHeaders_ = new HashMap<String, String>();
+    if (customHeaders == null) {
+      customHeaders = new HashMap<String, String>();
     }
-    customHeaders_.put(key, value);
+    customHeaders.put(key, value);
   }
 
   public void open() {
   }
 
   public void close() {
-    if (null != inputStream_) {
+    if (null != inputStream) {
       try {
-        inputStream_.close();
-      } catch (IOException ioe) {
-        ;
+        inputStream.close();
+      } catch (IOException ignored) {
+
       }
-      inputStream_ = null;
+      inputStream = null;
     }
 
     if (mConnectionManager != null) {
@@ -137,12 +137,12 @@ public class TEvernoteHttpClient extends TTransport {
   }
 
   public int read(byte[] buf, int off, int len) throws TTransportException {
-    if (inputStream_ == null) {
+    if (inputStream == null) {
       throw new TTransportException("Response buffer is empty, no request.");
     }
 
     try {
-      int ret = inputStream_.read(buf, off, len);
+      int ret = inputStream.read(buf, off, len);
       if (ret == -1) {
         throw new TTransportException("No more data available.");
       }
@@ -206,7 +206,7 @@ public class TEvernoteHttpClient extends TTransport {
   }
 
   public void write(byte[] buf, int off, int len) {
-    requestBuffer_.write(buf, off, len);
+    requestBuffer.write(buf, off, len);
   }
 
   public void flush() throws TTransportException {
@@ -217,17 +217,17 @@ public class TEvernoteHttpClient extends TTransport {
     // Extract request and reset buffer
     try {
       // Prepare http post request
-      HttpPost request = new HttpPost(url_.toExternalForm());
+      HttpPost request = new HttpPost(url.toExternalForm());
       this.request = request;
       request.addHeader("Content-Type", "application/x-thrift");
       request.addHeader("Cache-Control", "no-transform");
-      if (customHeaders_ != null) {
-        for (Map.Entry<String, String> header : customHeaders_.entrySet()) {
+      if (customHeaders != null) {
+        for (Map.Entry<String, String> header : customHeaders.entrySet()) {
           request.addHeader(header.getKey(), header.getValue());
         }
       }
       InputStreamEntity entity =
-          new InputStreamEntity(requestBuffer_.getInputStream(), requestBuffer_
+          new InputStreamEntity(requestBuffer.getInputStream(), requestBuffer
               .getSize());
       request.setEntity(entity);
       request.addHeader("Accept", "application/x-thrift");
@@ -248,15 +248,15 @@ public class TEvernoteHttpClient extends TTransport {
         throw new TTransportException("HTTP Response code: " + responseCode);
       }
       // Read the responses
-      requestBuffer_.reset();
-      inputStream_ = response.getEntity().getContent();
+      requestBuffer.reset();
+      inputStream = response.getEntity().getContent();
     } catch (IOException iox) {
       throw new TTransportException(iox);
     } catch (Exception ex) {
       throw new TTransportException(ex);
     } finally {
       try {
-        requestBuffer_.reset();
+        requestBuffer.reset();
       } catch (IOException e) {
       }
       this.request = null;

@@ -209,15 +209,14 @@ public class ImagePicker extends ParentActivity {
 
         // Set the note's ENML content. Learn about ENML at
         // http://dev.evernote.com/documentation/cloud/chapters/ENML.php
-        String content =
-            EvernoteUtil.NOTE_PREFIX +
-                "<p>This note was uploaded from Android. It contains an image.</p>" +
-                EvernoteUtil.createEnMediaTag(resource) +
-                EvernoteUtil.NOTE_SUFFIX;
+        String content = EvernoteUtil.NOTE_PREFIX
+            + "<p>This note was uploaded from Android. It contains an image.</p>"
+            + EvernoteUtil.createEnMediaTag(resource)
+            + EvernoteUtil.NOTE_SUFFIX;
 
         note.setContent(content);
 
-        if(!mEvernoteSession.getAuthenticationResult().isAppLinkedNotebook()) {
+        if (!mEvernoteSession.getAuthenticationResult().isAppLinkedNotebook()) {
           // Create the note on the server. The returned Note object
           // will contain server-generated attributes such as the note's
           // unique ID (GUID), the Resource's GUID, and the creation and update time.
@@ -360,7 +359,7 @@ public class ImagePicker extends ParentActivity {
     }
 
     /**
-     * Sets the image to the background and enables saving it to evernote
+     * Sets the image to the background and enables saving it to evernote.
      *
      * @param image
      */
