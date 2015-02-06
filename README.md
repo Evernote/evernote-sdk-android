@@ -57,18 +57,16 @@ dependencies {
 }
 ```
 
-##### Using a snapshot build for early access previews
+##### (Optional) Using a snapshot build for early access previews
 
-1. Add Sonatype's snapshot repository in your build script.
-
+Add Sonatype's snapshot repository in your build script.
 ```groovy
 maven {
     url "https://oss.sonatype.org/content/repositories/snapshots"
 }
 ```
 
-2. Add the snapshot depdendency. 
-
+Add the snapshot depdendency. 
 ```groovy
 dependencies {
     compile 'com.evernote:android-sdk:1.1.2-SNAPSHOT'
