@@ -44,11 +44,13 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+
 import com.evernote.androidsdk.R;
 import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.client.oauth.YinxiangApi;
 import com.evernote.edam.userstore.BootstrapInfo;
 import com.evernote.edam.userstore.BootstrapProfile;
+
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.EvernoteApi;
 import org.scribe.model.Token;
@@ -362,7 +364,7 @@ public class EvernoteOAuthActivity extends Activity {
       String url = null;
       try {
 
-        EvernoteSession session = EvernoteSession.getOpenSession();
+        EvernoteSession session = EvernoteSession.getInstance();
         if (session != null) {
           //Network request
           BootstrapManager.BootstrapInfoWrapper infoWrapper = session.getBootstrapSession().getBootstrapInfo();
@@ -480,12 +482,12 @@ public class EvernoteOAuthActivity extends Activity {
     protected void onPostExecute(EvernoteAuthToken authToken) {
       // TODO deprecated
       removeDialog(DIALOG_PROGRESS);
-      if (EvernoteSession.getOpenSession() == null) {
+      if (EvernoteSession.getInstance() == null) {
         exit(false);
         return;
       }
 
-      exit(EvernoteSession.getOpenSession().persistAuthenticationToken(
+      exit(EvernoteSession.getInstance().persistAuthenticationToken(
       getApplicationContext(), authToken, mSelectedBootstrapProfile.getSettings().getServiceHost()));
     }
   }

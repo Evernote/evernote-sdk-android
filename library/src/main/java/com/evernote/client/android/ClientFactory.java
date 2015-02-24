@@ -78,14 +78,14 @@ public class ClientFactory {
    * connection to the Evernote service.
    */
   public AsyncNoteStoreClient createNoteStoreClient() throws TTransportException {
-    if (EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
+    if (EvernoteSession.getInstance() == null || EvernoteSession.getInstance().getAuthenticationResult() == null) {
       throw new IllegalStateException();
     }
 
     TEvernoteHttpClient transport =
-        new TEvernoteHttpClient(EvernoteSession.getOpenSession().getAuthenticationResult().getNoteStoreUrl(), mUserAgent, mTempDir);
+        new TEvernoteHttpClient(EvernoteSession.getInstance().getAuthenticationResult().getNoteStoreUrl(), mUserAgent, mTempDir);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new AsyncNoteStoreClient(protocol, protocol, EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken());
+    return new AsyncNoteStoreClient(protocol, protocol, EvernoteSession.getInstance().getAuthenticationResult().getAuthToken());
   }
 
   /**
@@ -113,7 +113,7 @@ public class ClientFactory {
    */
   public AsyncBusinessNoteStoreClient createBusinessNoteStoreClient() throws TException, EDAMUserException, EDAMSystemException {
     com.evernote.client.android.AuthenticationResult authResult =
-        EvernoteSession.getOpenSession().getAuthenticationResult();
+        EvernoteSession.getInstance().getAuthenticationResult();
 
     if (authResult.getBusinessAuthToken() == null
         || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
@@ -150,7 +150,7 @@ public class ClientFactory {
    */
   public AsyncLinkedNoteStoreClient createLinkedNoteStoreClient(LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
     com.evernote.client.android.AuthenticationResult authResult =
-        EvernoteSession.getOpenSession().getAuthenticationResult();
+        EvernoteSession.getInstance().getAuthenticationResult();
 
     TEvernoteHttpClient transport =
         new TEvernoteHttpClient(linkedNotebook.getNoteStoreUrl(), mUserAgent, mTempDir);
@@ -173,10 +173,10 @@ public class ClientFactory {
    *
    */
   public AsyncUserStoreClient createUserStoreClient() throws TTransportException {
-    if (EvernoteSession.getOpenSession() == null || EvernoteSession.getOpenSession().getAuthenticationResult() == null) {
+    if (EvernoteSession.getInstance() == null || EvernoteSession.getInstance().getAuthenticationResult() == null) {
       throw new IllegalStateException();
     }
-    return createUserStoreClient(EvernoteSession.getOpenSession().getAuthenticationResult().getEvernoteHost());
+    return createUserStoreClient(EvernoteSession.getInstance().getAuthenticationResult().getEvernoteHost());
   }
 
   /**
@@ -237,8 +237,8 @@ public class ClientFactory {
     }
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
     String authToken = null;
-    if (EvernoteSession.getOpenSession().isLoggedIn()) {
-      authToken = EvernoteSession.getOpenSession().getAuthenticationResult().getAuthToken();
+    if (EvernoteSession.getInstance().isLoggedIn()) {
+      authToken = EvernoteSession.getInstance().getAuthenticationResult().getAuthToken();
     }
 
     return new AsyncUserStoreClient(protocol, protocol, authToken);

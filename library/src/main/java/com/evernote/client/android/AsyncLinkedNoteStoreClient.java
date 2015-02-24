@@ -65,7 +65,7 @@ public class AsyncLinkedNoteStoreClient {
 
   AsyncLinkedNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken, ClientFactory clientFactory) throws TTransportException {
     mLinkedStoreClient = new AsyncNoteStoreClient(iprot, oprot, authenticationToken);
-    mMainNoteStoreClient = EvernoteSession.getOpenSession().getClientFactory().createNoteStoreClient();
+    mMainNoteStoreClient = EvernoteSession.getInstance().getClientFactory().createNoteStoreClient();
     mAuthToken = authenticationToken;
     mClientFactory = clientFactory;
   }
@@ -174,8 +174,8 @@ public class AsyncLinkedNoteStoreClient {
     LinkedNotebook linkedNotebook = new LinkedNotebook();
     linkedNotebook.setShareKey(sharedNotebook.getShareKey());
     linkedNotebook.setShareName(originalNotebook.getName());
-    linkedNotebook.setUsername(EvernoteSession.getOpenSession().getAuthenticationResult().getBusinessUser().getUsername());
-    linkedNotebook.setShardId(EvernoteSession.getOpenSession().getAuthenticationResult().getBusinessUser().getShardId());
+    linkedNotebook.setUsername(EvernoteSession.getInstance().getAuthenticationResult().getBusinessUser().getUsername());
+    linkedNotebook.setShardId(EvernoteSession.getInstance().getAuthenticationResult().getBusinessUser().getShardId());
 
     return getAsyncPersonalClient().getClient().createLinkedNotebook(getAsyncPersonalClient().getAuthenticationToken(), linkedNotebook);
   }

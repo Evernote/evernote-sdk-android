@@ -26,6 +26,7 @@
 package com.evernote.client.android;
 
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.util.Log;
 import com.evernote.edam.type.User;
 
@@ -57,6 +58,12 @@ public class AuthenticationResult {
     restore(pref);
   }
 
+    public AuthenticationResult(String authToken, String noteStoreUrl, boolean isAppLinkedNotebook) {
+        this(authToken, noteStoreUrl, parseWebApiUrlPrefix(noteStoreUrl), parseHost(noteStoreUrl), -1, isAppLinkedNotebook);
+    }
+
+
+
   /**
    * Create a new AuthenticationResult.
    *
@@ -69,7 +76,6 @@ public class AuthenticationResult {
    *                              a linked notebook
    *
    */
-
   public AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, String evernoteHost, int userId, boolean isAppLinkedNotebook) {
     this.mAuthToken = authToken;
     this.mNoteStoreUrl = noteStoreUrl;
@@ -112,8 +118,6 @@ public class AuthenticationResult {
         .remove(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK)
         .apply();
   }
-
-
 
   /**
    * @return the authentication token that will be used to make authenticated API requests.
@@ -159,13 +163,13 @@ public class AuthenticationResult {
     return mIsAppLinkedNotebook;
   }
 
-
   /**
    * @return the URL that will be used to access the BusinessNoteStore service.
    */
   public String getBusinessNoteStoreUrl() {
     return mBusinessNoteStoreUrl;
   }
+
 
   /**
    * Set the BusinessNoteStore Url.
@@ -215,4 +219,17 @@ public class AuthenticationResult {
   void setBusinessAuthTokenExpiration(long businessAuthTokenExpiration) {
     this.mBusinessAuthTokenExpiration = businessAuthTokenExpiration;
   }
+
+    private static String parseWebApiUrlPrefix(String noteStoreUrl) {
+        int index = noteStoreUrl.indexOf("notestore");
+        if (index > 0) {
+            return noteStoreUrl.substring(0, index);
+        } else {
+            return noteStoreUrl;
+        }
+    }
+
+    private static String parseHost(String noteStoreUrl) {
+        return Uri.parse(noteStoreUrl).getHost();
+    }
 }

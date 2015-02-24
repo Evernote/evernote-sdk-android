@@ -102,8 +102,17 @@ public class ParentActivity extends Activity {
       consumerSecret = CONSUMER_SECRET;
     }
 
-    //Set up the Evernote Singleton Session
-    mEvernoteSession = EvernoteSession.getInstance(this, consumerKey, consumerSecret, EVERNOTE_SERVICE, SUPPORT_APP_LINKED_NOTEBOOKS);
+      //Set up the Evernote Singleton Session
+      mEvernoteSession = new EvernoteSession.Builder(this)
+          .setEvernoteService(EVERNOTE_SERVICE)
+          .setSupportAppLinkedNotebooks(SUPPORT_APP_LINKED_NOTEBOOKS)
+          .build(consumerKey, consumerSecret)
+          .asSingleton();
+
+//      mEvernoteSession = new EvernoteSession.Builder(this)
+//          .setEvernoteService(EvernoteSession.EvernoteService.PRODUCTION)
+//          .buildForSingleUser(BuildConfig.EVERNOTE_DEVELOPER_KEY, BuildConfig.EVERNOTE_NOTE_STORE_URL)
+//          .asSingleton();
   }
 
   // using createDialog, could use Fragments instead
