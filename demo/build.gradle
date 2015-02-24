@@ -35,6 +35,4 @@ android {
 
 dependencies {
     compile project(':library')
-
-    compile project.DEPENDENCY_SUPPORT_LIBRARY
 }
