@@ -1,5 +1,5 @@
-Evernote SDK for Android version 1.1.2
-====================================
+Evernote SDK for Android version 1.1.3
+======================================
 
 Evernote API version 1.25
 
@@ -14,12 +14,12 @@ In order to use the code in this SDK, you need to obtain an API key from http://
 
 In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action
 
-The instructions below assume you have the latest [Android SDK](http://developer.android.com/sdk/index.html) and [API 17](http://developer.android.com/tools/revisions/platforms.html#4.2) installed. The instructions for eclipse are based on [Eclipse Juno](http://www.eclipse.org/downloads/) and [latest Android development tools](http://developer.android.com/tools/sdk/eclipse-adt.html). The instructions for Intellij are based on [Intellij IDEA 12 Community Edition](http://www.jetbrains.com/idea/download/index.html) and is our recommended IDE.
+The instructions below assume you have the latest [Android SDK](http://developer.android.com/sdk/index.html).
 
 
 Sample App
 ----------
-The sample application HelloEDAM demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. The sample code provides mutliple activities that show notebook listing, note creation, and resource creation in two scenarios: A plain text note creator and an image saver.
+The sample application 'Evernote SDK Demo' demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. The sample code provides mutliple activities that show notebook listing, note creation, and resource creation in two scenarios: A plain text note creator and an image saver.
 
 ### Running the sample app from Android Studio
 To build and run the sample project from Android Studio:
@@ -53,7 +53,7 @@ Add the Evernote SDK for Android as a dependency in your build.gradle file.
 
 ```groovy
 dependencies {
-    compile 'com.evernote:android-sdk:1.1.2'
+    compile 'com.evernote:android-sdk:1.1.3'
 }
 ```
 
@@ -69,7 +69,7 @@ maven {
 Add the snapshot depdendency. 
 ```groovy
 dependencies {
-    compile 'com.evernote:android-sdk:1.1.2-SNAPSHOT'
+    compile 'com.evernote:android-sdk:1.1.3-SNAPSHOT'
 }
 ```
 
@@ -78,7 +78,8 @@ dependencies {
 The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's `AndroidManifest.xml`. Simply copy and paste the following snippet into your `AndroidManifest.xml` within the application section:
 
 ```xml
-<activity android:name="com.evernote.client.android.EvernoteOAuthActivity" android:configChanges="orientation|keyboardHidden" />
+<activity android:name="com.evernote.client.android.EvernoteOAuthActivity" />
+<activity android:name="com.evernote.client.android.login.EvernoteLoginActivity"/>
 ```
 
 ### Set up an `EvernoteSession`
@@ -91,15 +92,21 @@ private static final String CONSUMER_SECRET = "Your consumer secret";
 private static final EvernoteSession.EvernoteService EVERNOTE_SERVICE = EvernoteSession.EvernoteService.SANDBOX;
 ```
 
-When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote. The EvernoteSession instance of saved statically and does not need to be passed between activities. The better option is to run getInstance(...) in your onCreate() of the Application object or your parent Activity object.
+When your app starts, initialize the EvernoteSession singleton that has all of the information that is needed to authenticate to Evernote. The EvernoteSession instance of saved statically and does not need to be passed between activities. The better option is to build the instance in your onCreate() of the Application object or your parent Activity object.
 
 ```java
-mEvernoteSession = EvernoteSession.getInstance(this, CONSUMER_KEY, CONSUMER_SECRET, EVERNOTE_SERVICE);
+mEvernoteSession = new EvernoteSession.Builder(this)
+    .setEvernoteService(EVERNOTE_SERVICE)
+    .setSupportAppLinkedNotebooks(SUPPORT_APP_LINKED_NOTEBOOKS)
+    .build(consumerKey, consumerSecret)
+    .asSingleton();
 ```
 
 ### Give the user a way to initiate authentication
 
 In our sample app, we have a "Sign in to Evernote" button that initiates the authentication process. You might choose to do something similar, or you might simply initiate authentication the first time that the user tries to access Evernote-related functionality.
+
+The recommended approach is to use `FragmentActivity`s. Then the authentication process opens a dialog and no extra `Activity`. But normal `Activity`s are supported as well. 
 
 ```java
 mEvernoteSession.authenticate(this);
@@ -111,20 +118,39 @@ The Activity that completes the OAuth authentication automatically determines if
 
 ### Complete authentication in `onActivityResult`
 
-You can check whether authentication was successful by watching for the Evernote OAuth Activity in `onActivityResult`. If authentication is successful, you can start using the Evernote API.
+You can check whether authentication was successful by watching for the result in your `Activity`. If you use a `FragmentActivity`, then you should implement the `EvernoteLoginFragment.ResultCallback` interface.
+
+
+```java
+public class MyActivity extends Activity implements EvernoteLoginFragment.ResultCallback {
+
+    // ...
+
+    @Override
+    public void onLoginFinished(boolean successful) {
+        // handle result
+    }
+}    
+```
+
+If you use a normal `Activity`, you should override `onActivityResult`.
 
 ```java
 @Override
 public void onActivityResult(int requestCode, int resultCode, Intent data) {
-  super.onActivityResult(requestCode, resultCode, data);
-  switch(requestCode) {
-    // Update UI when oauth activity returns result
-    case EvernoteSession.REQUEST_CODE_OAUTH:
-      if (resultCode == Activity.RESULT_OK) {
-        // Authentication was successful, do what you need to do in your app
-      }
-      break;
-  }
+    switch (requestCode) {
+        case EvernoteSession.REQUEST_CODE_LOGIN:
+            if (resultCode == Activity.RESULT_OL) {
+                // handle success
+            } else {
+                // handle failure
+            }        
+            break;
+            
+        default:
+            super.onActivityResult(requestCode, resultCode, data);
+            break;
+    }
 }
 ```
 
@@ -257,7 +283,7 @@ new Thread(new Runnable() {
 
 License
 =======
-    Copyright (c) 2007-2012 by Evernote Corporation, All rights reserved.
+    Copyright (c) 2007-2015 by Evernote Corporation, All rights reserved.
 
     Use of the source code and binary libraries included in this package
     is permitted under the following terms:

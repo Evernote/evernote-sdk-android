@@ -34,8 +34,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
+
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.InvalidAuthenticationException;
+import com.evernote.client.android.login.EvernoteLoginFragment;
 
 /**
  * This simple Android app demonstrates how to integrate with the
@@ -45,7 +48,7 @@ import com.evernote.client.android.InvalidAuthenticationException;
  * <p/>
  * class created by @tylersmithnet
  */
-public class HelloEDAM extends ParentActivity {
+public class MainActivity extends ParentActivity implements EvernoteLoginFragment.ResultCallback {
 
   // Name of this application, for logging
   private static final String LOGTAG = "HelloEDAM";
@@ -86,7 +89,7 @@ public class HelloEDAM extends ParentActivity {
     mLoginButton = (Button) findViewById(R.id.login);
     mLogoutButton = (Button) findViewById(R.id.logout);
     mListView = (ListView) findViewById(R.id.list);
-    mAdapter = new ArrayAdapter<String>(this,
+    mAdapter = new ArrayAdapter<>(this,
         android.R.layout.simple_list_item_1,
         android.R.id.text1,
         getResources().getStringArray(R.array.esdk__main_list));
@@ -137,19 +140,25 @@ public class HelloEDAM extends ParentActivity {
     updateAuthUi();
   }
 
-  /**
-   * Called when the control returns from an activity that we launched.
-   */
-  @Override
-  public void onActivityResult(int requestCode, int resultCode, Intent data) {
-    super.onActivityResult(requestCode, resultCode, data);
-    switch (requestCode) {
-      //Update UI when oauth activity returns result
-      case EvernoteSession.REQUEST_CODE_OAUTH:
-        if (resultCode == Activity.RESULT_OK) {
-          updateAuthUi();
+    /**
+     * Called when the control returns from an activity that we launched.
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            //Update UI when oauth activity returns result
+            case EvernoteSession.REQUEST_CODE_LOGIN:
+                if (resultCode == Activity.RESULT_OK) {
+                    updateAuthUi();
+                }
+                break;
         }
-        break;
     }
-  }
+
+    @Override
+    public void onLoginFinished(boolean successful) {
+        Toast.makeText(this, successful ? R.string.esdk__evernote_login_successful : R.string.esdk__evernote_login_failed, Toast.LENGTH_SHORT).show();
+        updateAuthUi();
+    }
 }

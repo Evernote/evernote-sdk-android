@@ -27,17 +27,18 @@ package com.evernote.client.android;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 
 import com.evernote.client.android.helper.Cat;
 import com.evernote.client.android.helper.EvernotePreconditions;
-import com.evernote.client.android.helper.EvernoteSdkUtil;
+import com.evernote.client.android.login.EvernoteLoginActivity;
+import com.evernote.client.android.login.EvernoteLoginFragment;
 import com.evernote.client.oauth.EvernoteAuthToken;
 
 import java.io.File;
@@ -48,28 +49,19 @@ import java.util.Locale;
  * to the service via OAuth and obtain NoteStore.Client objects, which are used
  * to make authenticated API calls.
  *
- * To use EvernoteSession, first initialize the EvernoteSession singleton and
+ * To use EvernoteSession, first initialize the EvernoteSession singleton with the
+ * {@link EvernoteSession.Builder} class and call {@link EvernoteSession#asSingleton()}. After that
  * initiate authentication at an appropriate time:
  * <pre>
- *   EvernoteSession session = EvernoteSession.init(...);
- *   if (!session.isLoggedIn()) {
- *     session.authenticate(...);
- *   }
- * </pre>
+ * EvernoteSession evernoteSession = new EvernoteSession.Builder(this)
+ *      .setEvernoteService(EvernoteSession.EvernoteService.PRODUCTION)
+ *      .setSupportAppLinkedNotebooks(SUPPORT_APP_LINKED_NOTEBOOKS)
+ *      .build(consumerKey, consumerSecret)
+ *      .asSingleton();
  *
- * When authentication completes, you will want to trap the result in onActivityResult
- * to see if it was successful:
- * <pre>
- *   public void onActivityResult(int requestCode, int resultCode, Intent data) {
- *     super.onActivityResult(requestCode, resultCode, data);
- *       switch(requestCode) {
- *       case EvernoteSession.REQUEST_CODE_OAUTH:
- *         if (resultCode == Activity.RESULT_OK) {
- *           // OAuth login was successful, do the appropriate thing for your app
- *         }
- *         break;
- *     }
- *   }
+ * if (!session.isLoggedIn()) {
+ *      session.authenticate(...);
+ * }
  * </pre>
  *
  * Later, you can make any Evernote API calls that you need by obtaining a
@@ -79,7 +71,8 @@ import java.util.Locale;
  *   Notebook notebook = noteStore.getDefaultNotebook(session.getAuthToken());
  * </pre>
  *
- * class created by @tylersmithnet
+ * @author tsmith
+ * @author rwondratschek
  */
 @SuppressWarnings("UnusedDeclaration")
 public final class EvernoteSession {
@@ -89,7 +82,13 @@ public final class EvernoteSession {
     public static final String HOST_PRODUCTION = "https://www.evernote.com";
     public static final String HOST_CHINA = "https://app.yinxiang.com";
 
+    /**
+     * @deprecated Use {@link EvernoteSession#REQUEST_CODE_LOGIN} instead.
+     */
+    @Deprecated
     public static final int REQUEST_CODE_OAUTH = 14390;
+
+    public static final int REQUEST_CODE_LOGIN = 14390;
 
     private static final Cat CAT = new Cat("EvernoteSession");
 
@@ -124,11 +123,15 @@ public final class EvernoteSession {
                                               boolean supportAppLinkedNotebooks) {
 
         if (sInstance == null) {
-            new Builder(ctx)
-                .setEvernoteService(evernoteService)
-                .setSupportAppLinkedNotebooks(supportAppLinkedNotebooks)
-                .build(consumerKey, consumerSecret)
-                .asSingleton();
+            synchronized (EvernoteSession.class) {
+                if (sInstance == null) {
+                    new Builder(ctx)
+                        .setEvernoteService(evernoteService)
+                        .setSupportAppLinkedNotebooks(supportAppLinkedNotebooks)
+                        .build(consumerKey, consumerSecret)
+                        .asSingleton();
+                }
+            }
         }
 
         return sInstance;
@@ -141,6 +144,7 @@ public final class EvernoteSession {
     private ClientFactory mClientFactory;
     private AuthenticationResult mAuthenticationResult;
     private boolean mSupportAppLinkedNotebooks;
+    private boolean mForceAuthenticationInThirdPartyApp;
 
     private EvernoteSession() {
         // do nothing, builder sets up everything
@@ -185,26 +189,43 @@ public final class EvernoteSession {
     }
 
     /**
-     * Start the OAuth authentication process.
+     * Recommended approach to authenticate the user. If the main Evernote app is installed and up to date,
+     * the app is launched and authenticates the user. Otherwise the old OAuth process is launched and
+     * the user needs to enter his credentials.
+     *
      * <p/>
-     * TODO do we need to do anything special here if you're already logged in?
+     *
+     * Your {@link FragmentActivity} should implement {@link EvernoteLoginFragment.ResultCallback} to receive
+     * the authentication result. Alternatively you can extend {@link EvernoteLoginFragment} and override
+     * {@link EvernoteLoginFragment#onLoginFinished(boolean)}.
+     *
+     * @param activity The {@link FragmentActivity} holding the progress dialog.
      */
-    public void authenticate(Context ctx) {
-        // Create an activity that will be used for authentication
-        Intent intent = new Intent(ctx, EvernoteOAuthActivity.class);
-        intent.putExtra(EvernoteOAuthActivity.EXTRA_EVERNOTE_SERVICE, (Parcelable) mEvernoteService);
-        intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_KEY, mConsumerKey);
-        intent.putExtra(EvernoteOAuthActivity.EXTRA_CONSUMER_SECRET, mConsumerSecret);
-        intent.putExtra(EvernoteOAuthActivity.EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS, mSupportAppLinkedNotebooks);
+    public void authenticate(FragmentActivity activity) {
+        authenticate(activity, EvernoteLoginFragment.create(mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks));
+    }
 
-        if (ctx instanceof Activity) {
-            //If this is being called from an activity, an activity can register for the result code
-            ((Activity) ctx).startActivityForResult(intent, REQUEST_CODE_OAUTH);
-        } else {
-            //If this is being called from a service, the refresh will be handled manually
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            ctx.startActivity(intent);
-        }
+    /**
+     * @see EvernoteSession#authenticate(FragmentActivity)
+     */
+    public void authenticate(FragmentActivity activity, EvernoteLoginFragment fragment) {
+        fragment.show(activity.getSupportFragmentManager(), EvernoteLoginFragment.TAG);
+    }
+
+    /**
+     * Similar to {@link EvernoteSession#authenticate(FragmentActivity)}, but instead of opening a dialog
+     * this method launches a separate {@link Activity}.
+     *
+     * <p/>
+     *
+     * The calling {@code activity} should override {@link Activity#onActivityResult(int, int, android.content.Intent)}. The {@code requestCode}
+     * is {@link EvernoteSession#REQUEST_CODE_LOGIN}. The {@code resultCode} is either {@link Activity#RESULT_OK} or
+     * {@link Activity#RESULT_CANCELED}.
+     *
+     * @param activity The {@link Activity} launching the {@link EvernoteLoginActivity}.
+     */
+    public void authenticate(Activity activity) {
+        activity.startActivityForResult(EvernoteLoginActivity.createIntent(activity, mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks), REQUEST_CODE_LOGIN);
     }
 
     /**
@@ -271,7 +292,11 @@ public final class EvernoteSession {
         }
 
         // TODO The cookie jar is application scope, so we should only be removing evernote.com cookies.
-        EvernoteSdkUtil.removeAllCookies(ctx);
+        EvernoteUtil.removeAllCookies(ctx);
+    }
+
+    /*package*/ boolean isForceAuthenticationInThirdPartyApp() {
+        return mForceAuthenticationInThirdPartyApp;
     }
 
     /**
@@ -361,6 +386,7 @@ public final class EvernoteSession {
         private boolean mSupportAppLinkedNotebooks;
         private String mUserAgent;
         private File mMessageCacheDir;
+        private boolean mForceAuthenticationInThirdPartyApp;
 
         public Builder(Context context) {
             if (context == null) {
@@ -384,6 +410,11 @@ public final class EvernoteSession {
 
         public Builder setSupportAppLinkedNotebooks(boolean supportAppLinkedNotebooks) {
             mSupportAppLinkedNotebooks = supportAppLinkedNotebooks;
+            return this;
+        }
+
+        public Builder setForceAuthenticationInThirdPartyApp(boolean forceAuthenticationInThirdPartyApp) {
+            mForceAuthenticationInThirdPartyApp = forceAuthenticationInThirdPartyApp;
             return this;
         }
 
@@ -421,6 +452,7 @@ public final class EvernoteSession {
             session.mSupportAppLinkedNotebooks = mSupportAppLinkedNotebooks;
             session.mClientFactory = new ClientFactory(mUserAgent, mMessageCacheDir);
             session.mBootstrapManager = new BootstrapManager(session.mEvernoteService, session.mClientFactory);
+            session.mForceAuthenticationInThirdPartyApp = mForceAuthenticationInThirdPartyApp;
             return session;
         }
     }

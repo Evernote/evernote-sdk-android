@@ -25,10 +25,10 @@
  */
 package com.evernote.android.sample;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.util.Pair;
 import android.widget.Toast;
@@ -48,7 +48,7 @@ import java.util.List;
  *
  * In this example, it also takes care of dialogs
  */
-public class ParentActivity extends Activity {
+public class ParentActivity extends FragmentActivity {
 
   private static final String LOGTAG = "ParentActivity";
 

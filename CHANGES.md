@@ -1,3 +1,8 @@
+= 1.1.3-SNAPSHOT / 2015-2-28
+
+* Add new authentication process in main Evernote app
+* Add option to use developer token as authentication token
+
 = 1.1.2 / 2013-7-6
 
 * Updated to evernote-api 1.25

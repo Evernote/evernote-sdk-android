@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.evernote.android.sample">
+<manifest
+    package="com.evernote.android.sample"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
+        android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:allowBackup="true">
+        android:label="@string/app_name">
         <activity
-            android:name=".HelloEDAM"
+            android:name=".MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -21,10 +22,11 @@
         <activity
             android:name="com.evernote.client.android.EvernoteOAuthActivity"
             android:configChanges="orientation|keyboardHidden"/>
+        <activity android:name="com.evernote.client.android.login.EvernoteLoginActivity"/>
         <activity
             android:name=".ImagePicker"
-            android:label="@string/image_picker"
-            android:configChanges="orientation|keyboardHidden"/>
+            android:configChanges="orientation|keyboardHidden"
+            android:label="@string/image_picker"/>
         <activity
             android:name=".SimpleNote"
             android:label="@string/simple_note"/>

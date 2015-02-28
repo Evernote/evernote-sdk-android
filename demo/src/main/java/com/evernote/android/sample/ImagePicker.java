@@ -124,11 +124,11 @@ public class ImagePicker extends ParentActivity {
     updateSelectionUi();
   }
 
-  @Override
-  @SuppressWarnings("deprecation")
-  public Object onRetainNonConfigurationInstance() {
-    return mImageData;
-  }
+//  @Override
+//  @SuppressWarnings("deprecation")
+//  public Object onRetainNonConfigurationInstance() {
+//    return mImageData;
+//  }
 
 
   /**

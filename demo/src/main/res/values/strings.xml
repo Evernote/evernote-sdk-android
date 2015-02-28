@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">HelloEDAM</string>
+    <string name="app_name">Evernote SDK Demo</string>
     <string name="err_creating_note">Error creating new Evernote note</string>
     <string name="msg_image_saved">Image saved to Evernote</string>
     <string name="label_app_title">Evernote EDAM Android Demo</string>
