@@ -81,6 +81,8 @@ public final class EvernoteUtil {
      */
     private static final String EDAM_HASH_ALGORITHM = "MD5";
 
+    private static final String PACKAGE_NAME = "com.evernote";
+
     /**
      * Create an ENML &lt;en-media&gt; tag for the specified Resource object.
      */
@@ -204,7 +206,7 @@ public final class EvernoteUtil {
      */
     public static EvernoteInstallStatus getEvernoteInstallStatus(Context context) {
         PackageManager packageManager = context.getPackageManager();
-        Intent intent = new Intent(ACTION_AUTHORIZE);
+        Intent intent = new Intent(ACTION_AUTHORIZE).setPackage(PACKAGE_NAME);
 
         List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
         if (!resolveInfos.isEmpty()) {
@@ -213,7 +215,7 @@ public final class EvernoteUtil {
 
         try {
             // authentication feature not available, yet
-            packageManager.getPackageInfo("com.evernote", PackageManager.GET_ACTIVITIES);
+            packageManager.getPackageInfo(PACKAGE_NAME, PackageManager.GET_ACTIVITIES);
             return EvernoteInstallStatus.OLD_VERSION;
 
         } catch (Exception e) {
@@ -234,6 +236,7 @@ public final class EvernoteUtil {
 
         if (!forceThirdPartyApp && EvernoteInstallStatus.INSTALLED.equals(getEvernoteInstallStatus(context))) {
             intent = new Intent(ACTION_AUTHORIZE);
+            intent.setPackage(PACKAGE_NAME);
         } else {
             intent = new Intent(context, EvernoteOAuthActivity.class);
         }
