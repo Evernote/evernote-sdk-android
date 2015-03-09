@@ -81,7 +81,20 @@ public final class EvernoteUtil {
      */
     private static final String EDAM_HASH_ALGORITHM = "MD5";
 
+    private static final MessageDigest HASH_DIGEST;
+
     private static final String PACKAGE_NAME = "com.evernote";
+
+    static {
+        MessageDigest messageDigest;
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            // notify in hash method
+            messageDigest = null;
+        }
+        HASH_DIGEST = messageDigest;
+    }
 
     /**
      * Create an ENML &lt;en-media&gt; tag for the specified Resource object.
@@ -94,10 +107,10 @@ public final class EvernoteUtil {
      * Returns an MD5 checksum of the provided array of bytes.
      */
     public static byte[] hash(byte[] body) {
-        try {
-            return MessageDigest.getInstance(EDAM_HASH_ALGORITHM).digest(body);
-        } catch (NoSuchAlgorithmException e) {
-            throw new EvernoteUtilException(EDAM_HASH_ALGORITHM + " not supported", e);
+        if (HASH_DIGEST != null) {
+            return HASH_DIGEST.digest(body);
+        } else {
+            throw new EvernoteUtilException(EDAM_HASH_ALGORITHM + " not supported", new NoSuchAlgorithmException(EDAM_HASH_ALGORITHM));
         }
     }
 
@@ -105,18 +118,16 @@ public final class EvernoteUtil {
      * Returns an MD5 checksum of the contents of the provided InputStream.
      */
     public static byte[] hash(InputStream in) throws IOException {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance(EDAM_HASH_ALGORITHM);
-        } catch (NoSuchAlgorithmException e) {
-            throw new EvernoteUtilException(EDAM_HASH_ALGORITHM + " not supported", e);
+        if (HASH_DIGEST == null) {
+            throw new EvernoteUtilException(EDAM_HASH_ALGORITHM + " not supported", new NoSuchAlgorithmException(EDAM_HASH_ALGORITHM));
         }
+
         byte[] buf = new byte[1024];
         int n;
         while ((n = in.read(buf)) != -1) {
-            digest.update(buf, 0, n);
+            HASH_DIGEST.update(buf, 0, n);
         }
-        return digest.digest();
+        return HASH_DIGEST.digest();
     }
 
     /**

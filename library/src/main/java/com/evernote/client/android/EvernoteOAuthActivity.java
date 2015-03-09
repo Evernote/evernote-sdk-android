@@ -92,7 +92,6 @@ public class EvernoteOAuthActivity extends FragmentActivity {
         private boolean mIsWebViewAvailable;
 
         private String mUrl;
-        private boolean mSandbox;
 
         @Override
         public void onAttach(Activity activity) {
@@ -103,15 +102,13 @@ public class EvernoteOAuthActivity extends FragmentActivity {
             super.onAttach(activity);
 
             mUrl = activity.getIntent().getStringExtra(EvernoteUtil.EXTRA_AUTHORIZATION_URL);
-            mSandbox = !TextUtils.isEmpty(mUrl) && Uri.parse(mUrl).getHost().equalsIgnoreCase(HOST_SANDBOX);
         }
 
         @SuppressLint("SetJavaScriptEnabled")
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            if (mWebView != null) {
-                mWebView.destroy();
-            }
+            destroyWebView();
+
             mWebView = new WebView(getActivity());
             mWebView.setWebViewClient(mWebViewClient);
             mWebView.getSettings().setJavaScriptEnabled(true);
@@ -146,10 +143,7 @@ public class EvernoteOAuthActivity extends FragmentActivity {
 
         @Override
         public void onDestroy() {
-            if (mWebView != null) {
-                mWebView.destroy();
-                mWebView = null;
-            }
+            destroyWebView();
             super.onDestroy();
         }
 
@@ -161,6 +155,16 @@ public class EvernoteOAuthActivity extends FragmentActivity {
 
         public WebView getWebView() {
             return mIsWebViewAvailable ? mWebView : null;
+        }
+
+        private void destroyWebView() {
+            if (mWebView != null) {
+                ViewGroup viewGroup = (ViewGroup) mWebView.getParent();
+                viewGroup.removeView(mWebView);
+
+                mWebView.destroy();
+                mWebView = null;
+            }
         }
 
         private WebViewClient mWebViewClient = new WebViewClient() {
