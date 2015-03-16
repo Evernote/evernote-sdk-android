@@ -81,7 +81,7 @@ public class EvernoteLoginActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == EvernoteLoginTask.REQUEST_AUTH) {
-            EvernoteLoginTask task = TaskExecutor.getInstance().getTask(mTaskKey);
+            EvernoteLoginTask task = (EvernoteLoginTask) TaskExecutor.getInstance().getTask(mTaskKey);
             if (task != null) {
                 task.onActivityResult(resultCode, data);
             }
@@ -101,7 +101,7 @@ public class EvernoteLoginActivity extends Activity {
         DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                EvernoteLoginTask task = TaskExecutor.getInstance().getTask(mTaskKey);
+                EvernoteLoginTask task = (EvernoteLoginTask) TaskExecutor.getInstance().getTask(mTaskKey);
                 if (task != null) {
                     task.cancel();
                 }
