@@ -16,12 +16,11 @@ import net.vrallev.android.task.TaskExecutor;
 import net.vrallev.android.task.TaskResult;
 
 /**
- * Used if you call {@link EvernoteSession#authenticateWithApp(Activity)}. You shouldn't need interact
+ * Used if you call {@link EvernoteSession#authenticate(Activity)}. You shouldn't need interact
  * with this class directly.
  *
  * @author rwondratschek
  */
-@SuppressWarnings("UnusedDeclaration")
 public class EvernoteLoginActivity extends Activity {
 
     private static final String EXTRA_CONSUMER_KEY = "EXTRA_CONSUMER_KEY";
@@ -91,6 +90,7 @@ public class EvernoteLoginActivity extends Activity {
         }
     }
 
+    @SuppressWarnings("unused")
     @TaskResult
     public final void onResult(Boolean result) {
         setResult(result ? RESULT_OK : RESULT_CANCELED);

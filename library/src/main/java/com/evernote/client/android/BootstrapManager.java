@@ -26,6 +26,8 @@
 package com.evernote.client.android;
 
 import android.util.Log;
+
+import com.evernote.client.android.asyncclient.EvernoteUserStoreClient;
 import com.evernote.edam.userstore.BootstrapInfo;
 import com.evernote.edam.userstore.BootstrapProfile;
 import com.evernote.thrift.TException;
@@ -46,7 +48,8 @@ import java.util.Locale;
  *
  * @author @tylersmithnet
  */
-public class BootstrapManager {
+@SuppressWarnings({"JavaDoc", "unused"})
+/*package*/ class BootstrapManager {
 
   private static final String LOGTAG = "EvernoteSession";
 
@@ -70,22 +73,22 @@ public class BootstrapManager {
   public static final String DISPLAY_EVERNOTE = "Evernote";
   public static final String DISPLAY_EVERNOTE_INTL = "Evernote International";
 
-  private ArrayList<String> mBootstrapServerUrls = new ArrayList<String>();
-  private AsyncUserStoreClient mUserStoreClient;
+  private ArrayList<String> mBootstrapServerUrls = new ArrayList<>();
+//  private AsyncUserStoreClient mUserStoreClient;
   private Locale mLocale;
-  private ClientFactory mClientProducer;
+  //  private ClientFactory mClientProducer;
   private String mBootstrapServerUsed;
-
-  /**
-   * private constructor.
-   */
-  private BootstrapManager() { }
+  private final EvernoteSession mEvernoteSession;
 
   /**
    * package-scope constructor.
    */
-  BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer) {
-    this(service, producer, Locale.getDefault());
+  BootstrapManager(EvernoteSession session) {
+    this(session.getEvernoteService(), session);
+  }
+
+  BootstrapManager(EvernoteSession.EvernoteService service, EvernoteSession session) {
+    this(service, session, Locale.getDefault());
   }
 
   /**
@@ -93,12 +96,11 @@ public class BootstrapManager {
    *
    * @param service {@link com.evernote.client.android.EvernoteSession.EvernoteService#PRODUCTION} when using
    * production and {@link com.evernote.client.android.EvernoteSession.EvernoteService#SANDBOX} when using sandbox
-   * @param producer Client producer used to create clients
    * @param locale Used to detect if the china servers need to be checked
    */
-  BootstrapManager(EvernoteSession.EvernoteService service, ClientFactory producer, Locale locale) {
+  BootstrapManager(EvernoteSession.EvernoteService service, EvernoteSession session, Locale locale) {
+    mEvernoteSession = session;
     mLocale = locale;
-    mClientProducer = producer;
 
     mBootstrapServerUrls.clear();
     switch (service) {
@@ -130,12 +132,11 @@ public class BootstrapManager {
     for (String url : mBootstrapServerUrls) {
       i++;
       try {
-        mUserStoreClient =  mClientProducer.createUserStoreClient(url);
+        EvernoteUserStoreClient userStoreClient = mEvernoteSession.getEvernoteClientFactory().getUserStoreClient();
 
-        if (!mUserStoreClient.getClient().checkVersion(mClientProducer.getUserAgent(),
-            com.evernote.edam.userstore.Constants.EDAM_VERSION_MAJOR,
-            com.evernote.edam.userstore.Constants.EDAM_VERSION_MINOR)) {
-          mUserStoreClient = null;
+        if (!userStoreClient.checkVersion(EvernoteUtil.generateUserAgentString(mEvernoteSession.getApplicationContext()),
+                com.evernote.edam.userstore.Constants.EDAM_VERSION_MAJOR,
+                com.evernote.edam.userstore.Constants.EDAM_VERSION_MINOR)) {
           throw new ClientUnsupportedException(version);
         }
 
@@ -146,10 +147,8 @@ public class BootstrapManager {
         Log.e(LOGTAG, "Invalid Version", cue);
         throw cue;
       } catch (Exception e) {
-        mUserStoreClient = null;
         if (i < mBootstrapServerUrls.size()) {
           Log.e(LOGTAG, "Error contacting bootstrap server=" + url, e);
-          continue;
         } else {
           throw e;
         }
@@ -168,21 +167,18 @@ public class BootstrapManager {
     Log.d(LOGTAG, "getBootstrapInfo()");
     BootstrapInfo bsInfo = null;
     try {
-      if (mUserStoreClient == null) {
+      if (mBootstrapServerUsed == null) {
         initializeUserStoreAndCheckVersion();
       }
 
-      bsInfo = mUserStoreClient.getClient().getBootstrapInfo(mLocale.toString());
+      bsInfo = mEvernoteSession.getEvernoteClientFactory().getUserStoreClient().getBootstrapInfo(mLocale.toString());
       printBootstrapInfo(bsInfo);
 
-    } catch (ClientUnsupportedException cue) {
-      throw cue;
     } catch (TException e) {
       Log.e(LOGTAG, "error getting bootstrap info", e);
     }
 
-    BootstrapInfoWrapper wrapper = new BootstrapInfoWrapper(mBootstrapServerUsed, bsInfo);
-    return wrapper;
+    return new BootstrapInfoWrapper(mBootstrapServerUsed, bsInfo);
   }
 
   /**
@@ -215,6 +211,7 @@ public class BootstrapManager {
       mBootstrapInfo = info;
     }
 
+    @SuppressWarnings("unused")
     String getServerUrl() {
       return mServerUrl;
     }
@@ -228,5 +225,5 @@ public class BootstrapManager {
     public ClientUnsupportedException(String version) {
       super("Client version " + version + " not supported.");
     }
-  };
+  }
 }

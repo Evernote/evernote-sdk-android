@@ -25,6 +25,7 @@
  */
 package com.evernote.client.android;
 
+import com.evernote.client.android.asyncclient.EvernoteBusinessNotebookHelper;
 import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
@@ -51,12 +52,15 @@ import java.util.List;
  *
  *
  * @author @tylersmithnet
+ * @deprecated Use {@link EvernoteBusinessNotebookHelper} instead.
  */
+@SuppressWarnings("JavaDoc")
+@Deprecated
 public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient {
   /**
    * Reference to your personal note store.
    */
-
+  @Deprecated
   AsyncBusinessNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken, ClientFactory clientFactory) throws TTransportException {
     super(iprot, oprot, authenticationToken, clientFactory);
   }
@@ -76,6 +80,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient {
    *
    */
   @Override
+  @Deprecated
   public Note createNote(Note note, LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
 
     AsyncLinkedNoteStoreClient sharedNoteStore = getClientFactory().createLinkedNoteStoreClient(linkedNotebook);
@@ -97,9 +102,10 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient {
    * @throws EDAMNotFoundException
    */
   @Override
+  @Deprecated
   public List<LinkedNotebook> listNotebooks() throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
 
-    List<LinkedNotebook> linkedNotebooks = new ArrayList<LinkedNotebook>();
+    List<LinkedNotebook> linkedNotebooks = new ArrayList<>();
     for (LinkedNotebook notebook : super.listNotebooks()) {
       if (notebook.isSetBusinessId()) {
         linkedNotebooks.add(notebook);
@@ -116,6 +122,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient {
    * @return {@link LinkedNotebook} with guid from server
    */
   @Override
+  @Deprecated
   public LinkedNotebook createNotebook(Notebook notebook) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
     return super.createNotebook(notebook);
   }
@@ -128,6 +135,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient {
    * @return guid of notebook deleted
    */
   @Override
+  @Deprecated
   public int deleteNotebook(LinkedNotebook linkedNotebook) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
 
     AsyncLinkedNoteStoreClient sharedNoteStore = getClientFactory().createLinkedNoteStoreClient(linkedNotebook);
@@ -146,6 +154,7 @@ public class AsyncBusinessNoteStoreClient extends AsyncLinkedNoteStoreClient {
    * @param linkedNotebook
    */
   @Override
+  @Deprecated
   public Notebook getCorrespondingNotebook(LinkedNotebook linkedNotebook) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
     //Get LinkedStore for auth information
     AsyncLinkedNoteStoreClient sharedNoteStore = getClientFactory().createLinkedNoteStoreClient(linkedNotebook);

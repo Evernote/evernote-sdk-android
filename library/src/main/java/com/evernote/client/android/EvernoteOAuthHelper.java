@@ -126,7 +126,7 @@ public class EvernoteOAuthHelper {
 
     protected static BootstrapProfile fetchBootstrapProfile(EvernoteSession session) throws Exception {
         //Network request
-        BootstrapManager.BootstrapInfoWrapper infoWrapper = session.getBootstrapSession().getBootstrapInfo();
+        BootstrapManager.BootstrapInfoWrapper infoWrapper = new BootstrapManager(session).getBootstrapInfo();
         if (infoWrapper == null) {
             return null;
         }

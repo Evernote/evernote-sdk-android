@@ -25,6 +25,7 @@
  */
 package com.evernote.client.android;
 
+import com.evernote.client.android.asyncclient.EvernoteClientFactory;
 import com.evernote.client.conn.mobile.TEvernoteHttpClient;
 import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
@@ -44,8 +45,11 @@ import java.util.Map;
  *
  * @author @briangriffey
  * @author @tylersmithnet
+ * @deprecated Use {@link EvernoteClientFactory} instead.
  */
 
+@SuppressWarnings({"deprecation", "unused", "JavaDoc"})
+@Deprecated
 public class ClientFactory {
   private static final String LOGTAG = "ClientFactory";
   private static final String USER_AGENT_KEY = "User-Agent";
@@ -54,15 +58,11 @@ public class ClientFactory {
   private Map<String, String> mCustomHeaders;
   private File mTempDir;
 
-
-  /**
-   * Private constructor.
-   */
-  private ClientFactory() { }
-
   /**
    * This should always be requested through an {@link com.evernote.client.android.EvernoteSession}.
    */
+
+  @Deprecated
   ClientFactory(String userAgent, File tempDir) {
     mUserAgent = userAgent;
     mTempDir = tempDir;
@@ -77,6 +77,7 @@ public class ClientFactory {
    * @throws TTransportException if an error occurs setting up the
    * connection to the Evernote service.
    */
+  @Deprecated
   public AsyncNoteStoreClient createNoteStoreClient() throws TTransportException {
     if (EvernoteSession.getInstance() == null || EvernoteSession.getInstance().getAuthenticationResult() == null) {
       throw new IllegalStateException();
@@ -93,6 +94,7 @@ public class ClientFactory {
    *
    * @param callback to receive results from creating NoteStore
    */
+  @Deprecated
   public void createBusinessNoteStoreClientAsync(final OnClientCallback<AsyncBusinessNoteStoreClient> callback) {
     AsyncReflector.execute(this, callback, "createBusinessNoteStoreClient");
   }
@@ -111,6 +113,7 @@ public class ClientFactory {
    * @throws EDAMUserException
    * @throws EDAMSystemException User is not part of a business
    */
+  @Deprecated
   public AsyncBusinessNoteStoreClient createBusinessNoteStoreClient() throws TException, EDAMUserException, EDAMSystemException {
     com.evernote.client.android.AuthenticationResult authResult =
         EvernoteSession.getInstance().getAuthenticationResult();
@@ -139,6 +142,7 @@ public class ClientFactory {
    * @param notebook
    * @param callback
    */
+  @Deprecated
   public void createLinkedNoteStoreClientAsync(LinkedNotebook notebook, OnClientCallback<AsyncLinkedNoteStoreClient> callback) {
     AsyncReflector.execute(this, callback, "createLinkedNoteStoreClient", notebook);
   }
@@ -148,6 +152,7 @@ public class ClientFactory {
    *
    * @param linkedNotebook
    */
+  @Deprecated
   public AsyncLinkedNoteStoreClient createLinkedNoteStoreClient(LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
     com.evernote.client.android.AuthenticationResult authResult =
         EvernoteSession.getInstance().getAuthenticationResult();
@@ -172,6 +177,7 @@ public class ClientFactory {
    * connection to the Evernote service.
    *
    */
+  @Deprecated
   public AsyncUserStoreClient createUserStoreClient() throws TTransportException {
     if (EvernoteSession.getInstance() == null || EvernoteSession.getInstance().getAuthenticationResult() == null) {
       throw new IllegalStateException();
@@ -204,6 +210,7 @@ public class ClientFactory {
    * @return
    * @throws TTransportException
    */
+  @Deprecated
   AsyncUserStoreClient createUserStoreClient(String url) throws TTransportException {
     return createUserStoreClient(url, 0);
   }
@@ -221,6 +228,7 @@ public class ClientFactory {
    * connection to the Evernote service.
    *
    */
+  @Deprecated
   AsyncUserStoreClient createUserStoreClient(String url, int port) throws TTransportException {
     String serviceUrl = getFullUrl(url, port);
 
@@ -244,6 +252,7 @@ public class ClientFactory {
     return new AsyncUserStoreClient(protocol, protocol, authToken);
   }
 
+  @Deprecated
   private String getFullUrl(String serviceUrl, int port) {
     String url = "";
 
@@ -262,6 +271,7 @@ public class ClientFactory {
   /**
    * The user agent defined for the connection.
    */
+  @Deprecated
   public String getUserAgent() {
     return mUserAgent;
   }
@@ -271,6 +281,7 @@ public class ClientFactory {
    *
    * @param mUserAgent
    */
+  @Deprecated
   public void setUserAgent(String mUserAgent) {
     this.mUserAgent = mUserAgent;
   }
@@ -279,6 +290,7 @@ public class ClientFactory {
    * if non-null, this is a mapping of HTTP headers to values which
    * will be included in the request.
    */
+  @Deprecated
   public Map<String, String> getCustomHeaders() {
     return mCustomHeaders;
   }
@@ -288,6 +300,7 @@ public class ClientFactory {
    *
    * @param mCustomHeaders
    */
+  @Deprecated
   public void setCustomHeaders(Map<String, String> mCustomHeaders) {
     this.mCustomHeaders = mCustomHeaders;
   }
@@ -296,6 +309,7 @@ public class ClientFactory {
    * a temporary directory in which large outgoing Thrift messages will
    * be cached to disk before they are sent.
    */
+  @Deprecated
   public File getTempDir() {
     return mTempDir;
   }
@@ -306,6 +320,7 @@ public class ClientFactory {
    *
    * @param mTempDir
    */
+  @Deprecated
   public void setTempDir(File mTempDir) {
     this.mTempDir = mTempDir;
   }

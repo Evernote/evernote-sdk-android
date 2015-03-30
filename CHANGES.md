@@ -2,6 +2,9 @@
 
 * Add new authentication process in main Evernote app
 * Add option to use developer token as authentication token
+* Ease usage of NoteStore.Client
+* Make note store client creation extensible and exchangeable
+* Remove usage of deprecated default http client and switch to OkHTTP
 
 = 1.1.2 / 2013-7-6
 

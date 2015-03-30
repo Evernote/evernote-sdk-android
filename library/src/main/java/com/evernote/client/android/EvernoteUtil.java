@@ -35,6 +35,7 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.ValueCallback;
 
+import com.evernote.client.android.helper.Cat;
 import com.evernote.edam.type.Resource;
 
 import java.io.IOException;
@@ -42,8 +43,11 @@ import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
+import java.util.Locale;
 
 public final class EvernoteUtil {
+
+    private static final Cat CAT = new Cat("EvernoteUtil");
 
     private EvernoteUtil() {
 
@@ -256,7 +260,37 @@ public final class EvernoteUtil {
         return intent;
     }
 
-    public static enum EvernoteInstallStatus {
+    /**
+     * Construct a user-agent string based on the running application and
+     * the device and operating system information. This information is
+     * included in HTTP requests made to the Evernote service and assists
+     * in measuring traffic and diagnosing problems.
+     */
+    public static String generateUserAgentString(Context ctx) {
+        String packageName = null;
+        int packageVersion = 0;
+        try {
+            packageName = ctx.getPackageName();
+            packageVersion = ctx.getPackageManager().getPackageInfo(packageName, 0).versionCode;
+
+        } catch (PackageManager.NameNotFoundException e) {
+            CAT.e(e.getMessage());
+        }
+
+        String userAgent = packageName + " Android/" + packageVersion;
+
+        Locale locale = java.util.Locale.getDefault();
+        if (locale == null) {
+            userAgent += " (" + Locale.US + ");";
+        } else {
+            userAgent += " (" + locale.toString() + "); ";
+        }
+        userAgent += "Android/" + Build.VERSION.RELEASE + "; ";
+        userAgent += Build.MODEL + "/" + Build.VERSION.SDK_INT + ";";
+        return userAgent;
+    }
+
+    public enum EvernoteInstallStatus {
         INSTALLED,
         OLD_VERSION,
         NOT_INSTALLED

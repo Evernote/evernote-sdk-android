@@ -25,6 +25,7 @@
  */
 package com.evernote.client.android;
 
+import com.evernote.client.android.asyncclient.EvernoteLinkedNotebookHelper;
 import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
@@ -53,7 +54,10 @@ import java.util.List;
  *
  *
  * @author @tylersmithnet
+ * @deprecated Use {@link EvernoteLinkedNotebookHelper} instead.
  */
+@SuppressWarnings({"deprecation", "JavaDoc", "unused"})
+@Deprecated
 public class AsyncLinkedNoteStoreClient {
   /**
    * References users main note store.
@@ -63,6 +67,7 @@ public class AsyncLinkedNoteStoreClient {
   private String mAuthToken;
   private ClientFactory mClientFactory;
 
+  @Deprecated
   AsyncLinkedNoteStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken, ClientFactory clientFactory) throws TTransportException {
     mLinkedStoreClient = new AsyncNoteStoreClient(iprot, oprot, authenticationToken);
     mMainNoteStoreClient = EvernoteSession.getInstance().getClientFactory().createNoteStoreClient();
@@ -74,22 +79,27 @@ public class AsyncLinkedNoteStoreClient {
    * Returns the {@link AsyncNoteStoreClient} object that has been instantiated to the appropriate shard.
    * @return
    */
+  @Deprecated
   public AsyncNoteStoreClient getAsyncClient() {
     return mLinkedStoreClient;
   }
 
+  @Deprecated
   AsyncNoteStoreClient getAsyncPersonalClient() {
     return mMainNoteStoreClient;
   }
 
+  @Deprecated
   String getAuthenticationToken() {
     return mAuthToken;
   }
 
+  @Deprecated
   void setAuthToken(String authenticationToken) {
     mAuthToken = authenticationToken;
   }
 
+  @Deprecated
   ClientFactory getClientFactory() {
     return mClientFactory;
   }
@@ -101,6 +111,7 @@ public class AsyncLinkedNoteStoreClient {
    * @param linkedNotebook
    * @param callback
    */
+  @Deprecated
   public void createNoteAsync(final Note note, final LinkedNotebook linkedNotebook, final OnClientCallback<Note> callback) {
     AsyncReflector.execute(this, callback, "createNote", note, linkedNotebook);
 
@@ -120,6 +131,7 @@ public class AsyncLinkedNoteStoreClient {
    * @throws com.evernote.edam.error.EDAMNotFoundException
    *
    */
+  @Deprecated
   public Note createNote(Note note, LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
     SharedNotebook sharedNotebook = getAsyncClient().getClient().getSharedNotebookByAuth(getAuthenticationToken());
     note.setNotebookGuid(sharedNotebook.getNotebookGuid());
@@ -134,6 +146,7 @@ public class AsyncLinkedNoteStoreClient {
    *
    * @param callback
    */
+  @Deprecated
   public void listNotebooksAsync(final OnClientCallback<List<LinkedNotebook>> callback) {
     AsyncReflector.execute(getAsyncPersonalClient(), callback, "listNotebooks", getAuthenticationToken());
   }
@@ -144,6 +157,7 @@ public class AsyncLinkedNoteStoreClient {
    * @see {@link com.evernote.edam.notestore.NoteStore.Client#listLinkedNotebooks(String)}
    *
    */
+  @Deprecated
   public List<LinkedNotebook> listNotebooks() throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
     return getAsyncPersonalClient().getClient().listLinkedNotebooks(getAsyncPersonalClient().getAuthenticationToken());
   }
@@ -155,6 +169,7 @@ public class AsyncLinkedNoteStoreClient {
    *
    * @param callback
    */
+  @Deprecated
   public void createNotebookAsync(Notebook notebook, OnClientCallback<LinkedNotebook> callback) {
     AsyncReflector.execute(this, callback, "createNotebook", notebook);
   }
@@ -166,6 +181,7 @@ public class AsyncLinkedNoteStoreClient {
    *
    * @return {@link LinkedNotebook} with guid from server
    */
+  @Deprecated
   public LinkedNotebook createNotebook(Notebook notebook) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
 
     Notebook originalNotebook = getAsyncClient().getClient().createNotebook(getAuthenticationToken(), notebook);
@@ -186,6 +202,7 @@ public class AsyncLinkedNoteStoreClient {
    * Asynchronous call
    * @param callback
    */
+  @Deprecated
   public void deleteNotebookAsync(LinkedNotebook linkedNotebook, OnClientCallback<Integer> callback) {
     AsyncReflector.execute(this, callback, "deleteNotebook", linkedNotebook);
   }
@@ -197,6 +214,7 @@ public class AsyncLinkedNoteStoreClient {
    *
    * @return guid of notebook deleted
    */
+  @Deprecated
   public int deleteNotebook(LinkedNotebook linkedNotebook) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
 
     SharedNotebook sharedNotebook = getAsyncClient().getClient().getSharedNotebookByAuth(getAuthenticationToken());
@@ -214,6 +232,7 @@ public class AsyncLinkedNoteStoreClient {
    * @param linkedNotebook
    * @param callback
    */
+  @Deprecated
   public void getCorrespondingNotebookAsync(LinkedNotebook linkedNotebook, OnClientCallback<Notebook> callback) {
     AsyncReflector.execute(this, callback, "getCorrespondingNotebook", linkedNotebook);
   }
@@ -225,6 +244,7 @@ public class AsyncLinkedNoteStoreClient {
    *
    * @param linkedNotebook
    */
+  @Deprecated
   public Notebook getCorrespondingNotebook(LinkedNotebook linkedNotebook) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
     SharedNotebook sharedNotebook = getAsyncClient().getClient().getSharedNotebookByAuth(getAuthenticationToken());
     return getAsyncClient().getClient().getNotebook(getAuthenticationToken(), sharedNotebook.getNotebookGuid());
@@ -238,6 +258,7 @@ public class AsyncLinkedNoteStoreClient {
    * @param linkedNotebook
    * @param callback
    */
+  @Deprecated
   public void isNotebookWritableAsync(LinkedNotebook linkedNotebook, OnClientCallback<Boolean> callback) {
     AsyncReflector.execute(this, callback, "isLinkedNotebookWritable", linkedNotebook);
   }
@@ -248,6 +269,7 @@ public class AsyncLinkedNoteStoreClient {
    *
    * @param linkedNotebook
    */
+  @Deprecated
   public boolean isNotebookWritable(LinkedNotebook linkedNotebook) throws EDAMUserException, TException, EDAMSystemException, EDAMNotFoundException {
     Notebook notebook = getCorrespondingNotebook(linkedNotebook);
     return !notebook.getRestrictions().isNoCreateNotes();
@@ -260,6 +282,7 @@ public class AsyncLinkedNoteStoreClient {
    *
    */
 
+  @Deprecated
   public void findNotesMetadataAsync(NoteFilter filter,
                                       int offset,
                                       int maxNotes,
@@ -274,6 +297,7 @@ public class AsyncLinkedNoteStoreClient {
    * @see {@link com.evernote.edam.notestore.NoteStore.Client#findNotesMetadata(String, com.evernote.edam.notestore.NoteFilter, int, int, NotesMetadataResultSpec)}
    *
    */
+  @Deprecated
   public NotesMetadataList findNotesMetadata(NoteFilter filter,
                                              int offset,
                                              int maxNotes,

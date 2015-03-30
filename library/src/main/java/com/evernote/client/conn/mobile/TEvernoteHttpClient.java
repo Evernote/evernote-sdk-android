@@ -18,6 +18,8 @@
  */
 package com.evernote.client.conn.mobile;
 
+import android.util.Log;
+
 import com.evernote.thrift.transport.TTransport;
 import com.evernote.thrift.transport.TTransportException;
 import org.apache.http.ConnectionReuseStrategy;
@@ -54,12 +56,15 @@ import java.util.concurrent.TimeUnit;
  * HTTP implementation of the TTransport interface modified by Evernote to work
  * on Android. Instead of caching in memory, large Thrift messages are cached on
  * disk before being sent to the Thrift server.
+ *
+ * @deprecated Use {@link TAndroidTransport} instead.
  */
+@SuppressWarnings({"deprecation", "unused"})
+@Deprecated
 public class TEvernoteHttpClient extends TTransport {
-  /**
-   * Keep requests in RAM if they are less than 512kb.
-   */
-  private static final int MEMORY_BUFFER_SIZE = 512 * 1024;
+
+  // TODO: revert changes, mark deprecated
+
   private URL url = null;
   private String userAgent = null;
   private final DiskBackedByteStore requestBuffer;
@@ -79,6 +84,7 @@ public class TEvernoteHttpClient extends TTransport {
    * @throws TTransportException If an error occurs creating the temporary
    *                             file that will be used to cache Thrift messages to disk before sending.
    */
+  @Deprecated
   public TEvernoteHttpClient(String url, String userAgent, File tempDir)
       throws TTransportException {
 
@@ -88,34 +94,41 @@ public class TEvernoteHttpClient extends TTransport {
     try {
       this.url = new URL(url);
       requestBuffer =
-          new DiskBackedByteStore(tempDir, "http", MEMORY_BUFFER_SIZE);
+          new DiskBackedByteStore(tempDir);
     } catch (IOException iox) {
       throw new TTransportException(iox);
     }
   }
 
+  @Deprecated
   public void setConnectTimeout(int timeout) {
     HttpConnectionParams.setConnectionTimeout(httpParameters, timeout);
   }
 
+  @Deprecated
   public void setReadTimeout(int timeout) {
     HttpConnectionParams.setSoTimeout(httpParameters, timeout);
   }
 
+  @Deprecated
   public void setCustomHeaders(Map<String, String> headers) {
     customHeaders = headers;
   }
 
+  @Deprecated
   public void setCustomHeader(String key, String value) {
     if (customHeaders == null) {
-      customHeaders = new HashMap<String, String>();
+      customHeaders = new HashMap<>();
     }
     customHeaders.put(key, value);
   }
 
+  @Deprecated
   public void open() {
+    Log.d("TAG", "");
   }
 
+  @Deprecated
   public void close() {
     if (null != inputStream) {
       try {
@@ -132,10 +145,12 @@ public class TEvernoteHttpClient extends TTransport {
     }
   }
 
+  @Deprecated
   public boolean isOpen() {
     return true;
   }
 
+  @Deprecated
   public int read(byte[] buf, int off, int len) throws TTransportException {
     if (inputStream == null) {
       throw new TTransportException("Response buffer is empty, no request.");
@@ -155,6 +170,7 @@ public class TEvernoteHttpClient extends TTransport {
   private ClientConnectionManager mConnectionManager;
   private DefaultHttpClient mHttpClient;
 
+  @Deprecated
   private DefaultHttpClient getHTTPClient() {
 
     try {
@@ -205,14 +221,20 @@ public class TEvernoteHttpClient extends TTransport {
     return mHttpClient;
   }
 
-  public void write(byte[] buf, int off, int len) {
-    requestBuffer.write(buf, off, len);
+  @Deprecated
+  public void write(byte[] buf, int off, int len) throws TTransportException {
+    try {
+      requestBuffer.write(buf, off, len);
+    } catch (IOException e) {
+      throw new TTransportException(e);
+    }
   }
 
+  @Deprecated
   public void flush() throws TTransportException {
     long timer = System.currentTimeMillis();
 
-    HttpEntity httpEntity = null;
+    HttpEntity httpEntity;
 
     // Extract request and reset buffer
     try {
@@ -226,9 +248,7 @@ public class TEvernoteHttpClient extends TTransport {
           request.addHeader(header.getKey(), header.getValue());
         }
       }
-      InputStreamEntity entity =
-          new InputStreamEntity(requestBuffer.getInputStream(), requestBuffer
-              .getSize());
+      InputStreamEntity entity = new InputStreamEntity(requestBuffer.getInputStream(), requestBuffer.getBytesWritten());
       request.setEntity(entity);
       request.addHeader("Accept", "application/x-thrift");
       request.addHeader("User-Agent", userAgent == null ? "Java/THttpClient"
@@ -237,6 +257,7 @@ public class TEvernoteHttpClient extends TTransport {
           CoreProtocolPNames.USE_EXPECT_CONTINUE, false);
 
       DefaultHttpClient dHTTP = getHTTPClient();
+      //noinspection ConstantConditions
       HttpResponse response = dHTTP.execute(request);
       httpEntity = response.getEntity();
 
@@ -250,29 +271,29 @@ public class TEvernoteHttpClient extends TTransport {
       // Read the responses
       requestBuffer.reset();
       inputStream = response.getEntity().getContent();
-    } catch (IOException iox) {
-      throw new TTransportException(iox);
     } catch (Exception ex) {
       throw new TTransportException(ex);
     } finally {
       try {
         requestBuffer.reset();
-      } catch (IOException e) {
+      } catch (IOException ignored) {
       }
       this.request = null;
     }
   }
 
+  @Deprecated
   public void cancel() {
     try {
       if (this.request != null) {
         this.request.abort();
       }
-    } catch (Exception e) {
+    } catch (Exception ignored) {
     }
     close();
   }
 
+  @Deprecated
   public void reset() {
 
   }

@@ -26,6 +26,10 @@
 package com.evernote.client.conn.mobile;
 
 
+import android.support.annotation.NonNull;
+
+import com.squareup.okhttp.internal.Util;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -36,136 +40,158 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Implements an OutputStream that stores data to a temporary file on disk.
- * Used by TAndroidHttpClient to write Thrift messages to disk before
- * POSTing them to the Thrift server.
- * <p/>
- * You should not need to interact with this class directly.
+ * Holds all the data in memory until a threshold is reached. Then it writes all the data on disk.
+ *
+ * @author rwondratschek
  */
-public class DiskBackedByteStore extends OutputStream {
+public class DiskBackedByteStore extends ByteStore {
 
-  protected File file;
+    private static final int DEFAULT_MEMORY_BUFFER_SIZE = 2 * 1024 * 1024;
 
-  /**
-   * The maximum amount of memory to use before writing to disk.
-   */
-  protected int maxMemory;
+    /**
+     * The maximum amount of memory to use before writing to disk.
+     */
+    protected final int mMaxMemory;
+    protected final File mCacheDir;
 
-  protected FileOutputStream fileoutputStream = null;
-  protected ByteArrayOutputStream byteArray = null;
-  protected FileInputStream fileInputStream = null;
-  protected OutputStream current = null;
-  protected int size = 0;
-  protected Exception exception;
-  protected File tempPath;
+    protected File mCacheFile;
 
-  /**
-   * Constructor that sets the exact name of the file to use
-   * if we have to swap data out to secondary store.
-   *
-   * @param file      The full pathname where we will swap data.
-   * @param maxMemory The size, in bytes, that we will buffer
-   *                  until we swap.
-   */
-  public DiskBackedByteStore(File file, int maxMemory) {
-    this.file = file;
-    this.maxMemory = maxMemory;
-  }
+    protected OutputStream mCurrentOutputStream;
+    protected FileOutputStream mFileOutputStream;
+    protected ByteArrayOutputStream mByteArrayOutputStream;
 
-  public DiskBackedByteStore(File parentDir, String prefix, int maxMemory)
-      throws IOException {
-    parentDir.mkdirs();
-    tempPath = parentDir;
-    this.file = makeTempFile();
-    this.maxMemory = maxMemory;
-  }
+    protected int mBytesWritten;
+    protected boolean mClosed;
 
-  protected File makeTempFile() {
-    return new File(tempPath, (Math.random() * Long.MAX_VALUE) + ".tft");
-  }
+    protected InputStream mInputStream;
 
-  @Override
-  public void write(byte[] buffer, int offset, int count) {
-    initBuffers();
-    try {
-      if (isSwapRequired(count)) {
-        swapToDisk();
-      }
-      size += count;
-      current.write(buffer, offset, count);
-    } catch (Exception e) {
-      exception = e;
+    /**
+     * @param cacheDir A directory where the temporary data is stored.
+     */
+    public DiskBackedByteStore(File cacheDir) {
+        this(cacheDir, DEFAULT_MEMORY_BUFFER_SIZE);
     }
-  }
 
-  private boolean isSwapRequired(int delta) {
-    return size + delta > maxMemory && byteArray != null;
-  }
-
-  @Override
-  public void write(int oneByte) {
-    try {
-      initBuffers();
-      if (isSwapRequired(1)) {
-        swapToDisk();
-      }
-      size++;
-      current.write(oneByte);
-    } catch (Exception e) {
-      exception = e;
+    /**
+     * @param cacheDir A directory where the temporary data is stored.
+     * @param maxMemory The threshold before the data is written to disk.
+     */
+    public DiskBackedByteStore(File cacheDir, int maxMemory) {
+        mCacheDir = cacheDir;
+        mMaxMemory = maxMemory;
     }
-  }
 
-  private void initBuffers() {
-    if (current == null) {
-      current = byteArray = new ByteArrayOutputStream();
+    @Override
+    public void write(@NonNull byte[] buffer, int offset, int count) throws IOException {
+        initBuffers();
+        swapIfNecessary(count);
+
+        mCurrentOutputStream.write(buffer, offset, count);
+        mBytesWritten += count;
     }
-  }
 
-  protected void swapToDisk() throws IOException {
-    // Swap in disk
-    fileoutputStream = new FileOutputStream(file);
-    byteArray.writeTo(fileoutputStream);
-    byteArray = null;
-    current = fileoutputStream;
-  }
+    @Override
+    public void write(int oneByte) throws IOException {
+        initBuffers();
+        swapIfNecessary(1);
 
-  public void clear() {
-    byteArray = null;
-    current = null;
-    if (fileInputStream != null) {
-      try {
-        fileInputStream.close();
-      } catch (IOException e) {
-      }
+        mCurrentOutputStream.write(oneByte);
+        mBytesWritten++;
     }
-    fileInputStream = null;
-    size = 0;
-  }
 
-  public int getSize() {
-    return size;
-  }
-
-  public InputStream getInputStream() throws IOException {
-    current.close();
-    if (byteArray != null) {
-      return new ByteArrayInputStream(byteArray.toByteArray());
-    } else {
-      return fileInputStream = new FileInputStream(file);
+    protected String generateRandomFileName() {
+        return Math.random() * Long.MAX_VALUE + ".tft";
     }
-  }
 
-  public Exception getException() {
-    return exception;
-  }
-
-  public void reset() throws IOException {
-    clear();
-    if (file.isFile()) {
-      file.delete();
+    private void initBuffers() throws IOException {
+        if (mClosed) {
+            throw new IOException("Already closed");
+        }
+        if (mByteArrayOutputStream == null) {
+            mByteArrayOutputStream = new ByteArrayOutputStream(mMaxMemory);
+        }
+        if (mCurrentOutputStream == null) {
+            mCurrentOutputStream = mByteArrayOutputStream;
+        }
     }
-    file = makeTempFile();
-    exception = null;
-  }
+
+    private void swapIfNecessary(int delta) throws IOException {
+        if (isSwapRequired(delta)) {
+            swapToDisk();
+        }
+    }
+
+    private boolean isSwapRequired(int delta) {
+        return mBytesWritten + delta > mMaxMemory;
+    }
+
+    protected void swapToDisk() throws IOException {
+        if (!mCacheDir.exists() && !mCacheDir.mkdirs()) {
+            throw new IOException("could not create cache dir");
+        }
+        if (!mCacheDir.isDirectory()) {
+            throw new IOException("cache dir is no directory");
+        }
+
+        mCacheFile = new File(mCacheDir, generateRandomFileName());
+        mFileOutputStream = new FileOutputStream(mCacheFile);
+
+        mByteArrayOutputStream.writeTo(mFileOutputStream);
+        Util.closeQuietly(mByteArrayOutputStream);
+        mByteArrayOutputStream = null;
+
+        mCurrentOutputStream = mFileOutputStream;
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (!mClosed) {
+            Util.closeQuietly(mFileOutputStream);
+            Util.closeQuietly(mByteArrayOutputStream);
+            mClosed = true;
+        }
+    }
+
+    @Override
+    public int getBytesWritten() {
+        return mBytesWritten;
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+        if (mInputStream != null) {
+            return mInputStream;
+        }
+
+        close();
+
+        if (mByteArrayOutputStream != null) {
+            mInputStream = new ByteArrayInputStream(mByteArrayOutputStream.toByteArray());
+        } else {
+            mInputStream = new FileInputStream(mCacheFile);
+        }
+
+        return mInputStream;
+    }
+
+    @Override
+    public void reset() throws IOException {
+        try {
+            close();
+            Util.closeQuietly(mInputStream);
+
+            if (mCacheFile != null && mCacheFile.isFile()) {
+                if (!mCacheFile.delete()) {
+                    throw new IOException("could not delete cache file");
+                }
+            }
+        } finally {
+            mByteArrayOutputStream = null;
+            mFileOutputStream = null;
+            mCurrentOutputStream = null;
+            mInputStream = null;
+            mBytesWritten = 0;
+            mClosed = false;
+        }
+    }
 }

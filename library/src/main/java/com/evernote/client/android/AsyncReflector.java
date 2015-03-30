@@ -12,6 +12,8 @@ import java.util.concurrent.Executors;
 /**
  * Class that uses reflection to asynchronously wrap Client methods.
  */
+@SuppressWarnings({"deprecation", "unchecked"})
+@Deprecated
 /*package*/ final class AsyncReflector {
 
   private AsyncReflector() {
@@ -21,7 +23,8 @@ import java.util.concurrent.Executors;
   /**
    * List of primitives to convert from autoboxed method calls.
    */
-  public static final Map<Class<?>, Class<?>> PRIMITIVE_MAP = new HashMap<Class<?>, Class<?>>();
+  @Deprecated
+  public static final Map<Class<?>, Class<?>> PRIMITIVE_MAP = new HashMap<>();
   static {
     PRIMITIVE_MAP.put(Boolean.class, boolean.class);
     PRIMITIVE_MAP.put(Byte.class, byte.class);
@@ -41,6 +44,7 @@ import java.util.concurrent.Executors;
   /**
    * Reflection to run Asynchronous methods.
    */
+  @Deprecated
   static <T> void execute(final Object receiver, final OnClientCallback<T> callback, final String function, final Object... args) {
     final Handler handler = new Handler(Looper.getMainLooper());
     sThreadExecutor.execute(new Runnable() {
@@ -56,7 +60,7 @@ import java.util.concurrent.Executors;
             }
           }
 
-          Method method = null;
+          Method method;
           if (receiver instanceof Class) {
             //Can receive a class if using for static methods
             method = ((Class) receiver).getMethod(function, classes);

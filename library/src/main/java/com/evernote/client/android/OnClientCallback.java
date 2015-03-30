@@ -28,15 +28,18 @@ package com.evernote.client.android;
 /**
  * This class must be implemented to use the {@link AsyncNoteStoreClient} and the {@link AsyncUserStoreClient}.
  */
+@Deprecated
 public abstract class OnClientCallback<T> {
 
   /**
    * @param data sent to callback when the async operation has completed positively
    */
+  @Deprecated
   public abstract void onSuccess(final T data);
 
   /**
    * @param exception is the error sent to the callback when the async operation has completed negatively
    */
+  @Deprecated
   public abstract void onException(final Exception exception);
 }

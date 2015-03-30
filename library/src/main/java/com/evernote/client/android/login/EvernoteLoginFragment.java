@@ -28,7 +28,6 @@ import net.vrallev.android.task.TaskResult;
  *
  * @author rwondratschek
  */
-@SuppressWarnings("UnusedDeclaration")
 public class EvernoteLoginFragment extends DialogFragment {
 
     public static final String TAG = "EvernoteDialogFragment";
@@ -47,7 +46,7 @@ public class EvernoteLoginFragment extends DialogFragment {
         T fragment;
         try {
             fragment = subClass.newInstance();
-        } catch (java.lang.InstantiationException | IllegalAccessException e) {
+        } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }
 
@@ -121,6 +120,7 @@ public class EvernoteLoginFragment extends DialogFragment {
         }
     }
 
+    @SuppressWarnings("unused")
     @TaskResult
     public final void onResult(Boolean result) {
         dismiss();
@@ -133,10 +133,11 @@ public class EvernoteLoginFragment extends DialogFragment {
         }
     }
 
-    protected void onLoginFinished(boolean success) {
+    protected void onLoginFinished(@SuppressWarnings("UnusedParameters") boolean success) {
         // override me
     }
 
+    @SuppressWarnings("UnnecessaryInterfaceModifier")
     public interface ResultCallback {
         public void onLoginFinished(boolean successful);
     }

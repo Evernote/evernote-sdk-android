@@ -28,13 +28,12 @@ package com.evernote.client.android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 
+import com.evernote.client.android.asyncclient.EvernoteClientFactory;
 import com.evernote.client.android.helper.Cat;
 import com.evernote.client.android.helper.EvernotePreconditions;
 import com.evernote.client.android.login.EvernoteLoginActivity;
@@ -42,7 +41,6 @@ import com.evernote.client.android.login.EvernoteLoginFragment;
 import com.evernote.client.oauth.EvernoteAuthToken;
 
 import java.io.File;
-import java.util.Locale;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
@@ -137,14 +135,15 @@ public final class EvernoteSession {
         return sInstance;
     }
 
+    private Context mApplicationContext;
     private String mConsumerKey;
     private String mConsumerSecret;
     private EvernoteService mEvernoteService;
-    private BootstrapManager mBootstrapManager;
-    private ClientFactory mClientFactory;
+    @SuppressWarnings("deprecation")private ClientFactory mClientFactory;
     private AuthenticationResult mAuthenticationResult;
     private boolean mSupportAppLinkedNotebooks;
     private boolean mForceAuthenticationInThirdPartyApp;
+    private EvernoteClientFactory mEvernoteClientFactory;
 
     private EvernoteSession() {
         // do nothing, builder sets up everything
@@ -153,17 +152,34 @@ public final class EvernoteSession {
     /**
      * @return the Bootstrap object to check for server host urls
      */
-    protected BootstrapManager getBootstrapSession() {
-        return mBootstrapManager;
+    protected EvernoteService getEvernoteService() {
+        return mEvernoteService;
     }
 
     /**
      * Use this to create {@link AsyncNoteStoreClient} and {@link AsyncUserStoreClient}.
+     * @deprecated Use {@link #getEvernoteClientFactory()} instead.
      */
+    @SuppressWarnings("deprecation")
+    @Deprecated
     public ClientFactory getClientFactory() {
         return mClientFactory;
     }
 
+    public synchronized EvernoteClientFactory getEvernoteClientFactory() {
+        if (mEvernoteClientFactory == null) {
+            mEvernoteClientFactory = new EvernoteClientFactory.Builder(this).build();
+        }
+        return mEvernoteClientFactory;
+    }
+
+    public synchronized void setEvernoteClientFactory(EvernoteClientFactory evernoteClientFactory) {
+        mEvernoteClientFactory = EvernotePreconditions.checkNotNull(evernoteClientFactory);
+    }
+
+    public Context getApplicationContext() {
+        return mApplicationContext;
+    }
 
     /**
      * Get the authentication token that is used to make API calls
@@ -300,36 +316,6 @@ public final class EvernoteSession {
     }
 
     /**
-     * Construct a user-agent string based on the running application and
-     * the device and operating system information. This information is
-     * included in HTTP requests made to the Evernote service and assists
-     * in measuring traffic and diagnosing problems.
-     */
-    private static String generateUserAgentString(Context ctx) {
-        String packageName = null;
-        int packageVersion = 0;
-        try {
-            packageName = ctx.getPackageName();
-            packageVersion = ctx.getPackageManager().getPackageInfo(packageName, 0).versionCode;
-
-        } catch (PackageManager.NameNotFoundException e) {
-            CAT.e(e.getMessage());
-        }
-
-        String userAgent = packageName + " Android/" + packageVersion;
-
-        Locale locale = java.util.Locale.getDefault();
-        if (locale == null) {
-            userAgent += " (" + Locale.US + ");";
-        } else {
-            userAgent += " (" + locale.toString() + "); ";
-        }
-        userAgent += "Android/" + Build.VERSION.RELEASE + "; ";
-        userAgent += Build.MODEL + "/" + Build.VERSION.SDK_INT + ";";
-        return userAgent;
-    }
-
-    /**
      * Restore an AuthenticationResult from shared preferences.
      * @return The restored AuthenticationResult, or null if the preferences
      * did not contain the required information.
@@ -350,7 +336,7 @@ public final class EvernoteSession {
      * Sandbox will return profiles referencing sandbox.evernote.com
      * Production will return evernote.com and app.yinxiang.com
      */
-    public static enum EvernoteService implements Parcelable {
+    public enum EvernoteService implements Parcelable {
         SANDBOX,
         PRODUCTION;
 
@@ -384,8 +370,12 @@ public final class EvernoteSession {
 
         private EvernoteService mEvernoteService;
         private boolean mSupportAppLinkedNotebooks;
+
+        @Deprecated
         private String mUserAgent;
+        @Deprecated
         private File mMessageCacheDir;
+
         private boolean mForceAuthenticationInThirdPartyApp;
 
         public Builder(Context context) {
@@ -393,18 +383,17 @@ public final class EvernoteSession {
                 throw new IllegalArgumentException("Null not allowed");
             }
 
-            mContext = context;
+            mContext = context.getApplicationContext();
             mSupportAppLinkedNotebooks = true;
             mEvernoteService = EvernoteService.SANDBOX;
-            mUserAgent = generateUserAgentString(context);
+            //noinspection deprecation
+            mUserAgent = EvernoteUtil.generateUserAgentString(mContext);
+            //noinspection deprecation
             mMessageCacheDir = mContext.getFilesDir();
         }
 
         public Builder setEvernoteService(EvernoteService evernoteService) {
-            if (evernoteService == null) {
-                throw new IllegalArgumentException("Null not allowed");
-            }
-            mEvernoteService = evernoteService;
+            mEvernoteService = EvernotePreconditions.checkNotNull(evernoteService);
             return this;
         }
 
@@ -418,14 +407,17 @@ public final class EvernoteSession {
             return this;
         }
 
-        /*package*/ Builder setUserAgent(String userAgent) {
+        @SuppressWarnings("deprecation")
+        @Deprecated
+        private Builder setUserAgent(String userAgent) {
             // maybe set this to public
             mUserAgent = userAgent;
             return this;
         }
 
-        /*package*/ Builder setMessageCacheDir(File messageCacheDir) {
-            // maybe set this to public
+        @SuppressWarnings("deprecation")
+        @Deprecated
+        private Builder setMessageCacheDir(File messageCacheDir) {
             mMessageCacheDir = messageCacheDir;
             return this;
         }
@@ -448,10 +440,11 @@ public final class EvernoteSession {
         }
 
         private EvernoteSession build(EvernoteSession session) {
-            session.mEvernoteService = mEvernoteService;
+            session.mApplicationContext = mContext;
             session.mSupportAppLinkedNotebooks = mSupportAppLinkedNotebooks;
+            //noinspection deprecation
             session.mClientFactory = new ClientFactory(mUserAgent, mMessageCacheDir);
-            session.mBootstrapManager = new BootstrapManager(session.mEvernoteService, session.mClientFactory);
+            session.mEvernoteService = mEvernoteService;
             session.mForceAuthenticationInThirdPartyApp = mForceAuthenticationInThirdPartyApp;
             return session;
         }

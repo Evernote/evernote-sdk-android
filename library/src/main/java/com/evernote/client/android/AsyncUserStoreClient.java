@@ -26,6 +26,7 @@
 package com.evernote.client.android;
 
 
+import com.evernote.client.android.asyncclient.EvernoteUserStoreClient;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.type.PremiumInfo;
@@ -42,18 +43,22 @@ import com.evernote.thrift.protocol.TProtocol;
  * Use these methods with a {@link OnClientCallback} to get make network requests
  *
  * @author @tylersmithnet
+ * @deprecated Use {@link EvernoteUserStoreClient} instead.
  */
-@SuppressWarnings("UnusedDeclaration")
+@SuppressWarnings({"UnusedDeclaration", "deprecation"})
+@Deprecated
 public class AsyncUserStoreClient {
 
   private final String mAuthenticationToken;
   private final UserStore.Client mClient;
 
+  @Deprecated
   AsyncUserStoreClient(TProtocol prot, String authenticationToken) {
     mClient = new UserStore.Client(prot);
     mAuthenticationToken = authenticationToken;
   }
 
+  @Deprecated
   AsyncUserStoreClient(TProtocol iprot, TProtocol oprot, String authenticationToken) {
     mClient = new UserStore.Client(iprot, oprot);
     mAuthenticationToken = authenticationToken;
@@ -63,6 +68,7 @@ public class AsyncUserStoreClient {
    * If direct access to the Note Store is needed, all of these calls are synchronous.
    * @return {@link UserStore.Client}
    */
+  @Deprecated
   public UserStore.Client getClient() {
     return mClient;
   }
@@ -70,6 +76,7 @@ public class AsyncUserStoreClient {
   /**
    * @return authToken inserted into calls
    */
+  @Deprecated
   String getAuthenticationToken() {
     return mAuthenticationToken;
   }
@@ -77,6 +84,7 @@ public class AsyncUserStoreClient {
   /**
    * Asynchronous call.
    */
+  @Deprecated
   public void isBusinessUserAsync(final OnClientCallback<Boolean> callback) {
     AsyncReflector.execute(this, callback, "isBusinessUser");
   }
@@ -86,6 +94,7 @@ public class AsyncUserStoreClient {
    *
    * @return the result of a user belonging to a business account
    */
+  @Deprecated
   public boolean isBusinessUser() throws TException, EDAMUserException, EDAMSystemException {
     return getClient().getUser(getAuthenticationToken()).getAccounting().isSetBusinessId();
   }
@@ -96,6 +105,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#checkVersion(String, short, short)
    */
+  @Deprecated
   public void checkVersion(final String clientName, final short edamVersionMajor, final short edamVersionMinor, final OnClientCallback<Boolean> callback) {
     AsyncReflector.execute(mClient, callback, "checkVersion", clientName, edamVersionMajor, edamVersionMinor);
   }
@@ -106,6 +116,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getBootstrapInfo(String)
    */
+  @Deprecated
   public void getBootstrapInfo(final String locale, final OnClientCallback<BootstrapInfo> callback) {
     AsyncReflector.execute(mClient, callback, "getBootstrapInfo", locale);
   }
@@ -116,6 +127,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#authenticate(String, String, String, String, boolean)
    */
+  @Deprecated
   public void authenticate(final String username, final String password, final String consumerKey, final String consumerSecret,
                            boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
     AsyncReflector.execute(mClient, callback, "authenticate", username, password, consumerKey, consumerSecret, supportsTwoFactor);
@@ -127,6 +139,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#authenticateLongSession(String, String, String, String, String, String, boolean)
    */
+  @Deprecated
   public void authenticateLongSession(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier,
                                       final String deviceDescription, final boolean supportsTwoFactor, final OnClientCallback<AuthenticationResult> callback) {
     AsyncReflector.execute(mClient, callback, "authenticateLongSession", username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription, supportsTwoFactor);
@@ -138,6 +151,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#authenticateToBusiness(String)
    */
+  @Deprecated
   public void authenticateToBusiness(final String authenticationToken, final OnClientCallback<AuthenticationResult> callback) {
     AsyncReflector.execute(mClient, callback, "authenticateToBusiness", authenticationToken);
   }
@@ -148,6 +162,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#refreshAuthentication(String)
    */
+  @Deprecated
   public void refreshAuthentication(final String authenticationToken, final OnClientCallback<AuthenticationResult> callback) {
     AsyncReflector.execute(mClient, callback, "refreshAuthentication", authenticationToken);
   }
@@ -158,6 +173,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getUser(String)
    */
+  @Deprecated
   public void getUser(final OnClientCallback<User> callback) {
     AsyncReflector.execute(mClient, callback, "getUser", mAuthenticationToken);
   }
@@ -168,6 +184,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getPublicUserInfo(String)
    */
+  @Deprecated
   public void getPublicUserInfo(final String username, final OnClientCallback<PublicUserInfo> callback) {
     AsyncReflector.execute(mClient, callback, "getPublicUserInfo", username);
   }
@@ -178,6 +195,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getPremiumInfo(String)
    */
+  @Deprecated
   public void getPremiumInfo(final OnClientCallback<PremiumInfo> callback) {
     AsyncReflector.execute(mClient, callback, "getPremiumInfo", mAuthenticationToken);
   }
@@ -188,6 +206,7 @@ public class AsyncUserStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see UserStore.Client#getNoteStoreUrl(String)
    */
+  @Deprecated
   public void getNoteStoreUrl(final OnClientCallback<String> callback) {
     AsyncReflector.execute(mClient, callback, "getNoteStoreUrl", mAuthenticationToken);
   }
@@ -197,6 +216,7 @@ public class AsyncUserStoreClient {
    *
    * @see UserStore.Client#revokeLongSession(String)
    */
+  @Deprecated
   public void revokeLongSession(final OnClientCallback<Void> callback) throws EDAMUserException,
       EDAMSystemException, TException {
     AsyncReflector.execute(mClient, callback, "revokeLongSession", mAuthenticationToken);
@@ -208,6 +228,7 @@ public class AsyncUserStoreClient {
    * @see UserStore.Client#completeTwoFactorAuthentication(String, String,
    *      String, String)
    */
+  @Deprecated
   public void completeTwoFactorAuthentication(final String oneTimeCode, final String deviceIdentifier,
                                               final String deviceDescription, final OnClientCallback<AuthenticationResult> callback) throws EDAMUserException,
       EDAMSystemException, TException {

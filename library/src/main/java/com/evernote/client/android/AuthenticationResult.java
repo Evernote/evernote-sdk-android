@@ -207,6 +207,16 @@ public class AuthenticationResult {
   }
 
   /**
+   * @param businessAuthData The result containing the information from the business account.
+   */
+  public void setBusinessAuthData(com.evernote.edam.userstore.AuthenticationResult businessAuthData) {
+    setBusinessAuthToken(businessAuthData.getAuthenticationToken());
+    setBusinessAuthTokenExpiration(businessAuthData.getExpiration());
+    setBusinessNoteStoreUrl(businessAuthData.getNoteStoreUrl());
+    setBusinessUser(businessAuthData.getUser());
+  }
+
+  /**
    * @return the BusinessNoteStore Authorizaton token's expiration time (epoch)
    */
   public long getBusinessAuthTokenExpiration() {

@@ -160,7 +160,9 @@ public class EvernoteOAuthActivity extends FragmentActivity {
         private void destroyWebView() {
             if (mWebView != null) {
                 ViewGroup viewGroup = (ViewGroup) mWebView.getParent();
-                viewGroup.removeView(mWebView);
+                if (viewGroup != null) {
+                    viewGroup.removeView(mWebView);
+                }
 
                 mWebView.destroy();
                 mWebView = null;
