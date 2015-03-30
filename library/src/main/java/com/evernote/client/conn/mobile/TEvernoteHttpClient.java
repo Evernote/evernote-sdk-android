@@ -59,7 +59,6 @@ import java.util.concurrent.TimeUnit;
  *
  * @deprecated Use {@link TAndroidTransport} instead.
  */
-@SuppressWarnings({"deprecation", "unused"})
 @Deprecated
 public class TEvernoteHttpClient extends TTransport {
 

@@ -30,10 +30,12 @@ import java.util.concurrent.Future;
 public class EvernoteUserStoreClient extends EvernoteAsyncClient {
 
     private final UserStore.Client mClient;
+    private final String mAuthenticationToken;
 
     /*package*/ EvernoteUserStoreClient(@NonNull UserStore.Client client, @NonNull String authenticationToken, @NonNull ExecutorService executorService) {
-        super(authenticationToken, executorService);
+        super(executorService);
         mClient = EvernotePreconditions.checkNotNull(client);
+        mAuthenticationToken = EvernotePreconditions.checkNotEmpty(authenticationToken);
     }
 
     public boolean checkVersion(String clientName, short edamVersionMajor, short edamVersionMinor) throws TException {

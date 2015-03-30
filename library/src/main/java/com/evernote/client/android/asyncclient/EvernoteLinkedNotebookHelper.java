@@ -35,11 +35,10 @@ public class EvernoteLinkedNotebookHelper extends EvernoteAsyncClient {
     /**
      * @param client The note store client referencing the linked notebook note store url.
      * @param linkedNotebook The desired linked notebook.
-     * @param sharedNotebookAuthToken The authentication token for the linked notebook.
      * @param executorService The executor running the actions in the background.
      */
-    public EvernoteLinkedNotebookHelper(@NonNull EvernoteNoteStoreClient client, @NonNull LinkedNotebook linkedNotebook, @NonNull String sharedNotebookAuthToken, @NonNull ExecutorService executorService) {
-        super(sharedNotebookAuthToken, executorService);
+    public EvernoteLinkedNotebookHelper(@NonNull EvernoteNoteStoreClient client, @NonNull LinkedNotebook linkedNotebook, @NonNull ExecutorService executorService) {
+        super(executorService);
         mClient = EvernotePreconditions.checkNotNull(client);
         mLinkedNotebook = EvernotePreconditions.checkNotNull(linkedNotebook);
     }

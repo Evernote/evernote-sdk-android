@@ -50,11 +50,13 @@ import java.util.concurrent.Future;
 @SuppressWarnings("unused")
 public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
 
-    protected final NoteStore.Client mClient;
+    private final NoteStore.Client mClient;
+    private final String mAuthenticationToken;
 
     /*package*/ EvernoteNoteStoreClient(@NonNull NoteStore.Client client, @NonNull String authenticationToken, @NonNull ExecutorService executorService) {
-        super(authenticationToken, executorService);
+        super(executorService);
         mClient = EvernotePreconditions.checkNotNull(client);
+        mAuthenticationToken = EvernotePreconditions.checkNotEmpty(authenticationToken);
     }
 
     public SyncState getSyncState() throws EDAMUserException, EDAMSystemException, TException {

@@ -2,6 +2,8 @@ package com.evernote.client.android.asyncclient;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.EvernoteUtil;
@@ -47,16 +49,19 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings("unused")
 public class EvernoteClientFactory {
 
-    private final EvernoteSession mEvernoteSession;
-    private final OkHttpClient mHttpClient;
-    private final ByteStore mByteStore;
-    private final Map<String, String> mHeaders;
-    private final ExecutorService mExecutorService;
+    protected final EvernoteSession mEvernoteSession;
+    protected final OkHttpClient mHttpClient;
+    protected final ByteStore mByteStore;
+    protected final Map<String, String> mHeaders;
+    protected final ExecutorService mExecutorService;
 
     private EvernoteUserStoreClient mUserStoreClient;
     private final Map<String, EvernoteNoteStoreClient> mNoteStoreClients;
     private final Map<String, EvernoteLinkedNotebookHelper> mLinkedNotebookHelpers;
     private EvernoteBusinessNotebookHelper mBusinessNotebookHelper;
+
+    private EvernoteHtmlHelper mHtmlHelperDefault;
+    private EvernoteHtmlHelper mHtmlHelperBusiness;
 
     private final EvernoteAsyncClient mCreateHelperClient;
 
@@ -70,7 +75,7 @@ public class EvernoteClientFactory {
         mNoteStoreClients = new HashMap<>();
         mLinkedNotebookHelpers = new HashMap<>();
 
-        mCreateHelperClient = new EvernoteAsyncClient(null, mExecutorService) {};
+        mCreateHelperClient = new EvernoteAsyncClient(mExecutorService) {};
     }
 
     /**
@@ -94,6 +99,7 @@ public class EvernoteClientFactory {
                 .toString();
 
         UserStore.Client client = new UserStore.Client(createBinaryProtocol(url));
+        //noinspection ConstantConditions
         return new EvernoteUserStoreClient(client, mEvernoteSession.getAuthToken(), mExecutorService);
     }
 
@@ -103,7 +109,7 @@ public class EvernoteClientFactory {
      * @see com.evernote.client.android.AuthenticationResult#getNoteStoreUrl()
      */
     public synchronized EvernoteNoteStoreClient getNoteStoreClient() {
-        return getNoteStoreClient(mEvernoteSession.getAuthenticationResult().getNoteStoreUrl(), mEvernoteSession.getAuthToken());
+        return getNoteStoreClient(mEvernoteSession.getAuthenticationResult().getNoteStoreUrl(), EvernotePreconditions.checkNotEmpty(mEvernoteSession.getAuthToken()));
     }
 
     /**
@@ -117,7 +123,7 @@ public class EvernoteClientFactory {
      * @see NoteStore
      * @see NoteStore.Client
      */
-    public synchronized EvernoteNoteStoreClient getNoteStoreClient(String url, String authToken) {
+    public synchronized EvernoteNoteStoreClient getNoteStoreClient(@NonNull String url, @NonNull String authToken) {
         String key = createKey(url, authToken);
         EvernoteNoteStoreClient client = mNoteStoreClients.get(key);
         if (client == null) {
@@ -141,7 +147,7 @@ public class EvernoteClientFactory {
      * @throws EDAMNotFoundException
      * @throws TException
      */
-    public synchronized EvernoteLinkedNotebookHelper getLinkedNotebookHelper(LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public synchronized EvernoteLinkedNotebookHelper getLinkedNotebookHelper(@NonNull LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
         String key = linkedNotebook.getGuid();
         EvernoteLinkedNotebookHelper notebookHelper = mLinkedNotebookHelpers.get(key);
         if (notebookHelper == null) {
@@ -155,7 +161,7 @@ public class EvernoteClientFactory {
     /**
      * @see #getLinkedNotebookHelper(LinkedNotebook)
      */
-    public Future<EvernoteLinkedNotebookHelper> getLinkedNotebookHelperAsync(final LinkedNotebook linkedNotebook, EvernoteCallback<EvernoteLinkedNotebookHelper> callback) {
+    public Future<EvernoteLinkedNotebookHelper> getLinkedNotebookHelperAsync(@NonNull final LinkedNotebook linkedNotebook, @Nullable EvernoteCallback<EvernoteLinkedNotebookHelper> callback) {
         return mCreateHelperClient.submitTask(new Callable<EvernoteLinkedNotebookHelper>() {
             @Override
             public EvernoteLinkedNotebookHelper call() throws Exception {
@@ -164,15 +170,15 @@ public class EvernoteClientFactory {
         }, callback);
     }
 
-    protected EvernoteLinkedNotebookHelper createLinkedNotebookHelper(LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    protected EvernoteLinkedNotebookHelper createLinkedNotebookHelper(@NonNull LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
         String url = linkedNotebook.getNoteStoreUrl();
 
-        EvernoteNoteStoreClient client = getNoteStoreClient(url, mEvernoteSession.getAuthToken());
+        EvernoteNoteStoreClient client = getNoteStoreClient(url, EvernotePreconditions.checkNotEmpty(mEvernoteSession.getAuthToken()));
         AuthenticationResult authenticationResult = client.authenticateToSharedNotebook(linkedNotebook.getShareKey());
 
         client = getNoteStoreClient(url, authenticationResult.getAuthenticationToken());
 
-        return new EvernoteLinkedNotebookHelper(client, linkedNotebook, authenticationResult.getAuthenticationToken(), mExecutorService);
+        return new EvernoteLinkedNotebookHelper(client, linkedNotebook, mExecutorService);
     }
 
     /**
@@ -195,7 +201,7 @@ public class EvernoteClientFactory {
     /**
      * @see #getBusinessNotebookHelper()
      */
-    public Future<EvernoteBusinessNotebookHelper> getBusinessNotebookHelperAsync(EvernoteCallback<EvernoteBusinessNotebookHelper> callback) {
+    public Future<EvernoteBusinessNotebookHelper> getBusinessNotebookHelperAsync(@Nullable EvernoteCallback<EvernoteBusinessNotebookHelper> callback) {
         return mCreateHelperClient.submitTask(new Callable<EvernoteBusinessNotebookHelper>() {
             @Override
             public EvernoteBusinessNotebookHelper call() throws Exception {
@@ -205,17 +211,54 @@ public class EvernoteClientFactory {
     }
 
     protected EvernoteBusinessNotebookHelper createBusinessNotebookHelper() throws TException, EDAMUserException, EDAMSystemException {
-        com.evernote.client.android.AuthenticationResult authResult = mEvernoteSession.getAuthenticationResult();
-
-        if (authResult.getBusinessAuthToken() == null || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
-            AuthenticationResult businessAuthResult = getUserStoreClient().authenticateToBusiness();
-            authResult.setBusinessAuthData(businessAuthResult);
-        }
+        com.evernote.client.android.AuthenticationResult authResult = authenticateToBusiness();
 
         EvernoteNoteStoreClient client = getNoteStoreClient(authResult.getBusinessNoteStoreUrl(), authResult.getBusinessAuthToken());
 
         User businessUser = authResult.getBusinessUser();
-        return new EvernoteBusinessNotebookHelper(client, authResult.getBusinessAuthToken(), mExecutorService, businessUser.getName(), businessUser.getShardId());
+        return new EvernoteBusinessNotebookHelper(client, mExecutorService, businessUser.getName(), businessUser.getShardId());
+    }
+
+    /**
+     * Use this method, if you want to download a note as HTML from a private or linked note store.
+     * For business notes use {@link #getHtmlHelperBusiness()} instead.
+     *
+     * @return An async wrapper to load a note as HTML from the Evernote service.
+     */
+    public synchronized EvernoteHtmlHelper getHtmlHelperDefault() {
+        if (mHtmlHelperDefault == null) {
+            mHtmlHelperDefault = createHtmlHelper(mEvernoteSession.getAuthToken());
+        }
+        return mHtmlHelperDefault;
+    }
+
+    /**
+     * Use this method, if you want to download a business note as HTML.
+     *
+     * @return An async wrapper to load a business note as HTML from the Evernote service.
+     */
+    public synchronized EvernoteHtmlHelper getHtmlHelperBusiness() throws TException, EDAMUserException, EDAMSystemException {
+        if (mHtmlHelperBusiness == null) {
+            com.evernote.client.android.AuthenticationResult authenticationResult = authenticateToBusiness();
+            mHtmlHelperBusiness = createHtmlHelper(authenticationResult.getBusinessAuthToken());
+        }
+        return mHtmlHelperBusiness;
+    }
+
+    /**
+     * @see #getHtmlHelperBusiness()
+     */
+    public Future<EvernoteHtmlHelper> getHtmlHelperBusinessAsync(@Nullable EvernoteCallback<EvernoteHtmlHelper> callback) {
+        return mCreateHelperClient.submitTask(new Callable<EvernoteHtmlHelper>() {
+            @Override
+            public EvernoteHtmlHelper call() throws Exception {
+                return getHtmlHelperBusiness();
+            }
+        }, callback);
+    }
+
+    protected EvernoteHtmlHelper createHtmlHelper(String authToken) {
+        return new EvernoteHtmlHelper(mHttpClient, mEvernoteSession.getAuthenticationResult().getEvernoteHost(), authToken, mExecutorService);
     }
 
     protected TBinaryProtocol createBinaryProtocol(String url) {
@@ -232,6 +275,17 @@ public class EvernoteClientFactory {
 
     protected final String createKey(String url, String authToken) {
         return url + authToken;
+    }
+
+    protected final com.evernote.client.android.AuthenticationResult authenticateToBusiness() throws TException, EDAMUserException, EDAMSystemException {
+        com.evernote.client.android.AuthenticationResult authResult = mEvernoteSession.getAuthenticationResult();
+
+        if (authResult.getBusinessAuthToken() == null || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
+            AuthenticationResult businessAuthResult = getUserStoreClient().authenticateToBusiness();
+            authResult.setBusinessAuthData(businessAuthResult);
+        }
+
+        return authResult;
     }
 
     public static class Builder {

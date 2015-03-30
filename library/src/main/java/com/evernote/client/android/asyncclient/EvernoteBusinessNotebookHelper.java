@@ -35,13 +35,12 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
 
     /**
      * @param client The note store client referencing the business note store url.
-     * @param businessAuthToken The auth token for the business note store.
      * @param executorService The executor running the actions in the background.
      * @param businessUserName The name of the business user.
      * @param businessUserShardId The shard ID of the business user.
      */
-    public EvernoteBusinessNotebookHelper(@NonNull EvernoteNoteStoreClient client, @NonNull String businessAuthToken, @NonNull ExecutorService executorService, @NonNull String businessUserName, @NonNull String businessUserShardId) {
-        super(businessAuthToken, executorService);
+    public EvernoteBusinessNotebookHelper(@NonNull EvernoteNoteStoreClient client, @NonNull ExecutorService executorService, @NonNull String businessUserName, @NonNull String businessUserShardId) {
+        super(executorService);
         mClient = EvernotePreconditions.checkNotNull(client);
         mBusinessUserName = EvernotePreconditions.checkNotEmpty(businessUserName);
         mBusinessUserShardId = EvernotePreconditions.checkNotEmpty(businessUserShardId);

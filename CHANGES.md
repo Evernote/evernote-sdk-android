@@ -5,6 +5,7 @@
 * Ease usage of NoteStore.Client
 * Make note store client creation extensible and exchangeable
 * Remove usage of deprecated default http client and switch to OkHTTP
+* Add feature to download a note as HTML instead of ENML
 
 = 1.1.2 / 2013-7-6
 

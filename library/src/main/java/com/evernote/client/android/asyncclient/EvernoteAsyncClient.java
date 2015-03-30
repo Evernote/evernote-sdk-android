@@ -21,11 +21,9 @@ public abstract class EvernoteAsyncClient {
     private static final Handler UI_HANDLER = new Handler(Looper.getMainLooper());
     private static final Thread UI_THREAD = Looper.getMainLooper().getThread();
 
-    protected final String mAuthenticationToken;
     private final ExecutorService mExecutorService;
 
-    protected EvernoteAsyncClient(@Nullable String authenticationToken, @NonNull ExecutorService executorService) {
-        mAuthenticationToken = authenticationToken;
+    protected EvernoteAsyncClient(@NonNull ExecutorService executorService) {
         mExecutorService = EvernotePreconditions.checkNotNull(executorService);
     }
 
