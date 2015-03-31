@@ -6,7 +6,7 @@ Evernote API version 1.25
 
 Overview
 --------
-This SDK wraps the [Evernote Cloud API ](http://dev.evernote.com/documentation/cloud/) and provides OAuth authentication functionality. The SDK is provided as an Android Library project that can be included in your application.
+This SDK wraps the [Evernote Cloud API ](http://dev.evernote.com/documentation/cloud/) and provides OAuth authentication functionality. The SDK is provided as an Android Library project that can be included in your application with Gradle.
 
 Prerequisites
 -------------
@@ -140,7 +140,7 @@ If you use a normal `Activity`, you should override `onActivityResult`.
 public void onActivityResult(int requestCode, int resultCode, Intent data) {
     switch (requestCode) {
         case EvernoteSession.REQUEST_CODE_LOGIN:
-            if (resultCode == Activity.RESULT_OL) {
+            if (resultCode == Activity.RESULT_OK) {
                 // handle success
             } else {
                 // handle failure
@@ -154,35 +154,35 @@ public void onActivityResult(int requestCode, int resultCode, Intent data) {
 }
 ```
 
-Use the `ClientFactory` to create Async Clients
+Use the `EvernoteClientFactory` to create async clients
 -----------------------------------------------
 
-Calling `EvernoteSession.getClientFactory()` will give you access to `createNoteStore()`, `createUserStore()`, and `createBusinessNoteStore()`. These objects return Asynchronously wrapped `Client` objects that allow you to interact with the Evernote API over Thrift using a callback interface `OnClickCallback<T>`.
+Calling `EvernoteSession.getEvernoteClientFactory()` will give you access to async wrappers around `NoteStore.Client` or `UserStore.Client`. Browse the API JavaDocs at http://dev.evernote.com/documentation/reference/javadoc/
 
-If the underlying `NoteStore.Client` or `UserStore.Client` object is needed, access via the `getClient()` method. Browse the API JavaDocs at http://dev.evernote.com/documentation/reference/javadoc/
+The `EvernoteClientFactory` also creates multiple helper classes, e.g. `EvernoteHtmlHelper` to download a note as HTML.
 
 
-### Create an `AsyncNoteStore` to access primary methods for personal note data
+### Create an `EvernoteNoteStoreClient` to access primary methods for personal note data
 ```java
-mEvernoteSession.getClientFactory().createNoteStore();
+mEvernoteSession.getEvernoteClientFactory().getNoteStoreClient();
 ```
 
 
-### Create an `AsyncUserStore` to access User related methods
+### Create an `EvernoteUserStoreClient` to access User related methods
 ```java
-mEvernoteSession.getClientFactory().createUserStore();
+mEvernoteSession.getEvernoteClientFactory().getUserStoreClient();
 ```
 
 
-### Create an `AsyncBusinessNoteStoreClient` to access Business Notebooks
+### Create an `EvernoteBusinessNotebookHelper` to access Business Notebooks
 ```java
-mEvernoteSession.getClientFactory().createBusinessNoteStore();
+mEvernoteSession.getEvernoteClientFactory().getBusinessNotebookHelper();
 ```
 
 
-### Create an `AsyncLinkedNoteStoreClient` to access shared notebooks
+### Create an `EvernoteLinkedNotebookHelper` to access shared notebooks
 ```java
-mEvernoteSession.getClientFactory().createLinkedNoteStore(linkedNotebook);
+mEvernoteSession.getEvernoteClientFactory().getLinkedNotebookHelper(linkedNotebook);
 ```
 
 
@@ -191,94 +191,102 @@ Using the `AsyncNoteStoreClient` to make asynchronous API calls
 
 ### Getting list of notebooks asynchronously
 ```java
-public void listNotebooks() throws TTransportException {
-  if (mEvernoteSession.isLoggedIn()) {
-    mEvernoteSession.getClientFactory().createNoteStoreClient().listNotebooks(new OnClientCallback<List<Notebook>>() {
-      @Override
-      public void onSuccess(final List<Notebook> notebooks) {
-        List<String> namesList = new ArrayList<String>(notebooks.size());
-        for (Notebook notebook : notebooks) {
-          namesList.add(notebook.getName());
+if (!mEvernoteSession.isLoggedIn()) {
+    return;
+}
+
+EvernoteNoteStoreClient noteStoreClient = mEvernoteSession.getEvernoteClientFactory().getNoteStoreClient();
+noteStoreClient.listNotebooksAsync(new EvernoteCallback<List<Notebook>>() {
+    @Override
+    public void onSuccess(List<Notebook> result) {
+        List<String> namesList = new ArrayList<>(result.size());
+        for (Notebook notebook : result) {
+            namesList.add(notebook.getName());
         }
         String notebookNames = TextUtils.join(", ", namesList);
         Toast.makeText(getApplicationContext(), notebookNames + " notebooks have been retrieved", Toast.LENGTH_LONG).show();
-      }
+    }
 
-      @Override
-      public void onException(Exception exception) {
+    @Override
+    public void onException(Exception exception) {
         Log.e(LOGTAG, "Error retrieving notebooks", exception);
-      }
-    });
-  }
-}
+    }
+});
 ```
 
 ### Creating a note asynchronously
 ```java
-public void createNote(String title, String content) throws TTransportException {
-  if (mEvernoteSession.isLoggedIn()) {
-    Note note = new Note();
-    note.setTitle(title);
-    note.setContent(EvernoteUtil.NOTE_PREFIX + content + EvernoteUtil.NOTE_SUFFIX);
-    mEvernoteSession.getClientFactory().createNoteStoreClient().createNote(note, new OnClientCallback<Note>() {
-      @Override
-      public void onSuccess(final Note data) {
-        Toast.makeText(getApplicationContext(), data.getTitle() + " has been created", Toast.LENGTH_LONG).show();
-      }
-
-      @Override
-      public void onException(Exception exception) {
-        Log.e(LOGTAG, "Error creating note", exception);
-      }
-    });
-  }
+if (!mEvernoteSession.isLoggedIn()) {
+    return;
 }
+
+EvernoteNoteStoreClient noteStoreClient = mEvernoteSession.getEvernoteClientFactory().getNoteStoreClient();
+
+Note note = new Note();
+note.setTitle("My title");
+note.setContent(EvernoteUtil.NOTE_PREFIX + "My content" + EvernoteUtil.NOTE_SUFFIX);
+
+noteStoreClient.createNoteAsync(note, new EvernoteCallback<Note>() {
+    @Override
+    public void onSuccess(Note result) {
+        Toast.makeText(getApplicationContext(), result.getTitle() + " has been created", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onException(Exception exception) {
+        Log.e(LOGTAG, "Error creating note", exception);
+    }
+});
 ```
 
-### Using the `AsyncBusinessNoteStoreClient` to Access Evernote Business data
+### Using the `EvernoteBusinessNotebookHelper` to Access Evernote Business data
 
 1. Check if user is member of a business
-2. Create `AsyncBusinessNoteStore`
+2. Create `EvernoteBusinessNotebookHelper`
 3. Call synchronous methods from a background thread or call async methods from UI thread
 
-This notestore is not long lived, the Business authentication token expires frequently and is refreshed if needed in the `createBusinessNoteStore()` method
+This note store is not long lived, the Business authentication token expires frequently and is refreshed if needed in the `getBusinessNotebookHelper()` method.
 
 Example using the synchronous business methods inside a background thread to create a note in a business account
 
 ```java
-new Thread(new Runnable() {
-  @Override
-  public void run() {
-    try {
-      // Is the User member of a business
-      if(mEvernoteSession.getClientFactory().createUserStoreClient().isBusinessUser()) {
-        //Create an AsyncBusinessNoteStoreClient, gets valid auth token
-        AsyncBusinessNoteStoreClient client = mEvernoteSession.getClientFactory().createBusinessNoteStoreClient();
-        List<LinkedNotebook> notebooks = client.listNotebooks();
-        //If the user has any business notebooks
-        if(notebooks.size() > 0) {
-          //Create a note in the first one
-          Note note = new Note();
-          note.setTitle("New Note");
-          note.setContent(EvernoteUtil.NOTE_PREFIX + "Content of Note" + EvernoteUtil.NOTE_SUFFIX);
-          final Note createdNote = client.createNote(note, notebooks.get(0));
-          //Update user on UI thread
-          runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-              Toast.makeText(getApplicationContext(), createdNote.getTitle() + " has been created.", Toast.LENGTH_LONG).show();
+new Thread() {
+    @Override
+    public void run() {
+        try {
+            if (!mEvernoteSession.getEvernoteClientFactory().getUserStoreClient().isBusinessUser()) {
+                Log.d(LOGTAG, "Not a business User");
+                return;
             }
-          });
 
+            EvernoteBusinessNotebookHelper businessNotebookHelper = mEvernoteSession.getEvernoteClientFactory().getBusinessNotebookHelper();
+            List<LinkedNotebook> businessNotebooks = businessNotebookHelper.listBusinessNotebooks(mEvernoteSession);
+            if (businessNotebooks.isEmpty()) {
+                Log.d(LOGTAG, "No business notebooks found");
+            }
+
+            LinkedNotebook linkedNotebook = businessNotebooks.get(0);
+
+            Note note = new Note();
+            note.setTitle("My title");
+            note.setContent(EvernoteUtil.NOTE_PREFIX + "My content" + EvernoteUtil.NOTE_SUFFIX);
+
+            EvernoteLinkedNotebookHelper linkedNotebookHelper = mEvernoteSession.getEvernoteClientFactory().getLinkedNotebookHelper(linkedNotebook);
+            final Note createdNote = linkedNotebookHelper.createNoteInLinkedNotebook(note);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), createdNote.getTitle() + " has been created.", Toast.LENGTH_LONG).show();
+                }
+            });
+
+        } catch (TException | EDAMUserException | EDAMSystemException | EDAMNotFoundException e) {
+            e.printStackTrace();
         }
-      } else {
-        Log.d(LOGTAG, "Not a business User");
-      }
-    } catch(Exception exception) {
-      Log.e(LOGTAG, "Error received::", exception);
     }
-  }
-}).start();
+}.start();
+
 ```
 
 License

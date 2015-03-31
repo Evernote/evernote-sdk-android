@@ -132,7 +132,7 @@ import java.util.Locale;
     for (String url : mBootstrapServerUrls) {
       i++;
       try {
-        EvernoteUserStoreClient userStoreClient = mEvernoteSession.getEvernoteClientFactory().getUserStoreClient();
+        EvernoteUserStoreClient userStoreClient = mEvernoteSession.getEvernoteClientFactory().getUserStoreClient(getUserStoreUrl(url), null);
 
         if (!userStoreClient.checkVersion(EvernoteUtil.generateUserAgentString(mEvernoteSession.getApplicationContext()),
                 com.evernote.edam.userstore.Constants.EDAM_VERSION_MAJOR,
@@ -171,7 +171,7 @@ import java.util.Locale;
         initializeUserStoreAndCheckVersion();
       }
 
-      bsInfo = mEvernoteSession.getEvernoteClientFactory().getUserStoreClient().getBootstrapInfo(mLocale.toString());
+      bsInfo = mEvernoteSession.getEvernoteClientFactory().getUserStoreClient(getUserStoreUrl(mBootstrapServerUsed), null).getBootstrapInfo(mLocale.toString());
       printBootstrapInfo(bsInfo);
 
     } catch (TException e) {
@@ -225,5 +225,9 @@ import java.util.Locale;
     public ClientUnsupportedException(String version) {
       super("Client version " + version + " not supported.");
     }
+  }
+
+  private String getUserStoreUrl(String bootstrapServer) {
+    return bootstrapServer + "/edam/user";
   }
 }

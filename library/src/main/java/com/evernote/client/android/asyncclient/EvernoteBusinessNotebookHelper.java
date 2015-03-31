@@ -84,7 +84,7 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
 
         Iterator<LinkedNotebook> iterator = businessNotebooks.iterator();
         while (iterator.hasNext()) {
-            if (!iterator.next().isSetBusinessId()) {
+            if (!isBusinessNotebook(iterator.next())) {
                 iterator.remove();
             }
         }
@@ -157,5 +157,12 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
                 return createBusinessNotebook(notebook, defaultClient);
             }
         }, callback);
+    }
+
+    /**
+     * @return {@code true} if this linked notebook has a business ID.
+     */
+    public static boolean isBusinessNotebook(LinkedNotebook linkedNotebook) {
+        return linkedNotebook.isSetBusinessId();
     }
 }

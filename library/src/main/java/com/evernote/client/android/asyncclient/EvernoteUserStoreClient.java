@@ -1,6 +1,7 @@
 package com.evernote.client.android.asyncclient;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.evernote.client.android.helper.EvernotePreconditions;
 import com.evernote.edam.error.EDAMNotFoundException;
@@ -32,10 +33,10 @@ public class EvernoteUserStoreClient extends EvernoteAsyncClient {
     private final UserStore.Client mClient;
     private final String mAuthenticationToken;
 
-    /*package*/ EvernoteUserStoreClient(@NonNull UserStore.Client client, @NonNull String authenticationToken, @NonNull ExecutorService executorService) {
+    /*package*/ EvernoteUserStoreClient(@NonNull UserStore.Client client, @Nullable String authenticationToken, @NonNull ExecutorService executorService) {
         super(executorService);
         mClient = EvernotePreconditions.checkNotNull(client);
-        mAuthenticationToken = EvernotePreconditions.checkNotEmpty(authenticationToken);
+        mAuthenticationToken = authenticationToken;
     }
 
     public boolean checkVersion(String clientName, short edamVersionMajor, short edamVersionMinor) throws TException {
@@ -191,6 +192,19 @@ public class EvernoteUserStoreClient extends EvernoteAsyncClient {
             @Override
             public String call() throws Exception {
                 return getNoteStoreUrl();
+            }
+        }, callback);
+    }
+
+    public boolean isBusinessUser() throws TException, EDAMUserException, EDAMSystemException {
+        return getUser().getAccounting().isSetBusinessId();
+    }
+
+    public Future<Boolean> isBusinessUserAsync(EvernoteCallback<Boolean> callback) {
+        return submitTask(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return isBusinessUser();
             }
         }, callback);
     }

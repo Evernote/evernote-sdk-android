@@ -6,6 +6,7 @@
 * Make note store client creation extensible and exchangeable
 * Remove usage of deprecated default http client and switch to OkHTTP
 * Add feature to download a note as HTML instead of ENML
+* Add helper method to search notes in multiple note stores.
 
 = 1.1.2 / 2013-7-6
 

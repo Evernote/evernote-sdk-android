@@ -55,13 +55,15 @@ public class EvernoteClientFactory {
     protected final Map<String, String> mHeaders;
     protected final ExecutorService mExecutorService;
 
-    private EvernoteUserStoreClient mUserStoreClient;
+    private final Map<String, EvernoteUserStoreClient> mUserStoreClients;
     private final Map<String, EvernoteNoteStoreClient> mNoteStoreClients;
     private final Map<String, EvernoteLinkedNotebookHelper> mLinkedNotebookHelpers;
     private EvernoteBusinessNotebookHelper mBusinessNotebookHelper;
 
     private EvernoteHtmlHelper mHtmlHelperDefault;
     private EvernoteHtmlHelper mHtmlHelperBusiness;
+
+    private EvernoteSearchHelper mEvernoteSearchHelper;
 
     private final EvernoteAsyncClient mCreateHelperClient;
 
@@ -72,6 +74,7 @@ public class EvernoteClientFactory {
         mHeaders = headers;
         mExecutorService = EvernotePreconditions.checkNotNull(executorService);
 
+        mUserStoreClients = new HashMap<>();
         mNoteStoreClients = new HashMap<>();
         mLinkedNotebookHelpers = new HashMap<>();
 
@@ -79,18 +82,13 @@ public class EvernoteClientFactory {
     }
 
     /**
-     * @return An async wrapper for {@link UserStore.Client}.
+     * @return The default client for this session. It references the signed in user's user store.
      * @see UserStore
      * @see UserStore.Client
      */
     public synchronized EvernoteUserStoreClient getUserStoreClient() {
-        if (mUserStoreClient == null) {
-            mUserStoreClient = createUserStoreClient();
-        }
-        return mUserStoreClient;
-    }
+        checkLoggedIn();
 
-    protected EvernoteUserStoreClient createUserStoreClient() {
         String url = new Uri.Builder()
                 .scheme("https")
                 .authority(mEvernoteSession.getAuthenticationResult().getEvernoteHost())
@@ -98,9 +96,28 @@ public class EvernoteClientFactory {
                 .build()
                 .toString();
 
+        return getUserStoreClient(url, mEvernoteSession.getAuthToken());
+    }
+
+    /**
+     * @return An async wrapper for {@link UserStore.Client} with this specific url and authentication
+     * token combination.
+     * @see UserStore
+     * @see UserStore.Client
+     */
+    public synchronized EvernoteUserStoreClient getUserStoreClient(@NonNull String url, @Nullable String authToken) {
+        String key = createKey(url, authToken);
+        EvernoteUserStoreClient userStoreClient = mUserStoreClients.get(key);
+        if (userStoreClient == null) {
+            userStoreClient = createUserStoreClient(url, authToken);
+            mUserStoreClients.put(key, userStoreClient);
+        }
+        return userStoreClient;
+    }
+
+    protected EvernoteUserStoreClient createUserStoreClient(String url, String authToken) {
         UserStore.Client client = new UserStore.Client(createBinaryProtocol(url));
-        //noinspection ConstantConditions
-        return new EvernoteUserStoreClient(client, mEvernoteSession.getAuthToken(), mExecutorService);
+        return new EvernoteUserStoreClient(client,authToken , mExecutorService);
     }
 
     /**
@@ -109,6 +126,8 @@ public class EvernoteClientFactory {
      * @see com.evernote.client.android.AuthenticationResult#getNoteStoreUrl()
      */
     public synchronized EvernoteNoteStoreClient getNoteStoreClient() {
+        checkLoggedIn();
+
         return getNoteStoreClient(mEvernoteSession.getAuthenticationResult().getNoteStoreUrl(), EvernotePreconditions.checkNotEmpty(mEvernoteSession.getAuthToken()));
     }
 
@@ -192,7 +211,7 @@ public class EvernoteClientFactory {
      * @throws TException
      */
     public synchronized EvernoteBusinessNotebookHelper getBusinessNotebookHelper() throws TException, EDAMUserException, EDAMSystemException {
-        if (mBusinessNotebookHelper == null) {
+        if (mBusinessNotebookHelper == null || isBusinessAuthExpired()) {
             mBusinessNotebookHelper = createBusinessNotebookHelper();
         }
         return mBusinessNotebookHelper;
@@ -226,6 +245,8 @@ public class EvernoteClientFactory {
      * @return An async wrapper to load a note as HTML from the Evernote service.
      */
     public synchronized EvernoteHtmlHelper getHtmlHelperDefault() {
+        checkLoggedIn();
+
         if (mHtmlHelperDefault == null) {
             mHtmlHelperDefault = createHtmlHelper(mEvernoteSession.getAuthToken());
         }
@@ -261,6 +282,22 @@ public class EvernoteClientFactory {
         return new EvernoteHtmlHelper(mHttpClient, mEvernoteSession.getAuthenticationResult().getEvernoteHost(), authToken, mExecutorService);
     }
 
+    /**
+     * @return An async wrapper to search notes in multiple note stores.
+     */
+    public EvernoteSearchHelper getEvernoteSearchHelper() {
+        checkLoggedIn();
+
+        if (mEvernoteSearchHelper == null) {
+            mEvernoteSearchHelper = createEvernoteSearchHelper();
+        }
+        return mEvernoteSearchHelper;
+    }
+
+    protected EvernoteSearchHelper createEvernoteSearchHelper() {
+        return new EvernoteSearchHelper(mEvernoteSession, mExecutorService);
+    }
+
     protected TBinaryProtocol createBinaryProtocol(String url) {
         return new TBinaryProtocol(new TAndroidTransport(mHttpClient, mByteStore, url, mHeaders));
     }
@@ -274,18 +311,37 @@ public class EvernoteClientFactory {
     }
 
     protected final String createKey(String url, String authToken) {
-        return url + authToken;
+        if (url == null && authToken == null) {
+            throw new IllegalArgumentException();
+        } else if (url == null) {
+            return authToken;
+        } else if (authToken == null) {
+            return url;
+        } else {
+            return url + authToken;
+        }
     }
 
     protected final com.evernote.client.android.AuthenticationResult authenticateToBusiness() throws TException, EDAMUserException, EDAMSystemException {
         com.evernote.client.android.AuthenticationResult authResult = mEvernoteSession.getAuthenticationResult();
 
-        if (authResult.getBusinessAuthToken() == null || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
+        if (isBusinessAuthExpired()) {
             AuthenticationResult businessAuthResult = getUserStoreClient().authenticateToBusiness();
             authResult.setBusinessAuthData(businessAuthResult);
         }
 
         return authResult;
+    }
+
+    protected final boolean isBusinessAuthExpired() {
+        com.evernote.client.android.AuthenticationResult authResult = mEvernoteSession.getAuthenticationResult();
+        return authResult.getBusinessAuthToken() == null || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis();
+    }
+
+    protected void checkLoggedIn() {
+        if (!mEvernoteSession.isLoggedIn()) {
+            throw new IllegalStateException("user not logged in");
+        }
     }
 
     public static class Builder {
