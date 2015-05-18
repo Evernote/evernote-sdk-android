@@ -6,10 +6,10 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
-        applicationId "com.evernote.android.sample"
+        applicationId "com.evernote.android.demo"
 
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.compileSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
 
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
@@ -35,4 +35,5 @@ android {
 
 dependencies {
     compile project(':library')
+    compile 'com.android.support:recyclerview-v7:22.1.1'
 }
