@@ -12,48 +12,19 @@ Prerequisites
 -------------
 In order to use the code in this SDK, you need to obtain an API key from http://dev.evernote.com/documentation/cloud. You'll also find full API documentation on that page.
 
-In order to run the sample code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action
+In order to run the demo code, you need a user account on the sandbox service where you will do your development. Sign up for an account at https://sandbox.evernote.com/Registration.action
 
 The instructions below assume you have the latest [Android SDK](http://developer.android.com/sdk/index.html).
 
 
-Sample App
-----------
-The sample application 'Evernote SDK Demo' demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. The sample code provides mutliple activities that show notebook listing, note creation, and resource creation in two scenarios: A plain text note creator and an image saver.
+Download
+--------
 
-### Running the sample app from Android Studio
-To build and run the sample project from Android Studio:
-
-1. Open Android Studio
-2. Choose Import Non-Android Studio project
-3. Select the SDK root directory (the directory containing this README) and click OK
-4. Add your Evernote API consumer key and secret (see below)
-
-##### Adding Evernote API consumer key and secret
-You have two different options to add your consumer key and secret.
-
-###### gradle.properties file (preferred)
-
-1. Open the folder `.gradle` in your user's home directory. 
-2. Open or create a file called `gradle.properties`
-3. Add a line `EVERNOTE_CONSUMER_KEY=Your Consumer Key`
-4. Add a line `EVERNOTE_CONSUMER_SECRET=Your Consumer Secret`
-
-###### In code
-
-1. Open the class `com.evernote.android.sample.ParentActivity.java`
-2. At the top of `ParentActivity.java`, fill in your Evernote API consumer key and secret.
-
-Using the SDK in your app
--------------------------
-
-### Using Gradle (work in progress)
-
-Add the Evernote SDK for Android as a dependency in your build.gradle file.
+Add the library as a dependency in your build.gradle file.
 
 ```groovy
 dependencies {
-    compile 'com.evernote:android-sdk:1.1.3'
+    compile 'com.evernote:android-sdk:2.0.0'
 }
 ```
 
@@ -66,23 +37,56 @@ maven {
 }
 ```
 
-Add the snapshot depdendency. 
+Add the snapshot depdendency.
 ```groovy
 dependencies {
-    compile 'com.evernote:android-sdk:1.1.3-SNAPSHOT'
+    compile 'com.evernote:android-sdk:2.0.0-SNAPSHOT'
 }
 ```
 
-### Modify your `AndroidManifest.xml`
+Demo App
+--------
 
-The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's `AndroidManifest.xml`. Simply copy and paste the following snippet into your `AndroidManifest.xml` within the application section:
+The demo application 'Evernote SDK Demo' demonstrates how to use the Evernote SDK for Android to authentication to the Evernote service using OAuth, then access the user's Evernote account. The demo code provides multiple activities that show notebook listing, note creation, and resource creation in two scenarios: A plain text note creator and an image saver.
+
+#### Running the demo app from Android Studio
+To build and run the demo project from Android Studio:
+
+1. Open Android Studio
+2. Choose Import Non-Android Studio project
+3. Select the SDK root directory (the directory containing this README) and click OK
+4. Add your Evernote API consumer key and secret (see below)
+
+##### Adding Evernote API consumer key and secret
+You have two different options to add your consumer key and secret.
+
+###### gradle.properties file (preferred)
+
+1. Open the folder `~/.gradle` in your user's home directory.
+2. Open or create a file called `gradle.properties`
+3. Add a line `EVERNOTE_CONSUMER_KEY=Your Consumer Key`
+4. Add a line `EVERNOTE_CONSUMER_SECRET=Your Consumer Secret`
+
+###### In code
+
+1. Open the class `com.evernote.android.demo.DemoApp.java`
+2. At the top of `DemoApp.java`, fill in your Evernote API consumer key and secret.
+
+Usage SDK
+---------
+
+#### Modify your `AndroidManifest.xml`
+
+The SDK's OAuth functionality is implemented as an Android Activity that must be declared in your app's `AndroidManifest.xml`.
+
+Starting with Android Gradle plugin version 1.0.0 the necessary activities are merged in your app's `AndroidManifest.xml` file and you don't need to do anything. Otherwise simply copy and paste the following snippet into your `AndroidManifest.xml` within the application section:
 
 ```xml
 <activity android:name="com.evernote.client.android.EvernoteOAuthActivity" />
 <activity android:name="com.evernote.client.android.login.EvernoteLoginActivity"/>
 ```
 
-### Set up an `EvernoteSession`
+#### Set up an `EvernoteSession`
 
 Define your app credentials (key, secret, and host).  See http://dev.evernote.com/documentation/cloud/
 
@@ -102,9 +106,9 @@ mEvernoteSession = new EvernoteSession.Builder(this)
     .asSingleton();
 ```
 
-### Give the user a way to initiate authentication
+#### Give the user a way to initiate authentication
 
-In our sample app, we have a "Sign in to Evernote" button that initiates the authentication process. You might choose to do something similar, or you might simply initiate authentication the first time that the user tries to access Evernote-related functionality.
+In our demo app, we have a "Login" button that initiates the authentication process. You might choose to do something similar, or you might simply initiate authentication the first time that the user tries to access Evernote-related functionality.
 
 The recommended approach is to use `FragmentActivity`s. Then the authentication process opens a dialog and no extra `Activity`. But normal `Activity`s are supported as well. 
 
@@ -116,9 +120,9 @@ mEvernoteSession.authenticate(this);
 
 The Activity that completes the OAuth authentication automatically determines if the User is on the Evernote service or the Yinxiang service and configures the end points automatically.
 
-### Complete authentication in `onActivityResult`
+#### Complete authentication
 
-You can check whether authentication was successful by watching for the result in your `Activity`. If you use a `FragmentActivity`, then you should implement the `EvernoteLoginFragment.ResultCallback` interface.
+If you use a `FragmentActivity`, you should implement the `EvernoteLoginFragment.ResultCallback` interface.
 
 
 ```java
@@ -154,42 +158,34 @@ public void onActivityResult(int requestCode, int resultCode, Intent data) {
 }
 ```
 
-Use the `EvernoteClientFactory` to create async clients
------------------------------------------------
+Snippets
+--------
 
 Calling `EvernoteSession.getEvernoteClientFactory()` will give you access to async wrappers around `NoteStore.Client` or `UserStore.Client`. Browse the API JavaDocs at http://dev.evernote.com/documentation/reference/javadoc/
 
 The `EvernoteClientFactory` also creates multiple helper classes, e.g. `EvernoteHtmlHelper` to download a note as HTML.
 
-
-### Create an `EvernoteNoteStoreClient` to access primary methods for personal note data
+Create an `EvernoteNoteStoreClient` to access primary methods for personal note data
 ```java
 mEvernoteSession.getEvernoteClientFactory().getNoteStoreClient();
 ```
 
-
-### Create an `EvernoteUserStoreClient` to access User related methods
+Create an `EvernoteUserStoreClient` to access User related methods
 ```java
 mEvernoteSession.getEvernoteClientFactory().getUserStoreClient();
 ```
 
-
-### Create an `EvernoteBusinessNotebookHelper` to access Business Notebooks
+Create an `EvernoteBusinessNotebookHelper` to access Business Notebooks
 ```java
 mEvernoteSession.getEvernoteClientFactory().getBusinessNotebookHelper();
 ```
 
-
-### Create an `EvernoteLinkedNotebookHelper` to access shared notebooks
+Create an `EvernoteLinkedNotebookHelper` to access shared notebooks
 ```java
 mEvernoteSession.getEvernoteClientFactory().getLinkedNotebookHelper(linkedNotebook);
 ```
 
-
-Using the `AsyncNoteStoreClient` to make asynchronous API calls
----------------------------------------------------------------
-
-### Getting list of notebooks asynchronously
+###### Getting list of notebooks asynchronously
 ```java
 if (!mEvernoteSession.isLoggedIn()) {
     return;
@@ -214,7 +210,7 @@ noteStoreClient.listNotebooksAsync(new EvernoteCallback<List<Notebook>>() {
 });
 ```
 
-### Creating a note asynchronously
+###### Creating a note asynchronously
 ```java
 if (!mEvernoteSession.isLoggedIn()) {
     return;
@@ -239,7 +235,7 @@ noteStoreClient.createNoteAsync(note, new EvernoteCallback<Note>() {
 });
 ```
 
-### Using the `EvernoteBusinessNotebookHelper` to Access Evernote Business data
+###### Using the `EvernoteBusinessNotebookHelper` to Access Evernote Business data
 
 1. Check if user is member of a business
 2. Create `EvernoteBusinessNotebookHelper`
