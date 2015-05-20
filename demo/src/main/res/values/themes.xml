@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.Demo" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimaryDark">@color/tb_dark_green</item>
+        <item name="toolbarStyle">@style/ToolbarStyle</item>
+    </style>
+
+    <style name="Theme.Demo.Translucent" parent="Theme.Demo">
+        <item name="toolbarStyle">@style/ToolbarStyle.Trans</item>
+    </style>
+</resources>

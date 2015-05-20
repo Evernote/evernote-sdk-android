@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/bg_nav_header"
+              android:clickable="true"
+              android:orientation="vertical"
+              android:paddingTop="@dimen/status_bar_padding">
+
+    <TextView
+        android:id="@+id/textView_user_name"
+        style="@style/TextAppearance.AppCompat.Large.Inverse"
+        android:layout_width="match_parent"
+        android:layout_height="78dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginStart="24dp"
+        android:gravity="center_vertical"
+        tools:text="User name"/>
+
+</LinearLayout>

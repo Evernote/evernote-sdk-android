@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button
+    android:id="@+id/fab"
+    style="?android:attr/buttonStyleSmall"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/fab_size"
+    android:layout_height="@dimen/fab_size"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentRight="true"
+    android:layout_gravity="end|bottom"
+    android:layout_margin="20dp"
+    android:background="@drawable/bg_fab"
+    android:fontFamily="sans-serif-light"
+    android:paddingBottom="16dp"
+    android:stateListAnimator="@anim/fab"
+    android:text="+"
+    android:textColor="@android:color/white"
+    android:textSize="40sp"
+    tools:ignore="HardcodedText,UnusedAttribute"/>

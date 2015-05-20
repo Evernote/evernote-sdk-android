@@ -5,4 +5,15 @@
         <item>@string/esdk__simple_note</item>
         <item>@string/esdk__search_notes</item>
     </string-array>
+
+    <string-array name="nav_items">
+        <item>@string/notes</item>
+        <item>@string/notebooks</item>
+    </string-array>
+
+    <string-array name="notes_context_menu">
+        <item>@string/share_public_link</item>
+        <item>@string/raw_content</item>
+        <item>@string/delete</item>
+    </string-array>
 </resources>

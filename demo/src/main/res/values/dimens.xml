@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="action_bar_title_text_size">18dp</dimen>
+    <dimen name="status_bar_padding">0dp</dimen>
+
+    <dimen name="fab_size">56dp</dimen>
+</resources>

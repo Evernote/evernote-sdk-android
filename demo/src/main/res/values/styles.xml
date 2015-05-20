@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="ToolbarStyle" parent="Widget.AppCompat.Toolbar">
+        <item name="android:background">@color/tb_bg</item>
+        <item name="android:elevation" tools:ignore="NewApi">2dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:minHeight">?attr/actionBarSize</item>
+    </style>
+
+    <style name="ToolbarStyle.Trans">
+        <item name="android:paddingTop">@dimen/status_bar_padding</item>
+    </style>
+
+    <style name="GreenToolbarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:textColorPrimary">@color/tb_dark_green</item>
+        <item name="android:textColorSecondary">@color/tb_action_mode_gray</item>
+        <item name="actionModeStyle">@style/ActionModeGray</item>
+        <item name="actionModeBackground">@color/tb_dark_green</item>
+        <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="actionMenuTextColor">@color/tb_dark_green</item>
+        <item name="drawerArrowStyle">@style/Widget.AppCompat.DrawerArrowToggle</item>
+    </style>
+
+    <style name="ActionModeGray" parent="Widget.AppCompat.ActionMode">
+        <item name="background">@color/tb_action_mode_gray</item>
+        <item name="backgroundSplit">@color/tb_action_mode_gray</item>
+        <item name="titleTextStyle">@style/ActionModeTitleDarkGreen</item>
+        <!--<item name="android:subtitleTextStyle">@android:style/TextAppearance.Widget.ActionMode.Subtitle</item>-->
+    </style>
+
+    <style name="ActionModeTitleDarkGreen" parent="TextAppearance.AppCompat.Widget.ActionMode.Title">
+        <item name="android:textColor">@color/tb_dark_green</item>
+        <item name="android:textSize">@dimen/action_bar_title_text_size</item>
+    </style>
+
+</resources>

@@ -13,7 +13,7 @@
         android:layout_marginLeft="10dip"
         android:layout_marginRight="10dip"
         android:layout_marginTop="10dip"
-        android:hint="@string/title"
+        android:hint="@string/note_title"
         android:singleLine="true"/>
 
     <EditText
@@ -23,7 +23,7 @@
         android:layout_margin="10dip"
         android:layout_weight="1"
         android:gravity="top"
-        android:hint="@string/content"/>
+        android:hint="@string/note_content"/>
 
     <LinearLayout
         android:id="@+id/image_button_wrapper"

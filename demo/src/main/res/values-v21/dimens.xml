@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="button_elevation">2dp</dimen>
+    <dimen name="button_press_elevation">6dp</dimen>
+</resources>
