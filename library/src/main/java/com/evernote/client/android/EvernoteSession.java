@@ -335,12 +335,12 @@ public final class EvernoteSession {
      */
     public enum EvernoteService implements Parcelable {
         /**
-         * References sandbox.evernote.com
+         * References sandbox.evernote.com.
          */
         SANDBOX,
 
         /**
-         * References evernote.com and app.yinxiang.com
+         * References evernote.com and app.yinxiang.com.
          */
         PRODUCTION;
 

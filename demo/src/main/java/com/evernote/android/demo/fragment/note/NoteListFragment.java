@@ -99,7 +99,7 @@ public class NoteListFragment extends Fragment {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         switch (v.getId()) {
             case R.id.listView:
-                AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
+                AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
 
                 NoteRef noteRef = mNoteRefList.get(info.position);
                 boolean linked = noteRef.isLinked();
@@ -124,7 +124,7 @@ public class NoteListFragment extends Fragment {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
 
         NoteRef noteRef = mNoteRefList.get(info.position);
 
@@ -162,7 +162,7 @@ public class NoteListFragment extends Fragment {
     @TaskResult
     public void onNoteDeleted(DeleteNoteTask.Result result) {
         if (result != null) {
-            ((AbstractContainerFragment)getParentFragment()).refresh();
+            ((AbstractContainerFragment) getParentFragment()).refresh();
         } else {
             Toast.makeText(getActivity(), "Delete note failed", Toast.LENGTH_LONG).show();
         }
@@ -226,7 +226,7 @@ public class NoteListFragment extends Fragment {
         }
     }
 
-    private static class ShareNoteTask extends BaseTask<String> {
+    private static final class ShareNoteTask extends BaseTask<String> {
 
         private final NoteRef mNoteRef;
 

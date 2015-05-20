@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
         private final GestureDetector mGestureDetector;
 
         public MyOnItemTouchListener() {
-            mGestureDetector = new GestureDetector(MainActivity.this, new GestureDetector.SimpleOnGestureListener(){
+            mGestureDetector = new GestureDetector(MainActivity.this, new GestureDetector.SimpleOnGestureListener() {
                 @Override
                 public boolean onSingleTapUp(MotionEvent e) {
                     return true;
@@ -229,12 +229,12 @@ public class MainActivity extends AppCompatActivity {
         private static final int TYPE_HEADER = 0;
         private static final int TYPE_ITEM = 1;
 
-        private final String mNavTitles[];
+        private final String[] mNavTitles;
         private String mUsername;
 
         private int mSelection;
 
-        public MyAdapter(String titles[], String username, int initialPosition) {
+        public MyAdapter(String[] titles, String username, int initialPosition) {
             mNavTitles = titles;
             mUsername = username;
             mSelection = initialPosition;

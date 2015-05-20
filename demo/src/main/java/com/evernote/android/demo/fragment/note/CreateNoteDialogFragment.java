@@ -128,7 +128,7 @@ public class CreateNoteDialogFragment extends DialogFragment {
         mImageData = imageData;
     }
 
-    private static class QueryImageTask extends Task<CreateNewNoteTask.ImageData> {
+    private static final class QueryImageTask extends Task<CreateNewNoteTask.ImageData> {
 
         private static final String[] QUERY_COLUMNS = {
                 MediaStore.Images.Media._ID,

@@ -36,10 +36,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * A factory to create async wrappers around a {@link NoteStore.Client}. Use the corresponding
  * {@link EvernoteClientFactory.Builder} to create an instance.
- *
+ * <p/>
  * <br>
  * <br>
- *
+ * <p/>
  * Try to reuse a created instances. A factory caches created {@link NoteStore.Client}s, their wrappers
  * and internal helper objects like the http client. The easiest way to get access to a factory is to
  * call {@link EvernoteSession#getEvernoteClientFactory()}.
@@ -82,7 +82,7 @@ public class EvernoteClientFactory {
         mLinkedNotebookHelpers = new HashMap<>();
         mLinkedHtmlHelper = new HashMap<>();
 
-        mCreateHelperClient = new EvernoteAsyncClient(mExecutorService) {};
+        mCreateHelperClient = new EvernoteAsyncClient(mExecutorService) { };
     }
 
     /**
@@ -121,7 +121,7 @@ public class EvernoteClientFactory {
 
     protected EvernoteUserStoreClient createUserStoreClient(String url, String authToken) {
         UserStore.Client client = new UserStore.Client(createBinaryProtocol(url));
-        return new EvernoteUserStoreClient(client,authToken , mExecutorService);
+        return new EvernoteUserStoreClient(client, authToken, mExecutorService);
     }
 
     /**
@@ -136,11 +136,10 @@ public class EvernoteClientFactory {
     }
 
     /**
-     * @param url The note store URL.
+     * @param url       The note store URL.
      * @param authToken The authentication token to get access to this note store.
      * @return An async wrapper for {@link NoteStore.Client} with this specific url and authentication
      * token combination.
-     *
      * @see NoteStore
      * @see NoteStore.Client
      */
@@ -164,7 +163,9 @@ public class EvernoteClientFactory {
      *                       {@code null}.
      * @return An async wrapper providing several helper methods.
      */
-    public synchronized EvernoteLinkedNotebookHelper getLinkedNotebookHelper(@NonNull LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public synchronized EvernoteLinkedNotebookHelper getLinkedNotebookHelper(@NonNull LinkedNotebook linkedNotebook)
+            throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+
         String key = linkedNotebook.getGuid();
         EvernoteLinkedNotebookHelper notebookHelper = mLinkedNotebookHelpers.get(key);
         if (notebookHelper == null) {
@@ -178,7 +179,9 @@ public class EvernoteClientFactory {
     /**
      * @see #getLinkedNotebookHelper(LinkedNotebook)
      */
-    public Future<EvernoteLinkedNotebookHelper> getLinkedNotebookHelperAsync(@NonNull final LinkedNotebook linkedNotebook, @Nullable EvernoteCallback<EvernoteLinkedNotebookHelper> callback) {
+    public Future<EvernoteLinkedNotebookHelper> getLinkedNotebookHelperAsync(@NonNull final LinkedNotebook linkedNotebook,
+                                                                             @Nullable EvernoteCallback<EvernoteLinkedNotebookHelper> callback) {
+
         return mCreateHelperClient.submitTask(new Callable<EvernoteLinkedNotebookHelper>() {
             @Override
             public EvernoteLinkedNotebookHelper call() throws Exception {
@@ -187,7 +190,9 @@ public class EvernoteClientFactory {
         }, callback);
     }
 
-    protected EvernoteLinkedNotebookHelper createLinkedNotebookHelper(@NonNull LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    protected EvernoteLinkedNotebookHelper createLinkedNotebookHelper(@NonNull LinkedNotebook linkedNotebook) throws EDAMUserException,
+            EDAMSystemException, EDAMNotFoundException, TException {
+
         String url = linkedNotebook.getNoteStoreUrl();
 
         EvernoteNoteStoreClient client = getNoteStoreClient(url, EvernotePreconditions.checkNotEmpty(mEvernoteSession.getAuthToken()));

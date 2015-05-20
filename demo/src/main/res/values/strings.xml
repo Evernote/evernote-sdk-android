@@ -29,37 +29,4 @@
     <string name="email">Email</string>
     <string name="search">Search</string>
     <string name="query">Query</string>
-
-    <string name="err_creating_note">Error creating new Evernote note</string>
-    <string name="msg_image_saved">Image saved to Evernote</string>
-    <string name="label_app_title">Evernote EDAM Android Demo</string>
-    <string name="label_select_button">Select Image</string>
-    <string name="label_message">No image selected</string>
-    <string name="label_save_button">Save</string>
-    <string name="err_image_selected">Select Image</string>
-    <string name="err_retrieving_resource">Error retrieving resource</string>
-    <string name="msg_retrieved_resource">Retrieved resource from server</string>
-    <string name="esdk__loading">Loading…</string>
-    <string name="esdk__pick_notebook">Pick a notebook</string>
-
-    <string name="label_search">Search</string>
-    <string name="esdk__image_picker">Image Picker</string>
-    <string name="esdk__simple_note">Simple Note</string>
-    <string name="esdk__search_notes">Search notes</string>
-    <string name="label_select_notebook_button">Select Notebook</string>
-    <string name="empty_content_error">Note title and content cannot be empty</string>
-    <string name="note_saved">Note saved to Evernote</string>
-    <string name="notes_searched">Searching notes has finished</string>
-    <string name="simple_note">Simplenote</string>
-    <string name="image_picker">Image Picker</string>
-    <string name="search_notes">Search Notes</string>
-    <string name="search_hint">Search notes</string>
-    <string name="error_listing_notebooks">Error listing notebooks</string>
-    <string name="error_creating_notestore">Error creating notestore</string>
-    <string name="error_saving_note">Error saving note</string>
-    <string name="error_listing_notes">Error listing note</string>
-    <string name="CANNOT_GET_LINKED_NOTEBOOK">Cannot get linked notebook</string>
-    <string name="CANT_LIST_APP_LNB">Can\'t select notebook: account can only access one linked notebook</string>
-    <string name="ERROR_GETTING_LINKED_NOTEBOOK">Error getting linked notebook</string>
-    <string name="image">image</string>
 </resources>

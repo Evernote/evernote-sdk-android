@@ -124,11 +124,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public SyncChunk getLinkedNotebookSyncChunk(LinkedNotebook linkedNotebook, int afterUSN, int maxEntries, boolean fullSyncOnly) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public SyncChunk getLinkedNotebookSyncChunk(LinkedNotebook linkedNotebook, int afterUSN, int maxEntries, boolean fullSyncOnly)
+            throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+
         return mClient.getLinkedNotebookSyncChunk(mAuthenticationToken, linkedNotebook, afterUSN, maxEntries, fullSyncOnly);
     }
 
-    public Future<SyncChunk> getLinkedNotebookSyncChunkAsync(final LinkedNotebook linkedNotebook, final int afterUSN, final int maxEntries, final boolean fullSyncOnly, EvernoteCallback<SyncChunk> callback) {
+    public Future<SyncChunk> getLinkedNotebookSyncChunkAsync(final LinkedNotebook linkedNotebook, final int afterUSN,
+                                                             final int maxEntries, final boolean fullSyncOnly, EvernoteCallback<SyncChunk> callback) {
+
         return submitTask(new Callable<SyncChunk>() {
             @Override
             public SyncChunk call() throws Exception {
@@ -398,11 +402,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public NotesMetadataList findNotesMetadata(NoteFilter filter, int offset, int maxNotes, NotesMetadataResultSpec resultSpec) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public NotesMetadataList findNotesMetadata(NoteFilter filter, int offset, int maxNotes, NotesMetadataResultSpec resultSpec)
+            throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+
         return mClient.findNotesMetadata(mAuthenticationToken, filter, offset, maxNotes, resultSpec);
     }
 
-    public Future<NotesMetadataList> findNotesMetadataAsync(final NoteFilter filter, final int offset, final int maxNotes, final NotesMetadataResultSpec resultSpec, EvernoteCallback<NotesMetadataList> callback) {
+    public Future<NotesMetadataList> findNotesMetadataAsync(final NoteFilter filter, final int offset, final int maxNotes,
+                                                            final NotesMetadataResultSpec resultSpec, EvernoteCallback<NotesMetadataList> callback) {
+
         return submitTask(new Callable<NotesMetadataList>() {
             @Override
             public NotesMetadataList call() throws Exception {
@@ -424,11 +432,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public Note getNote(String guid, boolean withContent, boolean withResourcesData, boolean withResourcesRecognition, boolean withResourcesAlternateData) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public Note getNote(String guid, boolean withContent, boolean withResourcesData, boolean withResourcesRecognition,
+                        boolean withResourcesAlternateData) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+
         return mClient.getNote(mAuthenticationToken, guid, withContent, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
     }
 
-    public Future<Note> getNoteAsync(final String guid, final boolean withContent, final boolean withResourcesData, final boolean withResourcesRecognition, final boolean withResourcesAlternateData, EvernoteCallback<Note> callback) {
+    public Future<Note> getNoteAsync(final String guid, final boolean withContent, final boolean withResourcesData,
+                                     final boolean withResourcesRecognition, final boolean withResourcesAlternateData, EvernoteCallback<Note> callback) {
+
         return submitTask(new Callable<Note>() {
             @Override
             public Note call() throws Exception {
@@ -645,11 +657,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public Note getNoteVersion(String noteGuid, int updateSequenceNum, boolean withResourcesData, boolean withResourcesRecognition, boolean withResourcesAlternateData) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public Note getNoteVersion(String noteGuid, int updateSequenceNum, boolean withResourcesData, boolean withResourcesRecognition,
+                               boolean withResourcesAlternateData) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+
         return mClient.getNoteVersion(mAuthenticationToken, noteGuid, updateSequenceNum, withResourcesData, withResourcesRecognition, withResourcesAlternateData);
     }
 
-    public Future<Note> getNoteVersionAsync(final String noteGuid, final int updateSequenceNum, final boolean withResourcesData, final boolean withResourcesRecognition, final boolean withResourcesAlternateData, EvernoteCallback<Note> callback) {
+    public Future<Note> getNoteVersionAsync(final String noteGuid, final int updateSequenceNum, final boolean withResourcesData,
+                                            final boolean withResourcesRecognition, final boolean withResourcesAlternateData, EvernoteCallback<Note> callback) {
+
         return submitTask(new Callable<Note>() {
             @Override
             public Note call() throws Exception {
@@ -658,11 +674,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public Resource getResource(String guid, boolean withData, boolean withRecognition, boolean withAttributes, boolean withAlternateData) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public Resource getResource(String guid, boolean withData, boolean withRecognition, boolean withAttributes, boolean withAlternateData)
+            throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+
         return mClient.getResource(mAuthenticationToken, guid, withData, withRecognition, withAttributes, withAlternateData);
     }
 
-    public Future<Resource> getResourceAsync(final String guid, final boolean withData, final boolean withRecognition, final boolean withAttributes, final boolean withAlternateData, EvernoteCallback<Resource> callback) {
+    public Future<Resource> getResourceAsync(final String guid, final boolean withData, final boolean withRecognition, final boolean withAttributes,
+                                             final boolean withAlternateData, EvernoteCallback<Resource> callback) {
+
         return submitTask(new Callable<Resource>() {
             @Override
             public Resource call() throws Exception {
@@ -749,11 +769,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public Resource getResourceByHash(String noteGuid, byte[] contentHash, boolean withData, boolean withRecognition, boolean withAlternateData) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+    public Resource getResourceByHash(String noteGuid, byte[] contentHash, boolean withData, boolean withRecognition, boolean withAlternateData)
+            throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+
         return mClient.getResourceByHash(mAuthenticationToken, noteGuid, contentHash, withData, withRecognition, withAlternateData);
     }
 
-    public Future<Resource> getResourceByHashAsync(final String noteGuid, final byte[] contentHash, final boolean withData, final boolean withRecognition, final boolean withAlternateData, EvernoteCallback<Resource> callback) {
+    public Future<Resource> getResourceByHashAsync(final String noteGuid, final byte[] contentHash, final boolean withData,
+                                                   final boolean withRecognition, final boolean withAlternateData, EvernoteCallback<Resource> callback) {
+
         return submitTask(new Callable<Resource>() {
             @Override
             public Resource call() throws Exception {
@@ -840,11 +864,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public int setSharedNotebookRecipientSettings(long sharedNotebookId, SharedNotebookRecipientSettings recipientSettings) throws EDAMUserException, EDAMNotFoundException, EDAMSystemException, TException {
+    public int setSharedNotebookRecipientSettings(long sharedNotebookId, SharedNotebookRecipientSettings recipientSettings)
+            throws EDAMUserException, EDAMNotFoundException, EDAMSystemException, TException {
+
         return mClient.setSharedNotebookRecipientSettings(mAuthenticationToken, sharedNotebookId, recipientSettings);
     }
 
-    public Future<Integer> setSharedNotebookRecipientSettingsAsync(final long sharedNotebookId, final SharedNotebookRecipientSettings recipientSettings, EvernoteCallback<Integer> callback) {
+    public Future<Integer> setSharedNotebookRecipientSettingsAsync(final long sharedNotebookId, final SharedNotebookRecipientSettings recipientSettings,
+                                                                   EvernoteCallback<Integer> callback) {
+
         return submitTask(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
@@ -853,11 +881,15 @@ public class EvernoteNoteStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public int sendMessageToSharedNotebookMembers(String notebookGuid, String messageText, List<String> recipients) throws EDAMUserException, EDAMNotFoundException, EDAMSystemException, TException {
+    public int sendMessageToSharedNotebookMembers(String notebookGuid, String messageText, List<String> recipients) throws EDAMUserException,
+            EDAMNotFoundException, EDAMSystemException, TException {
+
         return mClient.sendMessageToSharedNotebookMembers(mAuthenticationToken, notebookGuid, messageText, recipients);
     }
 
-    public Future<Integer> sendMessageToSharedNotebookMembersAsync(final String notebookGuid, final String messageText, final List<String> recipients, EvernoteCallback<Integer> callback) {
+    public Future<Integer> sendMessageToSharedNotebookMembersAsync(final String notebookGuid, final String messageText,
+                                                                   final List<String> recipients, EvernoteCallback<Integer> callback) {
+
         return submitTask(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {

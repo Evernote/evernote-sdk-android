@@ -661,7 +661,8 @@ public class AsyncNoteStoreClient {
    * @param callback {@link OnClientCallback} providing an interface to the calling code
    * @see NoteStore.Client#getResourceByHash(String, String, byte[], boolean, boolean, boolean)
    */
-  @Deprecated public void getResourceByHash(String noteGuid, byte[] contentHash, boolean withData, boolean withRecognition, boolean withAlternateData, OnClientCallback<Resource> callback) {
+  @Deprecated public void getResourceByHash(String noteGuid, byte[] contentHash, boolean withData, boolean withRecognition,
+                                            boolean withAlternateData, OnClientCallback<Resource> callback) {
     AsyncReflector.execute(mClient, callback, "getResourceByHash", mAuthenticationToken, noteGuid, contentHash, withData, withRecognition, withAlternateData);
   }
 

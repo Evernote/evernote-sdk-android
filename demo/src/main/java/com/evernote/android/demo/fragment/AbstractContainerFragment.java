@@ -22,6 +22,7 @@ public abstract class AbstractContainerFragment extends Fragment {
 
     protected SwipeRefreshLayout mSwipeRefreshLayout;
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {

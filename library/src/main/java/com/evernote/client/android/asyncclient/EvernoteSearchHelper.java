@@ -397,7 +397,7 @@ public class EvernoteSearchHelper extends EvernoteAsyncClient {
     /**
      * A search result.
      */
-    public static class Result {
+    public static final class Result {
 
         private final List<NotesMetadataList> mPersonalResults;
         private final Map<Pair<String, LinkedNotebook>, List<NotesMetadataList>> mLinkedNotebookResults;

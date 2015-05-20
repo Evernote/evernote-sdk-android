@@ -65,11 +65,15 @@ public class EvernoteUserStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public AuthenticationResult authenticate(String username, String password, String consumerKey, String consumerSecret, boolean supportsTwoFactor) throws EDAMUserException, EDAMSystemException, TException {
+    public AuthenticationResult authenticate(String username, String password, String consumerKey, String consumerSecret,
+                                             boolean supportsTwoFactor) throws EDAMUserException, EDAMSystemException, TException {
+
         return mClient.authenticate(username, password, consumerKey, consumerSecret, supportsTwoFactor);
     }
 
-    public Future<AuthenticationResult> authenticateAsync(final String username, final String password, final String consumerKey, final String consumerSecret, final boolean supportsTwoFactor, EvernoteCallback<AuthenticationResult> callback) {
+    public Future<AuthenticationResult> authenticateAsync(final String username, final String password, final String consumerKey,
+                                                          final String consumerSecret, final boolean supportsTwoFactor, EvernoteCallback<AuthenticationResult> callback) {
+
         return submitTask(new Callable<AuthenticationResult>() {
             @Override
             public AuthenticationResult call() throws Exception {
@@ -78,11 +82,17 @@ public class EvernoteUserStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public AuthenticationResult authenticateLongSession(String username, String password, String consumerKey, String consumerSecret, String deviceIdentifier, String deviceDescription, boolean supportsTwoFactor) throws EDAMUserException, EDAMSystemException, TException {
+    public AuthenticationResult authenticateLongSession(String username, String password, String consumerKey, String consumerSecret, String deviceIdentifier,
+                                                        String deviceDescription, boolean supportsTwoFactor)
+            throws EDAMUserException, EDAMSystemException, TException {
+
         return mClient.authenticateLongSession(username, password, consumerKey, consumerSecret, deviceIdentifier, deviceDescription, supportsTwoFactor);
     }
 
-    public Future<AuthenticationResult> authenticateLongSessionAsync(final String username, final String password, final String consumerKey, final String consumerSecret, final String deviceIdentifier, final String deviceDescription, final boolean supportsTwoFactor, EvernoteCallback<AuthenticationResult> callback) {
+    public Future<AuthenticationResult> authenticateLongSessionAsync(final String username, final String password, final String consumerKey, final String consumerSecret,
+                                                                     final String deviceIdentifier, final String deviceDescription, final boolean supportsTwoFactor,
+                                                                     EvernoteCallback<AuthenticationResult> callback) {
+
         return submitTask(new Callable<AuthenticationResult>() {
             @Override
             public AuthenticationResult call() throws Exception {
@@ -91,11 +101,16 @@ public class EvernoteUserStoreClient extends EvernoteAsyncClient {
         }, callback);
     }
 
-    public AuthenticationResult completeTwoFactorAuthentication(String authenticationToken, String oneTimeCode, String deviceIdentifier, String deviceDescription) throws EDAMUserException, EDAMSystemException, TException {
+    public AuthenticationResult completeTwoFactorAuthentication(String authenticationToken, String oneTimeCode, String deviceIdentifier,
+                                                                String deviceDescription) throws EDAMUserException, EDAMSystemException, TException {
+
         return mClient.completeTwoFactorAuthentication(authenticationToken, oneTimeCode, deviceIdentifier, deviceDescription);
     }
 
-    public Future<AuthenticationResult> completeTwoFactorAuthenticationAsync(final String authenticationToken, final String oneTimeCode, final String deviceIdentifier, final String deviceDescription, EvernoteCallback<AuthenticationResult> callback) {
+    public Future<AuthenticationResult> completeTwoFactorAuthenticationAsync(final String authenticationToken, final String oneTimeCode,
+                                                                             final String deviceIdentifier, final String deviceDescription,
+                                                                             EvernoteCallback<AuthenticationResult> callback) {
+
         return submitTask(new Callable<AuthenticationResult>() {
             @Override
             public AuthenticationResult call() throws Exception {
@@ -108,14 +123,14 @@ public class EvernoteUserStoreClient extends EvernoteAsyncClient {
         mClient.revokeLongSession(mAuthenticationToken);
     }
 
-    public Future<Void> revokeLongSessionAsync(EvernoteCallback<Void> EvernoteCallback) {
+    public Future<Void> revokeLongSessionAsync(EvernoteCallback<Void> evernoteCallback) {
         return submitTask(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 revokeLongSession();
                 return null;
             }
-        }, EvernoteCallback);
+        }, evernoteCallback);
     }
 
     public AuthenticationResult authenticateToBusiness() throws EDAMUserException, EDAMSystemException, TException {

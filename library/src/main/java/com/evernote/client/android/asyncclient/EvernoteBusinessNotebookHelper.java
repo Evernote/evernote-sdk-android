@@ -39,7 +39,9 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
      * @param businessUserName The name of the business user.
      * @param businessUserShardId The shard ID of the business user.
      */
-    public EvernoteBusinessNotebookHelper(@NonNull EvernoteNoteStoreClient client, @NonNull ExecutorService executorService, @NonNull String businessUserName, @NonNull String businessUserShardId) {
+    public EvernoteBusinessNotebookHelper(@NonNull EvernoteNoteStoreClient client, @NonNull ExecutorService executorService,
+                                          @NonNull String businessUserName, @NonNull String businessUserShardId) {
+
         super(executorService);
         mClient = EvernotePreconditions.checkNotNull(client);
         mBusinessUserName = EvernotePreconditions.checkNotEmpty(businessUserName);
@@ -79,7 +81,9 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
      * @param defaultClient The note store client, which references the user's note store.
      * @return A list of {@link LinkedNotebook}s, which all have a business ID.
      */
-    public List<LinkedNotebook> listBusinessNotebooks(@NonNull EvernoteNoteStoreClient defaultClient) throws EDAMUserException, EDAMSystemException, TException, EDAMNotFoundException {
+    public List<LinkedNotebook> listBusinessNotebooks(@NonNull EvernoteNoteStoreClient defaultClient) throws EDAMUserException,
+            EDAMSystemException, TException, EDAMNotFoundException {
+
         List<LinkedNotebook> businessNotebooks = new ArrayList<>(defaultClient.listLinkedNotebooks());
 
         Iterator<LinkedNotebook> iterator = businessNotebooks.iterator();
@@ -102,7 +106,9 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
     /**
      * @see #listBusinessNotebooks(EvernoteNoteStoreClient)
      */
-    public Future<List<LinkedNotebook>> listBusinessNotebooksAsync(@NonNull final EvernoteNoteStoreClient defaultClient, @Nullable EvernoteCallback<List<LinkedNotebook>> callback) {
+    public Future<List<LinkedNotebook>> listBusinessNotebooksAsync(@NonNull final EvernoteNoteStoreClient defaultClient,
+                                                                   @Nullable EvernoteCallback<List<LinkedNotebook>> callback) {
+
         return submitTask(new Callable<List<LinkedNotebook>>() {
             @Override
             public List<LinkedNotebook> call() throws Exception {
@@ -116,7 +122,9 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
      * @param session The current valid session.
      * @return The new created {@link LinkedNotebook}, which has an business ID.
      */
-    public LinkedNotebook createBusinessNotebook(@NonNull Notebook notebook, @NonNull EvernoteSession session) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
+    public LinkedNotebook createBusinessNotebook(@NonNull Notebook notebook, @NonNull EvernoteSession session) throws TException,
+            EDAMUserException, EDAMSystemException, EDAMNotFoundException {
+
         return createBusinessNotebook(notebook, session.getEvernoteClientFactory().getNoteStoreClient());
     }
 
@@ -125,7 +133,9 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
      * @param defaultClient The note store client, which references the user's note store.
      * @return The new created {@link LinkedNotebook}, which has an business ID.
      */
-    public LinkedNotebook createBusinessNotebook(@NonNull Notebook notebook, @NonNull EvernoteNoteStoreClient defaultClient) throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
+    public LinkedNotebook createBusinessNotebook(@NonNull Notebook notebook, @NonNull EvernoteNoteStoreClient defaultClient)
+            throws TException, EDAMUserException, EDAMSystemException, EDAMNotFoundException {
+
         Notebook originalNotebook = mClient.createNotebook(notebook);
 
         List<SharedNotebook> sharedNotebooks = originalNotebook.getSharedNotebooks();
@@ -143,14 +153,18 @@ public class EvernoteBusinessNotebookHelper extends EvernoteAsyncClient {
     /**
      * @see #createBusinessNotebook(Notebook, EvernoteSession)
      */
-    public Future<LinkedNotebook> createBusinessNotebookAsync(@NonNull final Notebook notebook, @NonNull final EvernoteSession session, @Nullable EvernoteCallback<LinkedNotebook> callback) {
+    public Future<LinkedNotebook> createBusinessNotebookAsync(@NonNull final Notebook notebook, @NonNull final EvernoteSession session,
+                                                              @Nullable EvernoteCallback<LinkedNotebook> callback) {
+
         return createBusinessNotebookAsync(notebook, session.getEvernoteClientFactory().getNoteStoreClient(), callback);
     }
 
     /**
      * @see #createBusinessNotebook(Notebook, EvernoteNoteStoreClient)
      */
-    public Future<LinkedNotebook> createBusinessNotebookAsync(@NonNull final Notebook notebook, @NonNull final EvernoteNoteStoreClient defaultClient, @Nullable EvernoteCallback<LinkedNotebook> callback) {
+    public Future<LinkedNotebook> createBusinessNotebookAsync(@NonNull final Notebook notebook, @NonNull final EvernoteNoteStoreClient defaultClient,
+                                                              @Nullable EvernoteCallback<LinkedNotebook> callback) {
+
         return submitTask(new Callable<LinkedNotebook>() {
             @Override
             public LinkedNotebook call() throws Exception {

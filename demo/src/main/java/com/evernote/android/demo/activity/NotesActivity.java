@@ -93,7 +93,7 @@ public class NotesActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(name);
     }
 
-    private static class LoadNotebookNameTask extends BaseTask<String> {
+    private static final class LoadNotebookNameTask extends BaseTask<String> {
 
         private final LinkedNotebook mLinkedNotebook;
 

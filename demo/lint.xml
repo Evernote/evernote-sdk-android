@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <lint>
     <issue id="InvalidPackage" severity="ignore" />
-    <issue id="UnusedResources">
-        <ignore path="src/main/res/values/strings.xml" />
+    <issue id="IconMissingDensityFolder" severity="ignore" />
+    <issue id="RtlEnabled" severity="ignore" />
+    <issue id="IconColors">
+        <ignore path="src/main/res/drawable-hdpi/ic_action_search.png" />
+        <ignore path="src/main/res/drawable-mdpi/ic_action_search.png" />
+        <ignore path="src/main/res/drawable-xhdpi/ic_action_search.png" />
+        <ignore path="src/main/res/drawable-xxhdpi/ic_action_search.png" />
     </issue>
 </lint>
