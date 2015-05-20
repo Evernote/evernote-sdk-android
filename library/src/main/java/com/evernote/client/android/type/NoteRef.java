@@ -154,7 +154,7 @@ public class NoteRef implements Parcelable {
             return null;
         }
 
-        EvernoteNoteStoreClient noteStore = NoteRefHelper.getNoteStore(this);
+        EvernoteNoteStoreClient noteStore = NoteRefHelper.getSession().getEvernoteClientFactory().getNoteStoreClient();
         if (noteStore == null) {
             return null;
         }

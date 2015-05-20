@@ -61,6 +61,7 @@ public class EvernoteClientFactory {
     private EvernoteBusinessNotebookHelper mBusinessNotebookHelper;
 
     private EvernoteHtmlHelper mHtmlHelperDefault;
+    private final Map<String, EvernoteHtmlHelper> mLinkedHtmlHelper;
     private EvernoteHtmlHelper mHtmlHelperBusiness;
 
     private EvernoteSearchHelper mEvernoteSearchHelper;
@@ -79,6 +80,7 @@ public class EvernoteClientFactory {
         mUserStoreClients = new HashMap<>();
         mNoteStoreClients = new HashMap<>();
         mLinkedNotebookHelpers = new HashMap<>();
+        mLinkedHtmlHelper = new HashMap<>();
 
         mCreateHelperClient = new EvernoteAsyncClient(mExecutorService) {};
     }
@@ -134,8 +136,6 @@ public class EvernoteClientFactory {
     }
 
     /**
-     *
-     *
      * @param url The note store URL.
      * @param authToken The authentication token to get access to this note store.
      * @return An async wrapper for {@link NoteStore.Client} with this specific url and authentication
@@ -163,10 +163,6 @@ public class EvernoteClientFactory {
      * @param linkedNotebook The referenced {@link LinkedNotebook}. Its GUID and share key must not be
      *                       {@code null}.
      * @return An async wrapper providing several helper methods.
-     * @throws EDAMUserException
-     * @throws EDAMSystemException
-     * @throws EDAMNotFoundException
-     * @throws TException
      */
     public synchronized EvernoteLinkedNotebookHelper getLinkedNotebookHelper(@NonNull LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
         String key = linkedNotebook.getGuid();
@@ -208,9 +204,6 @@ public class EvernoteClientFactory {
      * which references the business note store URL.
      *
      * @return An async wrapper providing several helper methods.
-     * @throws EDAMUserException
-     * @throws EDAMSystemException
-     * @throws TException
      */
     public synchronized EvernoteBusinessNotebookHelper getBusinessNotebookHelper() throws TException, EDAMUserException, EDAMSystemException {
         if (mBusinessNotebookHelper == null || isBusinessAuthExpired()) {
@@ -241,8 +234,7 @@ public class EvernoteClientFactory {
     }
 
     /**
-     * Use this method, if you want to download a note as HTML from a private or linked note store.
-     * For business notes use {@link #getHtmlHelperBusiness()} instead.
+     * Use this method, if you want to download a personal note as HTML.
      *
      * @return An async wrapper to load a note as HTML from the Evernote service.
      */
@@ -253,6 +245,43 @@ public class EvernoteClientFactory {
             mHtmlHelperDefault = createHtmlHelper(mEvernoteSession.getAuthToken());
         }
         return mHtmlHelperDefault;
+    }
+
+    /**
+     * Use this method, if you want to download a linked note as HTML.
+     *
+     * @param linkedNotebook The referenced {@link LinkedNotebook}. Its GUID and share key must not be
+     *                       {@code null}.
+     * @return An async wrapper to load a note as HTML from the Evernote service.
+     */
+    public EvernoteHtmlHelper getLinkedHtmlHelper(@NonNull LinkedNotebook linkedNotebook) throws EDAMUserException, EDAMSystemException, EDAMNotFoundException, TException {
+        String key = linkedNotebook.getGuid();
+
+        EvernoteHtmlHelper htmlHelper = mLinkedHtmlHelper.get(key);
+        if (htmlHelper == null) {
+            String url = linkedNotebook.getNoteStoreUrl();
+
+            EvernoteNoteStoreClient client = getNoteStoreClient(url, EvernotePreconditions.checkNotEmpty(mEvernoteSession.getAuthToken()));
+            AuthenticationResult authenticationResult = client.authenticateToSharedNotebook(linkedNotebook.getShareKey());
+
+            htmlHelper = createHtmlHelper(authenticationResult.getAuthenticationToken());
+
+            mLinkedHtmlHelper.put(key, htmlHelper);
+        }
+
+        return htmlHelper;
+    }
+
+    /**
+     * @see #getLinkedNotebookHelper(LinkedNotebook)
+     */
+    public Future<EvernoteHtmlHelper> getLinkedHtmlHelperAsync(@NonNull final LinkedNotebook linkedNotebook, @Nullable EvernoteCallback<EvernoteHtmlHelper> callback) {
+        return mCreateHelperClient.submitTask(new Callable<EvernoteHtmlHelper>() {
+            @Override
+            public EvernoteHtmlHelper call() throws Exception {
+                return getLinkedHtmlHelper(linkedNotebook);
+            }
+        }, callback);
     }
 
     /**

@@ -19,10 +19,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.evernote.android.demo.R;
+import com.evernote.android.demo.activity.ViewHtmlActivity;
 import com.evernote.android.demo.fragment.AbstractContainerFragment;
 import com.evernote.android.demo.task.BaseTask;
 import com.evernote.android.demo.task.DeleteNoteTask;
 import com.evernote.android.demo.task.GetNoteContentTask;
+import com.evernote.android.demo.task.GetNoteHtmlTask;
 import com.evernote.android.demo.util.ParcelableUtil;
 import com.evernote.android.intent.EvernoteIntent;
 import com.evernote.client.android.EvernoteSession;
@@ -105,7 +107,7 @@ public class NoteListFragment extends Fragment {
 
                 String[] menuItems = getResources().getStringArray(R.array.notes_context_menu);
                 for (int i = 0; i < menuItems.length; i++) {
-                    if (linked && (i == 0 || i == 2)) {
+                    if (linked && (i == 0 || i == 3)) {
                         // share public link and delete
                         continue;
                     }
@@ -132,10 +134,14 @@ public class NoteListFragment extends Fragment {
                 return true;
 
             case 1:
-                new GetNoteContentTask(noteRef).start(this, "content");
+                new GetNoteHtmlTask(noteRef).start(this, "html");
                 return true;
 
             case 2:
+                new GetNoteContentTask(noteRef).start(this, "content");
+                return true;
+
+            case 3:
                 new DeleteNoteTask(noteRef).start(this);
                 return true;
 
@@ -169,6 +175,11 @@ public class NoteListFragment extends Fragment {
         } else {
             Toast.makeText(getActivity(), "Get content failed", Toast.LENGTH_LONG).show();
         }
+    }
+
+    @TaskResult(id = "html")
+    public void onGetNoteContentHtml(String html, GetNoteHtmlTask task) {
+        startActivity(ViewHtmlActivity.createIntent(getActivity(), task.getNoteRef(), html));
     }
 
     private class MyAdapter extends BaseAdapter {

@@ -66,13 +66,7 @@ public class EvernoteHtmlHelper extends EvernoteAsyncClient {
      */
     public Response downloadNote(@NonNull String noteGuid) throws IOException {
         String url = mBaseUrl + '/' + noteGuid;
-
-        Request.Builder requestBuilder = new Request.Builder()
-                .url(url)
-                .addHeader("Cookie", mAuthHeader)
-                .get();
-
-        return mHttpClient.newCall(requestBuilder.build()).execute();
+        return fetchEvernoteUrl(url);
     }
 
     /**
@@ -98,5 +92,26 @@ public class EvernoteHtmlHelper extends EvernoteAsyncClient {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Fetches the URL with the current authentication token as cookie in the header.
+     *
+     * <br>
+     * <br>
+     *
+     * <b>Pay attention</b> to which URLs you are sending the authentication token. It's better to
+     * verify the host first.
+     *
+     * @param url The URL which should be opened.
+     * @return The raw response.
+     */
+    public Response fetchEvernoteUrl(String url) throws IOException {
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .addHeader("Cookie", mAuthHeader)
+                .get();
+
+        return mHttpClient.newCall(requestBuilder.build()).execute();
     }
 }

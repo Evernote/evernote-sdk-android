@@ -34,5 +34,10 @@
         <activity
             android:name=".activity.NotesActivity"
             android:theme="@style/Theme.Demo"/>
+
+        <activity
+            android:name=".activity.ViewHtmlActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/Theme.Demo"/>
     </application>
 </manifest>
