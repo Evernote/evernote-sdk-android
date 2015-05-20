@@ -25,210 +25,137 @@
  */
 package com.evernote.client.android;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.util.Log;
-import com.evernote.edam.type.User;
+import android.text.TextUtils;
 
 /**
  * A container class for the results of a successful OAuth authorization with
  * the Evernote service.
  *
  * @author @tylersmithnet
+ * @author rwondratschek
  */
+@SuppressWarnings("unused")
 public class AuthenticationResult {
 
-  private static final String LOGTAG = "AuthenticationResult";
+    private static final String KEY_AUTH_TOKEN = "evernote.mAuthToken";
+    private static final String KEY_NOTESTORE_URL = "evernote.notestoreUrl";
+    private static final String KEY_WEB_API_URL_PREFIX = "evernote.webApiUrlPrefix";
+    private static final String KEY_USER_ID = "evernote.userId";
+    private static final String KEY_EVERNOTE_HOST = "evernote.mEvernoteHost";
+    private static final String KEY_IS_APP_LINKED_NOTEBOOK = "evernote.isAppLinkedNotebook";
 
-  private String mAuthToken;
-  private String mNoteStoreUrl;
-  private String mWebApiUrlPrefix;
-  private String mEvernoteHost;
-  private int mUserId;
+    private static final String PREFERENCE_NAME = "evernote.preferences";
 
-  private boolean mIsAppLinkedNotebook;
+    /*package*/ static AuthenticationResult fromPreferences(Context context) {
+        SharedPreferences prefs = getPreferences(context);
+        String authToken = prefs.getString(KEY_AUTH_TOKEN, null);
+        String noteStoreUrl = prefs.getString(KEY_NOTESTORE_URL, null);
 
-  private String mBusinessNoteStoreUrl;
-  private String mBusinessAuthToken;
-  private long mBusinessAuthTokenExpiration;
-  private User mBusinessUser;
+        if (TextUtils.isEmpty(authToken) || TextUtils.isEmpty(noteStoreUrl)) {
+            return null;
+        }
 
+        return new AuthenticationResult(authToken, noteStoreUrl,
+                prefs.getString(KEY_WEB_API_URL_PREFIX, null),
+                prefs.getString(KEY_EVERNOTE_HOST, null),
+                prefs.getInt(KEY_USER_ID, -1),
+                prefs.getBoolean(KEY_IS_APP_LINKED_NOTEBOOK, false));
+    }
 
-  public AuthenticationResult(SharedPreferences pref) {
-    restore(pref);
-  }
+    private String mAuthToken;
+    private String mNoteStoreUrl;
+    private String mWebApiUrlPrefix;
+    private String mEvernoteHost;
 
-    public AuthenticationResult(String authToken, String noteStoreUrl, boolean isAppLinkedNotebook) {
+    private int mUserId;
+    private boolean mIsAppLinkedNotebook;
+
+    /*package*/ AuthenticationResult(String authToken, String noteStoreUrl, boolean isAppLinkedNotebook) {
         this(authToken, noteStoreUrl, parseWebApiUrlPrefix(noteStoreUrl), parseHost(noteStoreUrl), -1, isAppLinkedNotebook);
     }
 
+    /*package*/ AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, String evernoteHost, int userId, boolean isAppLinkedNotebook) {
+        mAuthToken = authToken;
+        mNoteStoreUrl = noteStoreUrl;
+        mWebApiUrlPrefix = webApiUrlPrefix;
+        mEvernoteHost = evernoteHost;
+        mUserId = userId;
+        mIsAppLinkedNotebook = isAppLinkedNotebook;
+    }
 
+    /*package */ void persist() {
+        getPreferences(EvernoteSession.getInstance().getApplicationContext())
+                .edit()
+                .putString(KEY_AUTH_TOKEN, mAuthToken)
+                .putString(KEY_NOTESTORE_URL, mNoteStoreUrl)
+                .putString(KEY_WEB_API_URL_PREFIX, mWebApiUrlPrefix)
+                .putString(KEY_EVERNOTE_HOST, mEvernoteHost)
+                .putInt(KEY_USER_ID, mUserId)
+                .putBoolean(KEY_IS_APP_LINKED_NOTEBOOK, mIsAppLinkedNotebook)
+                .apply();
+    }
 
-  /**
-   * Create a new AuthenticationResult.
-   *
-   * @param authToken An Evernote authentication token.
-   * @param noteStoreUrl The URL of the Evernote NoteStore for the authenticated user.
-   * @param webApiUrlPrefix The URL of misc. Evernote web APIs for the authenticated user.
-   * @param evernoteHost the Evernote Web URL provided from the bootstrap process
-   * @param userId The numeric ID of the Evernote user.
-   * @param isAppLinkedNotebook whether this account can only access a single notebook which is
-   *                              a linked notebook
-   *
-   */
-  public AuthenticationResult(String authToken, String noteStoreUrl, String webApiUrlPrefix, String evernoteHost, int userId, boolean isAppLinkedNotebook) {
-    this.mAuthToken = authToken;
-    this.mNoteStoreUrl = noteStoreUrl;
-    this.mWebApiUrlPrefix = webApiUrlPrefix;
-    this.mEvernoteHost = evernoteHost;
-    this.mUserId = userId;
-    this.mIsAppLinkedNotebook = isAppLinkedNotebook;
-  }
+    /*package*/ void clear() {
+        getPreferences(EvernoteSession.getInstance().getApplicationContext())
+                .edit()
+                .remove(KEY_AUTH_TOKEN)
+                .remove(KEY_NOTESTORE_URL)
+                .remove(KEY_WEB_API_URL_PREFIX)
+                .remove(KEY_EVERNOTE_HOST)
+                .remove(KEY_USER_ID)
+                .remove(KEY_IS_APP_LINKED_NOTEBOOK)
+                .apply();
+    }
 
-  void persist(SharedPreferences pref) {
-    Log.d(LOGTAG, "persisting Authentication results to SharedPreference");
-    pref.edit()
-        .putString(SessionPreferences.KEY_AUTHTOKEN, mAuthToken)
-        .putString(SessionPreferences.KEY_NOTESTOREURL, mNoteStoreUrl)
-        .putString(SessionPreferences.KEY_WEBAPIURLPREFIX, mWebApiUrlPrefix)
-        .putString(SessionPreferences.KEY_EVERNOTEHOST, mEvernoteHost)
-        .putInt(SessionPreferences.KEY_USERID, mUserId)
-        .putBoolean(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK, mIsAppLinkedNotebook)
-        .apply();
-  }
+    /**
+     * @return The authentication token that will be used to make authenticated API requests.
+     */
+    public String getAuthToken() {
+        return mAuthToken;
+    }
 
-  void restore(SharedPreferences pref) {
-    Log.d(LOGTAG, "restoring Authentication results from SharedPreference");
-    mAuthToken = pref.getString(SessionPreferences.KEY_AUTHTOKEN, null);
-    mNoteStoreUrl = pref.getString(SessionPreferences.KEY_NOTESTOREURL, null);
-    mWebApiUrlPrefix = pref.getString(SessionPreferences.KEY_WEBAPIURLPREFIX, null);
-    mEvernoteHost = pref.getString(SessionPreferences.KEY_EVERNOTEHOST, null);
-    mUserId = pref.getInt(SessionPreferences.KEY_USERID, -1);
-    mIsAppLinkedNotebook = pref.getBoolean(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK, false);
-  }
+    /**
+     * @return The URL that will be used to access the NoteStore service.
+     */
+    public String getNoteStoreUrl() {
+        return mNoteStoreUrl;
+    }
 
-  void clear(SharedPreferences pref) {
-    Log.d(LOGTAG, "clearing Authentication results from SharedPreference");
-    pref.edit()
-        .remove(SessionPreferences.KEY_AUTHTOKEN)
-        .remove(SessionPreferences.KEY_NOTESTOREURL)
-        .remove(SessionPreferences.KEY_WEBAPIURLPREFIX)
-        .remove(SessionPreferences.KEY_EVERNOTEHOST)
-        .remove(SessionPreferences.KEY_USERID)
-        .remove(SessionPreferences.KEY_ISAPPLINKEDNOTEBOOK)
-        .apply();
-  }
+    /**
+     * @return The URL prefix that can be used to access non-Thrift API endpoints.
+     */
+    public String getWebApiUrlPrefix() {
+        return mWebApiUrlPrefix;
+    }
 
-  /**
-   * @return the authentication token that will be used to make authenticated API requests.
-   */
-  public String getAuthToken() {
-    return mAuthToken;
-  }
+    /**
+     * @return The Evernote Web URL provided from the bootstrap process
+     */
+    public String getEvernoteHost() {
+        return mEvernoteHost;
+    }
 
-  /**
-   * @return the URL that will be used to access the NoteStore service.
-   */
-  public String getNoteStoreUrl() {
-    return mNoteStoreUrl;
-  }
+    /**
+     * @return The numeric user ID of the user who authorized access to their Evernote account.
+     */
+    public int getUserId() {
+        return mUserId;
+    }
 
-  /**
-   * @return the URL prefix that can be used to access non-Thrift API endpoints.
-   */
-  public String getWebApiUrlPrefix() {
-    return mWebApiUrlPrefix;
-  }
+    /**
+     * @return Indicates whether this account is limited to accessing a single notebook, and
+     * that notebook is a linked notebook
+     */
+    public boolean isAppLinkedNotebook() {
+        return mIsAppLinkedNotebook;
+    }
 
-  /**
-   *
-   * @return the Evernote Web URL provided from the bootstrap process
-   */
-  public String getEvernoteHost() {
-    return mEvernoteHost;
-  }
-
-  /**
-   * @return the numeric user ID of the user who authorized access to their Evernote account.
-   */
-  public int getUserId() {
-    return mUserId;
-  }
-
-  /**
-   * @return Indicates whether this account is limited to accessing a single notebook, and
-   * that notebook is a linked notebook
-   */
-  public boolean isAppLinkedNotebook() {
-    return mIsAppLinkedNotebook;
-  }
-
-  /**
-   * @return the URL that will be used to access the BusinessNoteStore service.
-   */
-  public String getBusinessNoteStoreUrl() {
-    return mBusinessNoteStoreUrl;
-  }
-
-
-  /**
-   * Set the BusinessNoteStore Url.
-   */
-  void setBusinessNoteStoreUrl(String businessNoteStoreUrl) {
-    this.mBusinessNoteStoreUrl = businessNoteStoreUrl;
-  }
-
-  /**
-   * @return the {@link User} that references the business account user object.
-   */
-  public User getBusinessUser() {
-    return mBusinessUser;
-  }
-
-  /**
-   * Set the BusinessNoteStore Url.
-   */
-  void setBusinessUser(User user) {
-    this.mBusinessUser = user;
-  }
-
-  /**
-   * @return the Business Auth token.
-   */
-  public String getBusinessAuthToken() {
-    return mBusinessAuthToken;
-  }
-
-  /**
-   * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch).
-   */
-  void setBusinessAuthToken(String authToken) {
-    this.mBusinessAuthToken = authToken;
-  }
-
-  /**
-   * @param businessAuthData The result containing the information from the business account.
-   */
-  public void setBusinessAuthData(com.evernote.edam.userstore.AuthenticationResult businessAuthData) {
-    setBusinessAuthToken(businessAuthData.getAuthenticationToken());
-    setBusinessAuthTokenExpiration(businessAuthData.getExpiration());
-    setBusinessNoteStoreUrl(businessAuthData.getNoteStoreUrl());
-    setBusinessUser(businessAuthData.getUser());
-  }
-
-  /**
-   * @return the BusinessNoteStore Authorizaton token's expiration time (epoch)
-   */
-  public long getBusinessAuthTokenExpiration() {
-    return mBusinessAuthTokenExpiration;
-  }
-
-  /**
-   * Set the BusinessNoteStore Authorizaton token's expiration time  (epoch).
-   */
-  void setBusinessAuthTokenExpiration(long businessAuthTokenExpiration) {
-    this.mBusinessAuthTokenExpiration = businessAuthTokenExpiration;
-  }
+    protected static SharedPreferences getPreferences(Context context) {
+        return context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
+    }
 
     private static String parseWebApiUrlPrefix(String noteStoreUrl) {
         int index = noteStoreUrl.indexOf("notestore");

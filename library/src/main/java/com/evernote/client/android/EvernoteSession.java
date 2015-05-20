@@ -28,18 +28,15 @@ package com.evernote.client.android;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.app.FragmentActivity;
-import android.text.TextUtils;
 
 import com.evernote.client.android.asyncclient.EvernoteClientFactory;
 import com.evernote.client.android.helper.Cat;
 import com.evernote.client.android.helper.EvernotePreconditions;
 import com.evernote.client.android.login.EvernoteLoginActivity;
 import com.evernote.client.android.login.EvernoteLoginFragment;
-import com.evernote.client.oauth.EvernoteAuthToken;
 
 import java.io.File;
 
@@ -286,52 +283,6 @@ public final class EvernoteSession {
     }
 
     /**
-     * Called upon completion of the OAuth process to save resulting authentication
-     * information into the application's SharedPreferences, allowing it to be reused
-     * later.
-     *
-     * TODO: move this code
-     *
-     * @param ctx          Application Context or activity
-     * @param authToken    The authentication information returned at the end of a
-     *                     successful OAuth authentication.
-     * @param evernoteHost the URL of the Evernote Web API to connect to, provided by the bootstrap results
-     */
-    protected boolean persistAuthenticationToken(Context ctx, EvernoteAuthToken authToken, String evernoteHost) {
-        if (ctx == null || authToken == null) {
-            return false;
-        }
-        synchronized (this) {
-            mAuthenticationResult =
-                new AuthenticationResult(
-                    authToken.getToken(),
-                    authToken.getNoteStoreUrl(),
-                    authToken.getWebApiUrlPrefix(),
-                    evernoteHost,
-                    authToken.getUserId(),
-                    authToken.isAppLinkedNotebook());
-
-            mAuthenticationResult.persist(SessionPreferences.getPreferences(ctx));
-        }
-
-        return true;
-    }
-
-    /**
-     * Check whether the session has valid authentication information
-     * that will allow successful API calls to be made.
-     */
-    public boolean isLoggedIn() {
-        synchronized (this) {
-            return mAuthenticationResult != null;
-        }
-    }
-
-    public boolean isAppLinkedNotebook() {
-        return mAuthenticationResult.isAppLinkedNotebook();
-    }
-
-    /**
      * Sets this session instance as singleton. After that you can use {@link #getInstance()} to get
      * this session.
      *
@@ -342,40 +293,39 @@ public final class EvernoteSession {
         return this;
     }
 
+    protected synchronized void setAuthenticationResult(AuthenticationResult authenticationResult) {
+        mAuthenticationResult = authenticationResult;
+    }
+
     /**
-     * Clear all stored authentication information.
+     * Check whether the session has valid authentication information
+     * that will allow successful API calls to be made.
      */
-    public void logOut(Context ctx) throws InvalidAuthenticationException {
+    public synchronized boolean isLoggedIn() {
+        return mAuthenticationResult != null;
+    }
+
+    /**
+     * Clears all stored session information. If the user is not logged in, then this is a no-op.
+     *
+     * @return {@code true} if the user successfully logged out, {@code false} if the user wasn't
+     * logged in.
+     * @see #isLoggedIn()
+     */
+    public synchronized boolean logOut() {
         if (!isLoggedIn()) {
-            throw new InvalidAuthenticationException("Must not call when already logged out");
-        }
-        synchronized (this) {
-            mAuthenticationResult.clear(SessionPreferences.getPreferences(ctx));
-            mAuthenticationResult = null;
+            return false;
         }
 
-        // TODO The cookie jar is application scope, so we should only be removing evernote.com cookies.
-        EvernoteUtil.removeAllCookies(ctx);
+        mAuthenticationResult.clear();
+        mAuthenticationResult = null;
+
+        EvernoteUtil.removeAllCookies(getApplicationContext());
+        return true;
     }
 
     /*package*/ boolean isForceAuthenticationInThirdPartyApp() {
         return mForceAuthenticationInThirdPartyApp;
-    }
-
-    /**
-     * Restore an AuthenticationResult from shared preferences.
-     * @return The restored AuthenticationResult, or null if the preferences
-     * did not contain the required information.
-     */
-    private static AuthenticationResult getAuthenticationResultFromPref(SharedPreferences prefs) {
-        AuthenticationResult authResult = new AuthenticationResult(prefs);
-
-        if (TextUtils.isEmpty(authResult.getEvernoteHost()) || TextUtils.isEmpty(authResult.getAuthToken()) || TextUtils.isEmpty(authResult.getNoteStoreUrl())
-            || TextUtils.isEmpty(authResult.getWebApiUrlPrefix()) || TextUtils.isEmpty(authResult.getEvernoteHost())) {
-            return null;
-        }
-
-        return authResult;
     }
 
     /**
@@ -512,7 +462,7 @@ public final class EvernoteSession {
             EvernoteSession evernoteSession = new EvernoteSession();
             evernoteSession.mConsumerKey = EvernotePreconditions.checkNotEmpty(consumerKey);
             evernoteSession.mConsumerSecret = EvernotePreconditions.checkNotEmpty(consumerSecret);
-            evernoteSession.mAuthenticationResult = getAuthenticationResultFromPref(SessionPreferences.getPreferences(mContext));
+            evernoteSession.mAuthenticationResult = AuthenticationResult.fromPreferences(mContext);
 
             return build(evernoteSession);
         }

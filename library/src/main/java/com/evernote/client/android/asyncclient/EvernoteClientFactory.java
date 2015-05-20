@@ -67,6 +67,8 @@ public class EvernoteClientFactory {
 
     private final EvernoteAsyncClient mCreateHelperClient;
 
+    private com.evernote.edam.userstore.AuthenticationResult mBusinessAuthenticationResult;
+
     protected EvernoteClientFactory(EvernoteSession session, OkHttpClient httpClient, ByteStore byteStore, Map<String, String> headers, ExecutorService executorService) {
         mEvernoteSession = EvernotePreconditions.checkNotNull(session);
         mHttpClient = EvernotePreconditions.checkNotNull(httpClient);
@@ -230,11 +232,11 @@ public class EvernoteClientFactory {
     }
 
     protected EvernoteBusinessNotebookHelper createBusinessNotebookHelper() throws TException, EDAMUserException, EDAMSystemException {
-        com.evernote.client.android.AuthenticationResult authResult = authenticateToBusiness();
+        authenticateToBusiness();
 
-        EvernoteNoteStoreClient client = getNoteStoreClient(authResult.getBusinessNoteStoreUrl(), authResult.getBusinessAuthToken());
+        EvernoteNoteStoreClient client = getNoteStoreClient(mBusinessAuthenticationResult.getNoteStoreUrl(), mBusinessAuthenticationResult.getAuthenticationToken());
 
-        User businessUser = authResult.getBusinessUser();
+        User businessUser = mBusinessAuthenticationResult.getUser();
         return new EvernoteBusinessNotebookHelper(client, mExecutorService, businessUser.getName(), businessUser.getShardId());
     }
 
@@ -260,8 +262,8 @@ public class EvernoteClientFactory {
      */
     public synchronized EvernoteHtmlHelper getHtmlHelperBusiness() throws TException, EDAMUserException, EDAMSystemException {
         if (mHtmlHelperBusiness == null) {
-            com.evernote.client.android.AuthenticationResult authenticationResult = authenticateToBusiness();
-            mHtmlHelperBusiness = createHtmlHelper(authenticationResult.getBusinessAuthToken());
+            authenticateToBusiness();
+            mHtmlHelperBusiness = createHtmlHelper(mBusinessAuthenticationResult.getAuthenticationToken());
         }
         return mHtmlHelperBusiness;
     }
@@ -322,20 +324,14 @@ public class EvernoteClientFactory {
         }
     }
 
-    protected final com.evernote.client.android.AuthenticationResult authenticateToBusiness() throws TException, EDAMUserException, EDAMSystemException {
-        com.evernote.client.android.AuthenticationResult authResult = mEvernoteSession.getAuthenticationResult();
-
+    protected final void authenticateToBusiness() throws TException, EDAMUserException, EDAMSystemException {
         if (isBusinessAuthExpired()) {
-            AuthenticationResult businessAuthResult = getUserStoreClient().authenticateToBusiness();
-            authResult.setBusinessAuthData(businessAuthResult);
+            mBusinessAuthenticationResult = getUserStoreClient().authenticateToBusiness();
         }
-
-        return authResult;
     }
 
     protected final boolean isBusinessAuthExpired() {
-        com.evernote.client.android.AuthenticationResult authResult = mEvernoteSession.getAuthenticationResult();
-        return authResult.getBusinessAuthToken() == null || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis();
+        return mBusinessAuthenticationResult == null || mBusinessAuthenticationResult.getExpiration() < System.currentTimeMillis();
     }
 
     protected void checkLoggedIn() {

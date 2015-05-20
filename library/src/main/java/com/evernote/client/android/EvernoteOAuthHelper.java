@@ -7,7 +7,6 @@ import android.text.TextUtils;
 
 import com.evernote.client.android.helper.Cat;
 import com.evernote.client.android.helper.EvernotePreconditions;
-import com.evernote.client.oauth.EvernoteAuthToken;
 import com.evernote.client.oauth.YinxiangApi;
 import com.evernote.edam.userstore.BootstrapInfo;
 import com.evernote.edam.userstore.BootstrapProfile;
@@ -15,11 +14,15 @@ import com.evernote.edam.userstore.BootstrapProfile;
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.builder.api.Api;
 import org.scribe.builder.api.EvernoteApi;
+import org.scribe.exceptions.OAuthException;
 import org.scribe.model.Token;
 import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
+import org.scribe.utils.OAuthEncoder;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A helper class to handle OAuth requests.
@@ -31,6 +34,10 @@ public class EvernoteOAuthHelper {
 
     protected static final String CALLBACK_SCHEME = "en-oauth";
     protected static final Cat CAT = new Cat("OAuthHelper");
+
+    protected static final Pattern NOTE_STORE_REGEX = Pattern.compile("edam_noteStoreUrl=([^&]+)");
+    protected static final Pattern WEB_API_REGEX = Pattern.compile("edam_webApiUrlPrefix=([^&]+)");
+    protected static final Pattern USER_ID_REGEX = Pattern.compile("edam_userId=([^&]+)");
 
     protected final EvernoteSession mSession;
     protected final String mConsumerKey;
@@ -113,8 +120,19 @@ public class EvernoteOAuthHelper {
 
         Verifier verifier = new Verifier(verifierString);
         try {
-            EvernoteAuthToken evernoteAuthToken = new EvernoteAuthToken(mOAuthService.getAccessToken(mRequestToken, verifier), isAppLinkedNotebook);
-            mSession.persistAuthenticationToken(activity, evernoteAuthToken, mBootstrapProfile.getSettings().getServiceHost());
+            Token accessToken = mOAuthService.getAccessToken(mRequestToken, verifier);
+            String rawResponse = accessToken.getRawResponse();
+
+            String authToken = accessToken.getToken();
+            String noteStoreUrl = extract(rawResponse, NOTE_STORE_REGEX);
+            String webApiUrlPrefix = extract(rawResponse, WEB_API_REGEX);
+            int userId = Integer.parseInt(extract(rawResponse, USER_ID_REGEX));
+
+            String evernoteHost = mBootstrapProfile.getSettings().getServiceHost();
+
+            AuthenticationResult authenticationResult = new AuthenticationResult(authToken, noteStoreUrl, webApiUrlPrefix, evernoteHost, userId, isAppLinkedNotebook);
+            authenticationResult.persist();
+            mSession.setAuthenticationResult(authenticationResult);
             return true;
 
         } catch (Exception e) {
@@ -179,5 +197,14 @@ public class EvernoteOAuthHelper {
             .apiSecret(consumerSecret)
             .callback(CALLBACK_SCHEME + "://callback")
             .build();
+    }
+
+    private static String extract(String response, Pattern p) {
+        Matcher matcher = p.matcher(response);
+        if (matcher.find() && matcher.groupCount() >= 1) {
+            return OAuthEncoder.decode(matcher.group(1));
+        } else {
+            throw new OAuthException("Response body is incorrect. Can't extract token and secret from this: " + response);
+        }
     }
 }

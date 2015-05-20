@@ -58,6 +58,8 @@ public class ClientFactory {
   private Map<String, String> mCustomHeaders;
   private File mTempDir;
 
+  private AuthenticationResult mBusinessAuthResult;
+
   /**
    * This should always be requested through an {@link com.evernote.client.android.EvernoteSession}.
    */
@@ -66,6 +68,10 @@ public class ClientFactory {
   ClientFactory(String userAgent, File tempDir) {
     mUserAgent = userAgent;
     mTempDir = tempDir;
+  }
+
+  protected AuthenticationResult getBusinessAuthResult() {
+    return mBusinessAuthResult;
   }
 
   /**
@@ -115,24 +121,15 @@ public class ClientFactory {
    */
   @Deprecated
   public AsyncBusinessNoteStoreClient createBusinessNoteStoreClient() throws TException, EDAMUserException, EDAMSystemException {
-    com.evernote.client.android.AuthenticationResult authResult =
-        EvernoteSession.getInstance().getAuthenticationResult();
-
-    if (authResult.getBusinessAuthToken() == null
-        || authResult.getBusinessAuthTokenExpiration() < System.currentTimeMillis()) {
-
-      AuthenticationResult businessAuthResult = createUserStoreClient().getClient().authenticateToBusiness(authResult.getAuthToken());
-
-      authResult.setBusinessAuthToken(businessAuthResult.getAuthenticationToken());
-      authResult.setBusinessAuthTokenExpiration(businessAuthResult.getExpiration());
-      authResult.setBusinessNoteStoreUrl(businessAuthResult.getNoteStoreUrl());
-      authResult.setBusinessUser(businessAuthResult.getUser());
+    String authToken = EvernoteSession.getInstance().getAuthToken();
+    if (mBusinessAuthResult == null || mBusinessAuthResult.getExpiration() < System.currentTimeMillis()) {
+      mBusinessAuthResult = createUserStoreClient().getClient().authenticateToBusiness(authToken);
     }
 
     TEvernoteHttpClient transport =
-        new TEvernoteHttpClient(authResult.getBusinessNoteStoreUrl(), mUserAgent, mTempDir);
+            new TEvernoteHttpClient(mBusinessAuthResult.getNoteStoreUrl(), mUserAgent, mTempDir);
     TBinaryProtocol protocol = new TBinaryProtocol(transport);
-    return new AsyncBusinessNoteStoreClient(protocol, protocol, authResult.getBusinessAuthToken(), this);
+    return new AsyncBusinessNoteStoreClient(protocol, protocol, mBusinessAuthResult.getAuthenticationToken(), this);
   }
 
 

@@ -190,8 +190,8 @@ public class AsyncLinkedNoteStoreClient {
     LinkedNotebook linkedNotebook = new LinkedNotebook();
     linkedNotebook.setShareKey(sharedNotebook.getShareKey());
     linkedNotebook.setShareName(originalNotebook.getName());
-    linkedNotebook.setUsername(EvernoteSession.getInstance().getAuthenticationResult().getBusinessUser().getUsername());
-    linkedNotebook.setShardId(EvernoteSession.getInstance().getAuthenticationResult().getBusinessUser().getShardId());
+    linkedNotebook.setUsername(mClientFactory.getBusinessAuthResult().getUser().getUsername());
+    linkedNotebook.setShardId(mClientFactory.getBusinessAuthResult().getUser().getShardId());
 
     return getAsyncPersonalClient().getClient().createLinkedNotebook(getAsyncPersonalClient().getAuthenticationToken(), linkedNotebook);
   }
