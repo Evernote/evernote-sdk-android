@@ -27,4 +27,14 @@ public abstract class ByteStore extends OutputStream {
      * Reset all pointers.
      */
     public abstract void reset() throws IOException;
+
+    /**
+     * A factory to create a byte store.
+     */
+    public interface Factory {
+        /**
+         * @return A new instance.
+         */
+        ByteStore create();
+    }
 }

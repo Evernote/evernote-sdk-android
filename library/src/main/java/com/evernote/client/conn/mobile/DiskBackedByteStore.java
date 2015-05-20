@@ -67,16 +67,9 @@ public class DiskBackedByteStore extends ByteStore {
 
     /**
      * @param cacheDir A directory where the temporary data is stored.
-     */
-    public DiskBackedByteStore(File cacheDir) {
-        this(cacheDir, DEFAULT_MEMORY_BUFFER_SIZE);
-    }
-
-    /**
-     * @param cacheDir A directory where the temporary data is stored.
      * @param maxMemory The threshold before the data is written to disk.
      */
-    public DiskBackedByteStore(File cacheDir, int maxMemory) {
+    protected DiskBackedByteStore(File cacheDir, int maxMemory) {
         mCacheDir = cacheDir;
         mMaxMemory = maxMemory;
     }
@@ -107,6 +100,10 @@ public class DiskBackedByteStore extends ByteStore {
         if (mClosed) {
             throw new IOException("Already closed");
         }
+        if (mCurrentOutputStream != null) {
+            return;
+        }
+
         if (mByteArrayOutputStream == null) {
             mByteArrayOutputStream = new ByteArrayOutputStream(mMaxMemory);
         }
@@ -122,7 +119,11 @@ public class DiskBackedByteStore extends ByteStore {
     }
 
     private boolean isSwapRequired(int delta) {
-        return mBytesWritten + delta > mMaxMemory;
+        return !swapped() && mBytesWritten + delta > mMaxMemory;
+    }
+
+    private boolean swapped() {
+        return mBytesWritten > mMaxMemory;
     }
 
     protected void swapToDisk() throws IOException {
@@ -192,6 +193,33 @@ public class DiskBackedByteStore extends ByteStore {
             mInputStream = null;
             mBytesWritten = 0;
             mClosed = false;
+        }
+    }
+
+    public static class Factory implements ByteStore.Factory {
+
+        private final File mCacheDir;
+        private final int mMaxMemory;
+
+        /**
+         * @param cacheDir A directory where the temporary data is stored.
+         */
+        public Factory(File cacheDir) {
+            this(cacheDir, DEFAULT_MEMORY_BUFFER_SIZE);
+        }
+
+        /**
+         * @param cacheDir A directory where the temporary data is stored.
+         * @param maxMemory The threshold before the data is written to disk.
+         */
+        public Factory(File cacheDir, int maxMemory) {
+            mCacheDir = cacheDir;
+            mMaxMemory = maxMemory;
+        }
+
+        @Override
+        public DiskBackedByteStore create() {
+            return new DiskBackedByteStore(mCacheDir, mMaxMemory);
         }
     }
 }

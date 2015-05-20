@@ -6,10 +6,12 @@ import android.util.Pair;
 
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.helper.EvernotePreconditions;
+import com.evernote.client.android.type.NoteRef;
 import com.evernote.edam.error.EDAMNotFoundException;
 import com.evernote.edam.error.EDAMSystemException;
 import com.evernote.edam.error.EDAMUserException;
 import com.evernote.edam.notestore.NoteFilter;
+import com.evernote.edam.notestore.NoteMetadata;
 import com.evernote.edam.notestore.NotesMetadataList;
 import com.evernote.edam.notestore.NotesMetadataResultSpec;
 import com.evernote.edam.type.LinkedNotebook;
@@ -291,7 +293,7 @@ public class EvernoteSearchHelper extends EvernoteAsyncClient {
         }
 
         /**
-         * If no spec is set, then the default value will include the note titles.
+         * If no spec is set, then the default value will include the note's title and notebook GUID.
          *
          * @param resultSpec The used result spec for all queries.
          */
@@ -360,6 +362,7 @@ public class EvernoteSearchHelper extends EvernoteAsyncClient {
             if (mResultSpec == null) {
                 mResultSpec = new NotesMetadataResultSpec();
                 mResultSpec.setIncludeTitle(true);
+                mResultSpec.setIncludeNotebookGuid(true);
             }
             return mResultSpec;
         }
@@ -400,10 +403,24 @@ public class EvernoteSearchHelper extends EvernoteAsyncClient {
         private final Map<Pair<String, LinkedNotebook>, List<NotesMetadataList>> mLinkedNotebookResults;
         private final Map<Pair<String, LinkedNotebook>, List<NotesMetadataList>> mBusinessResults;
 
+        private NoteRef.Factory mNoteRefFactory;
+
         private Result(Set<Scope> scopes) {
             mPersonalResults = scopes.contains(Scope.PERSONAL_NOTES) ? new ArrayList<NotesMetadataList>() : null;
             mLinkedNotebookResults = scopes.contains(Scope.LINKED_NOTEBOOKS) ? new HashMap<Pair<String, LinkedNotebook>, List<NotesMetadataList>>() : null;
             mBusinessResults = scopes.contains(Scope.BUSINESS) ? new HashMap<Pair<String, LinkedNotebook>, List<NotesMetadataList>>() : null;
+
+            mNoteRefFactory = new NoteRef.DefaultFactory();
+        }
+
+        /**
+         * Exchange the factory to control how the {@link NoteRef} instances are created if you receive
+         * the results as NoteRef.
+         *
+         * @param noteRefFactory The new factory to construct the {@link NoteRef} instances.
+         */
+        public void setNoteRefFactory(@NonNull NoteRef.Factory noteRefFactory) {
+            mNoteRefFactory = EvernotePreconditions.checkNotNull(noteRefFactory);
         }
 
         private void setPersonalResults(List<NotesMetadataList> personalResults) {
@@ -429,6 +446,19 @@ public class EvernoteSearchHelper extends EvernoteAsyncClient {
         }
 
         /**
+         * @return All personal notes. Returns {@code null}, if {@link Scope#PERSONAL_NOTES} wasn't set.
+         */
+        public List<NoteRef> getPersonalResultsAsNoteRef() {
+            if (mPersonalResults == null) {
+                return null;
+            }
+
+            List<NoteRef> result = new ArrayList<>();
+            fillNoteRef(mPersonalResults, result, null);
+            return result;
+        }
+
+        /**
          * @return All linked notebooks with their paginated search result. The key in the returned
          * map consists of the {@link LinkedNotebook} and its GUID. Returns {@code null}, if
          * {@link Scope#LINKED_NOTEBOOKS} wasn't set.
@@ -438,12 +468,83 @@ public class EvernoteSearchHelper extends EvernoteAsyncClient {
         }
 
         /**
+         * @return All linked notes. Returns {@code null}, if {@link Scope#LINKED_NOTEBOOKS} wasn't set.
+         */
+        public List<NoteRef> getLinkedNotebookResultsAsNoteRef() {
+            if (mLinkedNotebookResults == null) {
+                return null;
+            }
+
+            List<NoteRef> result = new ArrayList<>();
+
+            for (Pair<String, LinkedNotebook> key : mLinkedNotebookResults.keySet()) {
+                List<NotesMetadataList> notesMetadataLists = mLinkedNotebookResults.get(key);
+                fillNoteRef(notesMetadataLists, result, key.second);
+            }
+
+            return result;
+        }
+
+        /**
          * @return All business notebooks with their paginated search result. The key in the returned
          * map consists of the business notebook and its GUID. Returns {@code null}, if
          * {@link Scope#BUSINESS} wasn't set.
          */
         public Map<Pair<String, LinkedNotebook>, List<NotesMetadataList>> getBusinessResults() {
             return mBusinessResults;
+        }
+
+        /**
+         * @return All business notes. Returns {@code null}, if {@link Scope#BUSINESS} wasn't set.
+         */
+        public List<NoteRef> getBusinessResultsAsNoteRef() {
+            if (mBusinessResults == null) {
+                return null;
+            }
+
+            List<NoteRef> result = new ArrayList<>();
+
+            for (Pair<String, LinkedNotebook> key : mBusinessResults.keySet()) {
+                List<NotesMetadataList> notesMetadataLists = mBusinessResults.get(key);
+                fillNoteRef(notesMetadataLists, result, key.second);
+            }
+
+            return result;
+        }
+
+        /**
+         * @return All personal, linked and business notes. Never returns {@code null}, if no results
+         * were found then the list is empty.
+         */
+        public List<NoteRef> getAllAsNoteRef() {
+            List<NoteRef> result = new ArrayList<>();
+
+            List<NoteRef> part = getPersonalResultsAsNoteRef();
+            if (part != null) {
+                result.addAll(part);
+            }
+
+            part = getLinkedNotebookResultsAsNoteRef();
+            if (part != null) {
+                result.addAll(part);
+            }
+
+            part = getBusinessResultsAsNoteRef();
+            if (part != null) {
+                result.addAll(part);
+            }
+
+            return result;
+        }
+
+        protected void fillNoteRef(final List<NotesMetadataList> notesMetadataList, final List<NoteRef> result, LinkedNotebook linkedNotebook) {
+            for (NotesMetadataList notesMetadataListEntry : notesMetadataList) {
+                List<NoteMetadata> notes = notesMetadataListEntry.getNotes();
+                for (NoteMetadata note : notes) {
+                    NoteRef ref = linkedNotebook == null ? mNoteRefFactory.fromPersonal(note) : mNoteRefFactory.fromLinked(note, linkedNotebook);
+                    result.add(ref);
+                }
+            }
         }
     }
 }

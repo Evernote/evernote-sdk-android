@@ -27,6 +27,7 @@ package com.evernote.client.android;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -86,6 +87,10 @@ public final class EvernoteSession {
     @Deprecated
     public static final int REQUEST_CODE_OAUTH = 14390;
 
+    /**
+     * The used request code when you launch authentication process from a {@link Activity}. Override
+     * {@link Activity#onActivityResult(int, int, Intent)} to receive the result.
+     */
     public static final int REQUEST_CODE_LOGIN = 14390;
 
     private static final Cat CAT = new Cat("EvernoteSession");
@@ -143,7 +148,9 @@ public final class EvernoteSession {
     private AuthenticationResult mAuthenticationResult;
     private boolean mSupportAppLinkedNotebooks;
     private boolean mForceAuthenticationInThirdPartyApp;
-    private EvernoteClientFactory mEvernoteClientFactory;
+
+    private EvernoteClientFactory.Builder mEvernoteClientFactoryBuilder;
+    private ThreadLocal<EvernoteClientFactory> mFactoryThreadLocal;
 
     private EvernoteSession() {
         // do nothing, builder sets up everything
@@ -166,17 +173,51 @@ public final class EvernoteSession {
         return mClientFactory;
     }
 
+    /**
+     * Returns a factory to create various clients and helper objects to get access to the Evernote API.
+     *
+     * <br>
+     * <br>
+     *
+     * The returned factory is <b>not thread safe</b> itself, however, the cached factory is a thread local
+     * object. That means a new factory is created for each thread calling this method. The recommended
+     * approach is to reuse worker threads to keep the number of created factories small.
+     *
+     * <br>
+     * <br>
+     *
+     * With {@link #setEvernoteClientFactoryBuilder(EvernoteClientFactory.Builder)} you can exchange
+     * the builder.
+     *
+     * @return A factory for this thread.
+     */
     public synchronized EvernoteClientFactory getEvernoteClientFactory() {
-        if (mEvernoteClientFactory == null) {
-            mEvernoteClientFactory = new EvernoteClientFactory.Builder(this).build();
+        if (mFactoryThreadLocal == null) {
+            mFactoryThreadLocal = new ThreadLocal<>();
         }
-        return mEvernoteClientFactory;
+        if (mEvernoteClientFactoryBuilder == null) {
+            mEvernoteClientFactoryBuilder = new EvernoteClientFactory.Builder(this);
+        }
+
+        EvernoteClientFactory factory = mFactoryThreadLocal.get();
+        if (factory == null) {
+            factory = mEvernoteClientFactoryBuilder.build();
+            mFactoryThreadLocal.set(factory);
+        }
+        return factory;
     }
 
-    public synchronized void setEvernoteClientFactory(EvernoteClientFactory evernoteClientFactory) {
-        mEvernoteClientFactory = EvernotePreconditions.checkNotNull(evernoteClientFactory);
+    /**
+     * @param builder The new builder returning {@link EvernoteClientFactory}s in {@link #getEvernoteClientFactory()}.
+     */
+    public synchronized void setEvernoteClientFactoryBuilder(EvernoteClientFactory.Builder builder) {
+        mEvernoteClientFactoryBuilder = EvernotePreconditions.checkNotNull(builder);
+        mFactoryThreadLocal = null; // invalidate
     }
 
+    /**
+     * @return The application context for the running app.
+     */
     public Context getApplicationContext() {
         return mApplicationContext;
     }
@@ -290,6 +331,12 @@ public final class EvernoteSession {
         return mAuthenticationResult.isAppLinkedNotebook();
     }
 
+    /**
+     * Sets this session instance as singleton. After that you can use {@link #getInstance()} to get
+     * this session.
+     *
+     * @return The same instance.
+     */
     public EvernoteSession asSingleton() {
         sInstance = this;
         return this;
@@ -337,7 +384,14 @@ public final class EvernoteSession {
      * Production will return evernote.com and app.yinxiang.com
      */
     public enum EvernoteService implements Parcelable {
+        /**
+         * References sandbox.evernote.com
+         */
         SANDBOX,
+
+        /**
+         * References evernote.com and app.yinxiang.com
+         */
         PRODUCTION;
 
 
@@ -364,6 +418,9 @@ public final class EvernoteSession {
         };
     }
 
+    /**
+     * Builder class to construct an {@link EvernoteSession}.
+     */
     public static class Builder {
 
         private final Context mContext;
@@ -378,10 +435,11 @@ public final class EvernoteSession {
 
         private boolean mForceAuthenticationInThirdPartyApp;
 
+        /**
+         * @param context Any context. The session caches the application context.
+         */
         public Builder(Context context) {
-            if (context == null) {
-                throw new IllegalArgumentException("Null not allowed");
-            }
+            EvernotePreconditions.checkNotNull(context);
 
             mContext = context.getApplicationContext();
             mSupportAppLinkedNotebooks = true;
@@ -392,16 +450,37 @@ public final class EvernoteSession {
             mMessageCacheDir = mContext.getFilesDir();
         }
 
+        /**
+         * Default is {@link EvernoteService#SANDBOX}. You need to exchange the value for your
+         * production app.
+         *
+         * @param evernoteService The desired service.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         */
         public Builder setEvernoteService(EvernoteService evernoteService) {
             mEvernoteService = EvernotePreconditions.checkNotNull(evernoteService);
             return this;
         }
 
+        /**
+         * Default is {@code true}.
+         *
+         * @param supportAppLinkedNotebooks {@code true} if app linked notebooks are supported.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         */
         public Builder setSupportAppLinkedNotebooks(boolean supportAppLinkedNotebooks) {
             mSupportAppLinkedNotebooks = supportAppLinkedNotebooks;
             return this;
         }
 
+        /**
+         * Default is {@code false}.
+         *
+         * @param forceAuthenticationInThirdPartyApp {@code true} if the authentication should be
+         *                                           launched in the third party app and not in the
+         *                                           main Evernote app.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         */
         public Builder setForceAuthenticationInThirdPartyApp(boolean forceAuthenticationInThirdPartyApp) {
             mForceAuthenticationInThirdPartyApp = forceAuthenticationInThirdPartyApp;
             return this;
@@ -422,6 +501,13 @@ public final class EvernoteSession {
             return this;
         }
 
+        /**
+         * Creates a new instance with this consumer key and secret pair.
+         *
+         * @param consumerKey Your consumer key.
+         * @param consumerSecret Your consumer secret.
+         * @return The new created session. Call {@link #asSingleton()} to make reuse the session in the SDK.
+         */
         public EvernoteSession build(String consumerKey, String consumerSecret) {
             EvernoteSession evernoteSession = new EvernoteSession();
             evernoteSession.mConsumerKey = EvernotePreconditions.checkNotEmpty(consumerKey);
@@ -431,6 +517,13 @@ public final class EvernoteSession {
             return build(evernoteSession);
         }
 
+        /**
+         * Creates a session only for your personal account. Use this with the production environment.
+         *
+         * @param developerToken Your personal developer token.
+         * @param noteStoreUrl The note store url of your Evernote account.
+         * @return The new created session. Call {@link #asSingleton()} to make reuse the session in the SDK.
+         */
         public EvernoteSession buildForSingleUser(String developerToken, String noteStoreUrl) {
             EvernoteSession evernoteSession = new EvernoteSession();
             evernoteSession.mAuthenticationResult = new AuthenticationResult(EvernotePreconditions.checkNotEmpty(developerToken),

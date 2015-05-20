@@ -31,19 +31,6 @@ import java.util.concurrent.CountDownLatch;
         mIsFragment = isFragment;
     }
 
-    private EvernoteLoginFragment getFragment() {
-        if (!mIsFragment) {
-            return null;
-        }
-
-        Fragment fragment = findFragmentSupport(EvernoteLoginFragment.TAG);
-        if (fragment instanceof EvernoteLoginFragment) {
-            return (EvernoteLoginFragment) fragment;
-        } else {
-            return null;
-        }
-    }
-
     @Override
     public Boolean execute() {
         boolean intentFired = startAuthorization();
@@ -83,8 +70,8 @@ import java.util.concurrent.CountDownLatch;
 
 
         if (mIsFragment) {
-            EvernoteLoginFragment fragment = getFragment();
-            if (fragment != null) {
+            Fragment fragment = getFragment();
+            if (fragment instanceof EvernoteLoginFragment) {
                 fragment.startActivityForResult(intent, REQUEST_AUTH);
                 return true;
             } else {

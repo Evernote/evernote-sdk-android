@@ -344,13 +344,18 @@ public class EvernoteClientFactory {
         }
     }
 
+    /**
+     * A builder to construct an {@link EvernoteClientFactory}. The recommended approach is to set
+     * the builder in the session with {@link EvernoteSession#setEvernoteClientFactoryBuilder(Builder)}
+     * and then to call {@link EvernoteSession#getEvernoteClientFactory()}.
+     */
     public static class Builder {
 
         private final EvernoteSession mEvernoteSession;
         private final Map<String, String> mHeaders;
 
         private OkHttpClient mHttpClient;
-        private ByteStore mByteStore;
+        private ByteStore.Factory mByteStoreFactory;
         private ExecutorService mExecutorService;
 
         /**
@@ -370,10 +375,11 @@ public class EvernoteClientFactory {
         }
 
         /**
-         * @param byteStore Caches the written data, which is later sent to the Evernote service.
+         * @param byteStoreFactory Creates the {@link ByteStore} for each Thread. The {@link ByteStore}
+         *                         caches the written data, which is later sent to the Evernote service.
          */
-        public Builder setByteStore(ByteStore byteStore) {
-            mByteStore = byteStore;
+        public Builder setByteStoreFactory(ByteStore.Factory byteStoreFactory) {
+            mByteStoreFactory = byteStoreFactory;
             return this;
         }
 
@@ -395,8 +401,8 @@ public class EvernoteClientFactory {
             if (mHttpClient == null) {
                 mHttpClient = createDefaultHttpClient();
             }
-            if (mByteStore == null) {
-                mByteStore = createDefaultByteStore(mEvernoteSession.getApplicationContext());
+            if (mByteStoreFactory == null) {
+                mByteStoreFactory = createDefaultByteStore(mEvernoteSession.getApplicationContext());
             }
             if (mExecutorService == null) {
                 mExecutorService = Executors.newSingleThreadExecutor();
@@ -406,7 +412,7 @@ public class EvernoteClientFactory {
             addHeader("Accept", "application/x-thrift");
             addHeader("User-Agent", EvernoteUtil.generateUserAgentString(mEvernoteSession.getApplicationContext()));
 
-            return new EvernoteClientFactory(mEvernoteSession, mHttpClient, mByteStore, mHeaders, mExecutorService);
+            return new EvernoteClientFactory(mEvernoteSession, mHttpClient, mByteStoreFactory.create(), mHeaders, mExecutorService);
         }
 
         private OkHttpClient createDefaultHttpClient() {
@@ -418,9 +424,9 @@ public class EvernoteClientFactory {
             return httpClient;
         }
 
-        private ByteStore createDefaultByteStore(Context context) {
+        private ByteStore.Factory createDefaultByteStore(Context context) {
             int cacheSize = (int) (Runtime.getRuntime().maxMemory() / 32);
-            return new DiskBackedByteStore(new File(context.getCacheDir(), "evernoteCache"), cacheSize);
+            return new DiskBackedByteStore.Factory(new File(context.getCacheDir(), "evernoteCache"), cacheSize);
         }
     }
 }

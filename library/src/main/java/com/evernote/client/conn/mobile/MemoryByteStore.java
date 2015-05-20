@@ -49,6 +49,10 @@ public class MemoryByteStore extends ByteStore {
 
     protected InputStream mInputStream;
 
+    protected MemoryByteStore() {
+        // no op
+    }
+
     @Override
     public void write(@NonNull byte[] buffer, int offset, int count) throws IOException {
         initBuffers();
@@ -110,6 +114,15 @@ public class MemoryByteStore extends ByteStore {
             mInputStream = null;
             mBytesWritten = 0;
             mClosed = false;
+        }
+    }
+
+    @SuppressWarnings("unused")
+    public static class Factory implements ByteStore.Factory {
+
+        @Override
+        public MemoryByteStore create() {
+            return new MemoryByteStore();
         }
     }
 }

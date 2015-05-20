@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
+import android.os.Looper;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.ValueCallback;
@@ -201,6 +202,15 @@ public final class EvernoteUtil {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private static void removeAllCookiesV21() {
         final CookieManager cookieManager = CookieManager.getInstance();
+
+        Looper looper = Looper.myLooper();
+        boolean prepared = false;
+        if (looper == null) {
+            Looper.prepare();
+            prepared = true;
+        }
+
+        // requires a looper
         cookieManager.removeAllCookies(new ValueCallback<Boolean>() {
             @Override
             public void onReceiveValue(Boolean value) {
@@ -214,6 +224,11 @@ public final class EvernoteUtil {
                 thread.start();
             }
         });
+
+        if (prepared) {
+            looper = Looper.myLooper();
+            looper.quit();
+        }
     }
 
     /**

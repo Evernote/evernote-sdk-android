@@ -62,8 +62,6 @@ import java.util.concurrent.TimeUnit;
 @Deprecated
 public class TEvernoteHttpClient extends TTransport {
 
-  // TODO: revert changes, mark deprecated
-
   private URL url = null;
   private String userAgent = null;
   private final DiskBackedByteStore requestBuffer;
@@ -93,7 +91,7 @@ public class TEvernoteHttpClient extends TTransport {
     try {
       this.url = new URL(url);
       requestBuffer =
-          new DiskBackedByteStore(tempDir);
+          new DiskBackedByteStore.Factory(tempDir).create();
     } catch (IOException iox) {
       throw new TTransportException(iox);
     }
