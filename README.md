@@ -24,7 +24,7 @@ Add the library as a dependency in your build.gradle file.
 
 ```groovy
 dependencies {
-    compile 'com.evernote:android-sdk:2.0.0'
+    compile 'com.evernote:android-sdk:2.0.0-RC1'
 }
 ```
 

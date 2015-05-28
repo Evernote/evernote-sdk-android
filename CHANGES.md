@@ -1,4 +1,4 @@
-= 1.1.3-SNAPSHOT / 2015-2-28
+= 2.0.0-RC1 / 2015-5-28
 
 * Add new authentication process in main Evernote app
 * Add option to use developer token as authentication token
@@ -8,6 +8,7 @@
 * Add feature to download a note as HTML instead of ENML
 * Add helper method to search notes in multiple note stores.
 * Add NoteRef
+* Add new demo
 
 = 1.1.2 / 2013-7-6
 
