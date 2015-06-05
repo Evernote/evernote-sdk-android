@@ -1,4 +1,4 @@
-Evernote SDK for Android version 2.0.0-RC1
+Evernote SDK for Android version 2.0.0-RC2
 ==========================================
 
 Evernote API version 1.25
@@ -24,7 +24,7 @@ Add the library as a dependency in your build.gradle file.
 
 ```groovy
 dependencies {
-    compile 'com.evernote:android-sdk:2.0.0-RC1'
+    compile 'com.evernote:android-sdk:2.0.0-RC2'
 }
 ```
 
@@ -53,7 +53,7 @@ The demo application 'Evernote SDK Demo' demonstrates how to use the Evernote SD
 To build and run the demo project from Android Studio:
 
 1. Open Android Studio
-2. Choose Import Non-Android Studio project
+2. Choose Import Project (Eclipse ADT, Gradle, etc.)
 3. Select the SDK root directory (the directory containing this README) and click OK
 4. Add your Evernote API consumer key and secret (see below)
 
@@ -120,6 +120,8 @@ mEvernoteSession.authenticate(this);
 
 The Activity that completes the OAuth authentication automatically determines if the User is on the Evernote service or the Yinxiang service and configures the end points automatically.
 
+If you want to test if bootstrapping works within your app, you can either change the device's language to Chinese or you can set a specific Locale object in the session builder, e.g. `new EvernoteSession.Builder(this).setLocale(Locale.SIMPLIFIED_CHINESE)`. If the SDK can't decide which server to use, then the user has the option to change the Evernote service while authenticating.
+
 #### Complete authentication
 
 If you use a `FragmentActivity`, you should implement the `EvernoteLoginFragment.ResultCallback` interface.
@@ -167,31 +169,31 @@ The `EvernoteClientFactory` also creates multiple helper classes, e.g. `Evernote
 
 Create an `EvernoteNoteStoreClient` to access primary methods for personal note data
 ```java
-mEvernoteSession.getEvernoteClientFactory().getNoteStoreClient();
+EvernoteSession.getInstance().getEvernoteClientFactory().getNoteStoreClient();
 ```
 
 Create an `EvernoteUserStoreClient` to access User related methods
 ```java
-mEvernoteSession.getEvernoteClientFactory().getUserStoreClient();
+EvernoteSession.getInstance().getEvernoteClientFactory().getUserStoreClient();
 ```
 
 Create an `EvernoteBusinessNotebookHelper` to access Business Notebooks
 ```java
-mEvernoteSession.getEvernoteClientFactory().getBusinessNotebookHelper();
+EvernoteSession.getInstance().getEvernoteClientFactory().getBusinessNotebookHelper();
 ```
 
 Create an `EvernoteLinkedNotebookHelper` to access shared notebooks
 ```java
-mEvernoteSession.getEvernoteClientFactory().getLinkedNotebookHelper(linkedNotebook);
+EvernoteSession.getInstance().getEvernoteClientFactory().getLinkedNotebookHelper(linkedNotebook);
 ```
 
 ###### Getting list of notebooks asynchronously
 ```java
-if (!mEvernoteSession.isLoggedIn()) {
+if (!EvernoteSession.getInstance().isLoggedIn()) {
     return;
 }
 
-EvernoteNoteStoreClient noteStoreClient = mEvernoteSession.getEvernoteClientFactory().getNoteStoreClient();
+EvernoteNoteStoreClient noteStoreClient = EvernoteSession.getInstance().getEvernoteClientFactory().getNoteStoreClient();
 noteStoreClient.listNotebooksAsync(new EvernoteCallback<List<Notebook>>() {
     @Override
     public void onSuccess(List<Notebook> result) {
@@ -212,11 +214,11 @@ noteStoreClient.listNotebooksAsync(new EvernoteCallback<List<Notebook>>() {
 
 ###### Creating a note asynchronously
 ```java
-if (!mEvernoteSession.isLoggedIn()) {
+if (!EvernoteSession.getInstance().isLoggedIn()) {
     return;
 }
 
-EvernoteNoteStoreClient noteStoreClient = mEvernoteSession.getEvernoteClientFactory().getNoteStoreClient();
+EvernoteNoteStoreClient noteStoreClient = EvernoteSession.getInstance().getEvernoteClientFactory().getNoteStoreClient();
 
 Note note = new Note();
 note.setTitle("My title");
@@ -250,13 +252,13 @@ new Thread() {
     @Override
     public void run() {
         try {
-            if (!mEvernoteSession.getEvernoteClientFactory().getUserStoreClient().isBusinessUser()) {
+            if (!EvernoteSession.getInstance().getEvernoteClientFactory().getUserStoreClient().isBusinessUser()) {
                 Log.d(LOGTAG, "Not a business User");
                 return;
             }
 
-            EvernoteBusinessNotebookHelper businessNotebookHelper = mEvernoteSession.getEvernoteClientFactory().getBusinessNotebookHelper();
-            List<LinkedNotebook> businessNotebooks = businessNotebookHelper.listBusinessNotebooks(mEvernoteSession);
+            EvernoteBusinessNotebookHelper businessNotebookHelper = EvernoteSession.getInstance().getEvernoteClientFactory().getBusinessNotebookHelper();
+            List<LinkedNotebook> businessNotebooks = businessNotebookHelper.listBusinessNotebooks(EvernoteSession.getInstance());
             if (businessNotebooks.isEmpty()) {
                 Log.d(LOGTAG, "No business notebooks found");
             }
@@ -267,7 +269,7 @@ new Thread() {
             note.setTitle("My title");
             note.setContent(EvernoteUtil.NOTE_PREFIX + "My content" + EvernoteUtil.NOTE_SUFFIX);
 
-            EvernoteLinkedNotebookHelper linkedNotebookHelper = mEvernoteSession.getEvernoteClientFactory().getLinkedNotebookHelper(linkedNotebook);
+            EvernoteLinkedNotebookHelper linkedNotebookHelper = EvernoteSession.getInstance().getEvernoteClientFactory().getLinkedNotebookHelper(linkedNotebook);
             final Note createdNote = linkedNotebookHelper.createNoteInLinkedNotebook(note);
 
             runOnUiThread(new Runnable() {

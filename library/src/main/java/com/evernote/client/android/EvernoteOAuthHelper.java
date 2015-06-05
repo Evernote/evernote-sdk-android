@@ -21,6 +21,7 @@ import org.scribe.oauth.OAuthService;
 import org.scribe.utils.OAuthEncoder;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +32,11 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("UnusedDeclaration")
 public class EvernoteOAuthHelper {
+
+    /**
+     * Server matched name for BootstrapProfile that matches china.
+     */
+    public static final String CHINA_PROFILE_NAME = "Evernote-China";
 
     protected static final String CALLBACK_SCHEME = "en-oauth";
     protected static final Cat CAT = new Cat("OAuthHelper");
@@ -43,6 +49,7 @@ public class EvernoteOAuthHelper {
     protected final String mConsumerKey;
     protected final String mConsumerSecret;
     protected final boolean mSupportAppLinkedNotebooks;
+    protected final Locale mLocale;
 
     protected BootstrapProfile mBootstrapProfile;
     protected OAuthService mOAuthService;
@@ -50,19 +57,49 @@ public class EvernoteOAuthHelper {
     protected Token mRequestToken;
 
     public EvernoteOAuthHelper(EvernoteSession session, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks) {
+        this(session, consumerKey, consumerSecret, supportAppLinkedNotebooks, Locale.getDefault());
+    }
+
+    public EvernoteOAuthHelper(EvernoteSession session, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks, Locale locale) {
         mSession = EvernotePreconditions.checkNotNull(session);
         mConsumerKey = EvernotePreconditions.checkNotEmpty(consumerKey);
         mConsumerSecret = EvernotePreconditions.checkNotEmpty(consumerSecret);
         mSupportAppLinkedNotebooks = supportAppLinkedNotebooks;
+        mLocale = EvernotePreconditions.checkNotNull(locale);
+    }
+
+    public List<BootstrapProfile> fetchBootstrapProfiles() throws Exception {
+        //Network request
+        BootstrapManager.BootstrapInfoWrapper infoWrapper = new BootstrapManager(mSession.getEvernoteService(), mSession, mLocale).getBootstrapInfo();
+        if (infoWrapper == null) {
+            return null;
+        }
+
+        BootstrapInfo info = infoWrapper.getBootstrapInfo();
+        if (info == null) {
+            return null;
+        }
+
+        return info.getProfiles();
+    }
+
+    public BootstrapProfile getDefaultBootstrapProfile(List<BootstrapProfile> bootstrapProfiles) {
+        EvernotePreconditions.checkCollectionNotEmpty(bootstrapProfiles, "bootstrapProfiles");
+
+        // return the first in the list, this is the preferred profile from the server
+        return bootstrapProfiles.get(0);
+    }
+
+    public void setBootstrapProfile(BootstrapProfile bootstrapProfile) {
+        mBootstrapProfile = EvernotePreconditions.checkNotNull(bootstrapProfile);
     }
 
     public void initialize() throws Exception {
-        BootstrapProfile bootstrapProfile = fetchBootstrapProfile(mSession);
-        initialize(EvernotePreconditions.checkNotNull(bootstrapProfile, "Bootstrap did not return a valid host"));
-    }
+        if (mBootstrapProfile == null) {
+            List<BootstrapProfile> bootstrapProfiles = fetchBootstrapProfiles();
+            setBootstrapProfile(getDefaultBootstrapProfile(bootstrapProfiles));
+        }
 
-    public void initialize(BootstrapProfile bootstrapProfile) {
-        mBootstrapProfile = EvernotePreconditions.checkNotNull(bootstrapProfile);
         mOAuthService = createOAuthService(mBootstrapProfile, mConsumerKey, mConsumerSecret);
     }
 
@@ -81,15 +118,11 @@ public class EvernoteOAuthHelper {
     }
 
     public Intent startAuthorization(Activity activity) {
-        if (mBootstrapProfile != null) {
-            initialize(mBootstrapProfile);
-        } else {
-            try {
-                initialize();
-            } catch (Exception e) {
-                CAT.e(e);
-                return null;
-            }
+        try {
+            initialize();
+        } catch (Exception e) {
+            CAT.e(e);
+            return null;
         }
 
         createRequestToken();
@@ -140,26 +173,6 @@ public class EvernoteOAuthHelper {
         }
 
         return false;
-    }
-
-    protected static BootstrapProfile fetchBootstrapProfile(EvernoteSession session) throws Exception {
-        //Network request
-        BootstrapManager.BootstrapInfoWrapper infoWrapper = new BootstrapManager(session).getBootstrapInfo();
-        if (infoWrapper == null) {
-            return null;
-        }
-
-        BootstrapInfo info = infoWrapper.getBootstrapInfo();
-        if (info == null) {
-            return null;
-        }
-
-        List<BootstrapProfile> profiles = info.getProfiles();
-        if (profiles != null && !profiles.isEmpty()) {
-            return profiles.get(0);
-        } else {
-            return null;
-        }
     }
 
     protected static OAuthService createOAuthService(BootstrapProfile bootstrapProfile, String consumerKey, String consumerSecret) {

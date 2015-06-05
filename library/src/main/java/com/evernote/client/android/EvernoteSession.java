@@ -39,6 +39,7 @@ import com.evernote.client.android.login.EvernoteLoginActivity;
 import com.evernote.client.android.login.EvernoteLoginFragment;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * Represents a session with the Evernote web service API. Used to authenticate
@@ -77,6 +78,9 @@ public final class EvernoteSession {
     public static final String HOST_SANDBOX = "https://sandbox.evernote.com";
     public static final String HOST_PRODUCTION = "https://www.evernote.com";
     public static final String HOST_CHINA = "https://app.yinxiang.com";
+
+    public static final String SCREEN_NAME_YXBIJI = "印象笔记";
+    public static final String SCREEN_NAME_INTERNATIONAL = "Evernote International";
 
     /**
      * @deprecated Use {@link EvernoteSession#REQUEST_CODE_LOGIN} instead.
@@ -145,6 +149,7 @@ public final class EvernoteSession {
     private AuthenticationResult mAuthenticationResult;
     private boolean mSupportAppLinkedNotebooks;
     private boolean mForceAuthenticationInThirdPartyApp;
+    private Locale mLocale;
 
     private EvernoteClientFactory.Builder mEvernoteClientFactoryBuilder;
     private ThreadLocal<EvernoteClientFactory> mFactoryThreadLocal;
@@ -256,7 +261,7 @@ public final class EvernoteSession {
      * @param activity The {@link FragmentActivity} holding the progress dialog.
      */
     public void authenticate(FragmentActivity activity) {
-        authenticate(activity, EvernoteLoginFragment.create(mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks));
+        authenticate(activity, EvernoteLoginFragment.create(mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks, mLocale));
     }
 
     /**
@@ -279,7 +284,7 @@ public final class EvernoteSession {
      * @param activity The {@link Activity} launching the {@link EvernoteLoginActivity}.
      */
     public void authenticate(Activity activity) {
-        activity.startActivityForResult(EvernoteLoginActivity.createIntent(activity, mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks), REQUEST_CODE_LOGIN);
+        activity.startActivityForResult(EvernoteLoginActivity.createIntent(activity, mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks, mLocale), REQUEST_CODE_LOGIN);
     }
 
     /**
@@ -377,6 +382,7 @@ public final class EvernoteSession {
 
         private EvernoteService mEvernoteService;
         private boolean mSupportAppLinkedNotebooks;
+        private Locale mLocale;
 
         @Deprecated
         private String mUserAgent;
@@ -398,6 +404,8 @@ public final class EvernoteSession {
             mUserAgent = EvernoteUtil.generateUserAgentString(mContext);
             //noinspection deprecation
             mMessageCacheDir = mContext.getFilesDir();
+
+            mLocale = Locale.getDefault();
         }
 
         /**
@@ -433,6 +441,30 @@ public final class EvernoteSession {
          */
         public Builder setForceAuthenticationInThirdPartyApp(boolean forceAuthenticationInThirdPartyApp) {
             mForceAuthenticationInThirdPartyApp = forceAuthenticationInThirdPartyApp;
+            return this;
+        }
+
+        /**
+         * The parameter is used to find the appropriate Evernote server, which can be with
+         * {@link EvernoteService#PRODUCTION} either {@link #HOST_PRODUCTION} or {@link #HOST_CHINA}.
+         * China is only used if the locale is Chinese, e.g. {@link Locale#SIMPLIFIED_CHINESE}.
+         *
+         * <br>
+         * <br>
+         *
+         * Usually you don't want change this value. But for testing purposes it makes sense to switch
+         * to a Chinese locale and to test that your app works for Chinese users.
+         *
+         * <br>
+         * <br>
+         *
+         * The default value is {@link Locale#getDefault()}.
+         *
+         * @param locale The new locale used the fetch the bootstrap profiles. {@code null} is not allowed.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         */
+        public Builder setLocale(Locale locale) {
+            mLocale = EvernotePreconditions.checkNotNull(locale);
             return this;
         }
 
@@ -484,6 +516,7 @@ public final class EvernoteSession {
 
         private EvernoteSession build(EvernoteSession session) {
             session.mApplicationContext = mContext;
+            session.mLocale = mLocale;
             session.mSupportAppLinkedNotebooks = mSupportAppLinkedNotebooks;
             //noinspection deprecation
             session.mClientFactory = new ClientFactory(mUserAgent, mMessageCacheDir);

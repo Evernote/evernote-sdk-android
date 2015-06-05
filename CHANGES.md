@@ -1,3 +1,7 @@
+= 2.0.0-RC2 / 2015-6-5
+
+* Add fallback if multiple bootstrap profiles are supported (necessary for Chinese users)
+
 = 2.0.0-RC1 / 2015-5-28
 
 * Add new authentication process in main Evernote app

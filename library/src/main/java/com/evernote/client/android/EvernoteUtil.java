@@ -46,6 +46,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Locale;
 
+@SuppressWarnings("unused")
 public final class EvernoteUtil {
 
     private static final Cat CAT = new Cat("EvernoteUtil");
@@ -60,6 +61,11 @@ public final class EvernoteUtil {
     public static final String ACTION_AUTHORIZE = "com.evernote.action.AUTHORIZE";
 
     /**
+     * Action for an {@link Intent} to receive the bootstrap profile name from the main Evernote app.
+     */
+    public static final String ACTION_GET_BOOTSTRAP_PROFILE_NAME = "com.evernote.action.GET_BOOTSTRAP_PROFILE_NAME";
+
+    /**
      * Extra URL to authorize this app.
      */
     public static final String EXTRA_AUTHORIZATION_URL = "authorization_url";
@@ -68,6 +74,11 @@ public final class EvernoteUtil {
      * Returned OAuth callback from the main Evernote app.
      */
     public static final String EXTRA_OAUTH_CALLBACK_URL = "oauth_callback_url";
+
+    /**
+     * Returned bootstrap profile name from the main Evernote app.
+     */
+    public static final String EXTRA_BOOTSTRAP_PROFILE_NAME = "bootstrap_profile_name";
 
     /**
      * The ENML preamble to every Evernote note.
@@ -227,16 +238,18 @@ public final class EvernoteUtil {
 
         if (prepared) {
             looper = Looper.myLooper();
-            looper.quit();
+            if (looper != null) {
+                looper.quit();
+            }
         }
     }
 
     /**
-     * Checks if Evernote is installed and if this installation can authorize this app.
+     * Checks if Evernote is installed and if the app can resolve this action.
      */
-    public static EvernoteInstallStatus getEvernoteInstallStatus(Context context) {
+    public static EvernoteInstallStatus getEvernoteInstallStatus(Context context, String action) {
         PackageManager packageManager = context.getPackageManager();
-        Intent intent = new Intent(ACTION_AUTHORIZE).setPackage(PACKAGE_NAME);
+        Intent intent = new Intent(action).setPackage(PACKAGE_NAME);
 
         List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
         if (!resolveInfos.isEmpty()) {
@@ -264,7 +277,7 @@ public final class EvernoteUtil {
     public static Intent createAuthorizationIntent(Context context, String authorizationUrl, boolean forceThirdPartyApp) {
         Intent intent;
 
-        if (!forceThirdPartyApp && EvernoteInstallStatus.INSTALLED.equals(getEvernoteInstallStatus(context))) {
+        if (!forceThirdPartyApp && EvernoteInstallStatus.INSTALLED.equals(getEvernoteInstallStatus(context, ACTION_AUTHORIZE))) {
             intent = new Intent(ACTION_AUTHORIZE);
             intent.setPackage(PACKAGE_NAME);
         } else {
@@ -273,6 +286,30 @@ public final class EvernoteUtil {
 
         intent.putExtra(EXTRA_AUTHORIZATION_URL, authorizationUrl);
         return intent;
+    }
+
+    /**
+     * Returns an Intent to query the bootstrap profile name from the main Evernote app. This is useful
+     * if you want to use the main app to authenticate the user and he is already signed in.
+     *
+     * @param context The {@link Context} starting the {@link Intent}.
+     * @param evernoteSession The current session.
+     * @return An Intent to query the bootstrap profile name. Returns {@code null}, if the main app
+     * is not installed, not up to date or you do not want to use the main app to authenticate the
+     * user.
+     */
+    public static Intent createGetBootstrapProfileNameIntent(Context context, EvernoteSession evernoteSession) {
+        if (evernoteSession.isForceAuthenticationInThirdPartyApp()) {
+            // we don't want to use the main app, return null
+            return null;
+        }
+
+        EvernoteUtil.EvernoteInstallStatus installStatus = EvernoteUtil.getEvernoteInstallStatus(context, EvernoteUtil.ACTION_GET_BOOTSTRAP_PROFILE_NAME);
+        if (!EvernoteUtil.EvernoteInstallStatus.INSTALLED.equals(installStatus)) {
+            return null;
+        }
+
+        return new Intent(EvernoteUtil.ACTION_GET_BOOTSTRAP_PROFILE_NAME).setPackage(PACKAGE_NAME);
     }
 
     /**

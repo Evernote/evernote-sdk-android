@@ -34,6 +34,7 @@ import com.evernote.thrift.TException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -56,27 +57,15 @@ import java.util.Locale;
   /**
    * List of locales that match china.
    */
-  private static List<Locale> sChinaLocales = Arrays.asList(Locale.TRADITIONAL_CHINESE,
-      Locale.CHINESE,
-      Locale.CHINA,
-      Locale.SIMPLIFIED_CHINESE);
-
-  /**
-   * Server matched name for BootstrapProfile that matches china.
-   */
-  public static final String CHINA_PROFILE = "Evernote-China";
-
-  /**
-   * Display names for Yinxiang and Evernote.
-   */
-  public static final String DISPLAY_YXBIJI = "印象笔记";
-  public static final String DISPLAY_EVERNOTE = "Evernote";
-  public static final String DISPLAY_EVERNOTE_INTL = "Evernote International";
+  public static final List<Locale> CHINA_LOCALES = Collections.unmodifiableList(Arrays.asList(
+          Locale.TRADITIONAL_CHINESE,
+          Locale.CHINESE,
+          Locale.CHINA,
+          Locale.SIMPLIFIED_CHINESE
+  ));
 
   private ArrayList<String> mBootstrapServerUrls = new ArrayList<>();
-//  private AsyncUserStoreClient mUserStoreClient;
   private Locale mLocale;
-  //  private ClientFactory mClientProducer;
   private String mBootstrapServerUsed;
   private final EvernoteSession mEvernoteSession;
 
@@ -105,7 +94,7 @@ import java.util.Locale;
     mBootstrapServerUrls.clear();
     switch (service) {
       case PRODUCTION:
-        if (sChinaLocales.contains(mLocale)) {
+        if (CHINA_LOCALES.contains(mLocale)) {
           mBootstrapServerUrls.add(EvernoteSession.HOST_CHINA);
         }
         mBootstrapServerUrls.add(EvernoteSession.HOST_PRODUCTION);

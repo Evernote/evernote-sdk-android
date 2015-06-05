@@ -118,6 +118,10 @@ public class Cat {
     }
 
     private void println(int priority, String message, Throwable t) {
+        if (message == null) {
+            message = "";
+        }
+
         if (t != null) {
             message += '\n' + Log.getStackTraceString(t);
         }
