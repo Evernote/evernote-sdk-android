@@ -148,6 +148,7 @@ public final class EvernoteSession {
     @SuppressWarnings("deprecation")private ClientFactory mClientFactory;
     private AuthenticationResult mAuthenticationResult;
     private boolean mSupportAppLinkedNotebooks;
+	private String mSuggestedNotebookName;
     private boolean mForceAuthenticationInThirdPartyApp;
     private Locale mLocale;
 
@@ -261,7 +262,7 @@ public final class EvernoteSession {
      * @param activity The {@link FragmentActivity} holding the progress dialog.
      */
     public void authenticate(FragmentActivity activity) {
-        authenticate(activity, EvernoteLoginFragment.create(mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks, mLocale));
+        authenticate(activity, EvernoteLoginFragment.create(mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks, mSuggestedNotebookName, mLocale));
     }
 
     /**
@@ -284,7 +285,7 @@ public final class EvernoteSession {
      * @param activity The {@link Activity} launching the {@link EvernoteLoginActivity}.
      */
     public void authenticate(Activity activity) {
-        activity.startActivityForResult(EvernoteLoginActivity.createIntent(activity, mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks, mLocale), REQUEST_CODE_LOGIN);
+        activity.startActivityForResult(EvernoteLoginActivity.createIntent(activity, mConsumerKey, mConsumerSecret, mSupportAppLinkedNotebooks, mSuggestedNotebookName, mLocale), REQUEST_CODE_LOGIN);
     }
 
     /**
@@ -382,6 +383,7 @@ public final class EvernoteSession {
 
         private EvernoteService mEvernoteService;
         private boolean mSupportAppLinkedNotebooks;
+        private String mSuggestedNotebookName;
         private Locale mLocale;
 
         @Deprecated
@@ -428,6 +430,16 @@ public final class EvernoteSession {
          */
         public Builder setSupportAppLinkedNotebooks(boolean supportAppLinkedNotebooks) {
             mSupportAppLinkedNotebooks = supportAppLinkedNotebooks;
+            return this;
+        }
+
+        /**
+         *
+         * @param suggestedNotebookName suggested name for  linked notebook.
+         * @return This Builder object to allow for chaining of calls to set methods.
+         */
+        public Builder setSuggestedNotebookName(String suggestedNotebookName) {
+            mSuggestedNotebookName = suggestedNotebookName;
             return this;
         }
 
@@ -518,6 +530,7 @@ public final class EvernoteSession {
             session.mApplicationContext = mContext;
             session.mLocale = mLocale;
             session.mSupportAppLinkedNotebooks = mSupportAppLinkedNotebooks;
+            session.mSuggestedNotebookName = mSuggestedNotebookName;
             //noinspection deprecation
             session.mClientFactory = new ClientFactory(mUserAgent, mMessageCacheDir);
             session.mEvernoteService = mEvernoteService;

@@ -31,16 +31,18 @@ public class EvernoteLoginActivity extends Activity implements EvernoteLoginTask
     private static final String EXTRA_CONSUMER_KEY = "EXTRA_CONSUMER_KEY";
     private static final String EXTRA_CONSUMER_SECRET = "EXTRA_CONSUMER_SECRET";
     private static final String EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS = "EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS";
+    private static final String EXTRA_SUGGESTED_NOTEBOOK_NAME = "EXTRA_SUGGESTED_NOTEBOOK_NAME";
     private static final String EXTRA_LOCALE = "EXTRA_LOCALE";
 
     private static final String KEY_TASK = "KEY_TASK";
     private static final String KEY_RESULT_POSTED = "KEY_RESULT_POSTED";
 
-    public static Intent createIntent(Context context, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks, Locale locale) {
+    public static Intent createIntent(Context context, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks, String suggestedNotebookName, Locale locale) {
         Intent intent = new Intent(context, EvernoteLoginActivity.class);
         intent.putExtra(EXTRA_CONSUMER_KEY, consumerKey);
         intent.putExtra(EXTRA_CONSUMER_SECRET, consumerSecret);
         intent.putExtra(EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS, supportAppLinkedNotebooks);
+        intent.putExtra(EXTRA_SUGGESTED_NOTEBOOK_NAME, suggestedNotebookName);
         intent.putExtra(EXTRA_LOCALE, locale);
         return intent;
     }
@@ -56,7 +58,7 @@ public class EvernoteLoginActivity extends Activity implements EvernoteLoginTask
         if (savedInstanceState == null) {
             Bundle args = getIntent().getExtras();
             EvernoteOAuthHelper helper = new EvernoteOAuthHelper(EvernoteSession.getInstance(), args.getString(EXTRA_CONSUMER_KEY),
-                    args.getString(EXTRA_CONSUMER_SECRET), args.getBoolean(EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS, true),
+                    args.getString(EXTRA_CONSUMER_SECRET), args.getBoolean(EXTRA_SUPPORT_APP_LINKED_NOTEBOOKS, true), args.getString(EXTRA_SUGGESTED_NOTEBOOK_NAME),
                     (Locale) args.getSerializable(EXTRA_LOCALE));
 
             mTaskKey = TaskExecutor.getInstance().execute(new EvernoteLoginTask(helper, false), this);

@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.net.URLEncoder;
 
 /**
  * A helper class to handle OAuth requests.
@@ -49,6 +50,7 @@ public class EvernoteOAuthHelper {
     protected final String mConsumerKey;
     protected final String mConsumerSecret;
     protected final boolean mSupportAppLinkedNotebooks;
+	protected final String mSuggestedNotebookName;
     protected final Locale mLocale;
 
     protected BootstrapProfile mBootstrapProfile;
@@ -56,15 +58,16 @@ public class EvernoteOAuthHelper {
 
     protected Token mRequestToken;
 
-    public EvernoteOAuthHelper(EvernoteSession session, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks) {
-        this(session, consumerKey, consumerSecret, supportAppLinkedNotebooks, Locale.getDefault());
+    public EvernoteOAuthHelper(EvernoteSession session, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks, String suggestedNotebookName) {
+        this(session, consumerKey, consumerSecret, supportAppLinkedNotebooks, suggestedNotebookName, Locale.getDefault());
     }
 
-    public EvernoteOAuthHelper(EvernoteSession session, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks, Locale locale) {
+    public EvernoteOAuthHelper(EvernoteSession session, String consumerKey, String consumerSecret, boolean supportAppLinkedNotebooks, String suggestedNotebookName, Locale locale) {
         mSession = EvernotePreconditions.checkNotNull(session);
         mConsumerKey = EvernotePreconditions.checkNotEmpty(consumerKey);
         mConsumerSecret = EvernotePreconditions.checkNotEmpty(consumerSecret);
         mSupportAppLinkedNotebooks = supportAppLinkedNotebooks;
+        mSuggestedNotebookName = suggestedNotebookName;
         mLocale = EvernotePreconditions.checkNotNull(locale);
     }
 
@@ -113,6 +116,14 @@ public class EvernoteOAuthHelper {
         if (mSupportAppLinkedNotebooks) {
             url += "&supportLinkedSandbox=true";
         }
+		
+		if (mSupportAppLinkedNotebooks&&mSuggestedNotebookName!=null&&mSuggestedNotebookName.length()>0){
+			try{
+				url += "&suggestedNotebookName="+ URLEncoder.encode(mSuggestedNotebookName, "UTF-8");							
+			} catch (Exception e){
+				CAT.e(e);
+			}
+		}
 
         return url;
     }
