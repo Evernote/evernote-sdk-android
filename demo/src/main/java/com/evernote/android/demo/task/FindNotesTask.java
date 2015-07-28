@@ -33,8 +33,6 @@ public class FindNotesTask extends BaseTask<List<NoteRef>> {
 
         if (notebook != null) {
             noteFilter.setNotebookGuid(notebook.getGuid());
-        } else if (linkedNotebook != null) {
-            noteFilter.setNotebookGuid(linkedNotebook.getGuid());
         }
 
         mSearch = new EvernoteSearchHelper.Search()
@@ -43,7 +41,7 @@ public class FindNotesTask extends BaseTask<List<NoteRef>> {
                 .setNoteFilter(noteFilter);
 
         if (linkedNotebook != null) {
-            mSearch.addScope(EvernoteSearchHelper.Scope.LINKED_NOTEBOOKS);
+            mSearch.addLinkedNotebook(linkedNotebook);
         } else {
             mSearch.addScope(EvernoteSearchHelper.Scope.PERSONAL_NOTES);
         }
