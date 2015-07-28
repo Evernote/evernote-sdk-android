@@ -7,7 +7,6 @@ import android.text.TextUtils;
 
 import com.evernote.client.android.helper.Cat;
 import com.evernote.client.android.helper.EvernotePreconditions;
-import com.evernote.client.oauth.YinxiangApi;
 import com.evernote.edam.userstore.BootstrapInfo;
 import com.evernote.edam.userstore.BootstrapProfile;
 
@@ -197,7 +196,7 @@ public class EvernoteOAuthHelper {
                 break;
 
             case EvernoteSession.HOST_CHINA:
-                apiClass = YinxiangApi.class;
+                apiClass = EvernoteApi.Yinxiang.class;
                 break;
 
             default:
