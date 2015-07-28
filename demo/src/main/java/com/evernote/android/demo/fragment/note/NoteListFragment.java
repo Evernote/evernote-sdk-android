@@ -74,15 +74,7 @@ public class NoteListFragment extends Fragment {
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = EvernoteIntent.viewNote()
-                        .setNoteGuid(mNoteRefList.get(position).getGuid())
-                        .create();
-
-                if (EvernoteIntent.isEvernoteInstalled(getActivity())) {
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(getActivity(), R.string.evernote_not_installed, Toast.LENGTH_SHORT).show();
-                }
+                new GetNoteHtmlTask(mNoteRefList.get(position)).start(NoteListFragment.this, "html");
             }
         });
 
@@ -134,7 +126,15 @@ public class NoteListFragment extends Fragment {
                 return true;
 
             case 1:
-                new GetNoteHtmlTask(noteRef).start(this, "html");
+                Intent intent = EvernoteIntent.viewNote()
+                        .setNoteGuid(noteRef.getGuid())
+                        .create();
+
+                if (EvernoteIntent.isEvernoteInstalled(getActivity())) {
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(getActivity(), R.string.evernote_not_installed, Toast.LENGTH_SHORT).show();
+                }
                 return true;
 
             case 2:

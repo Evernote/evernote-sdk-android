@@ -14,6 +14,7 @@
     <string name="delete">Delete</string>
     <string name="raw_content">Raw content</string>
     <string name="html_content">HTML content</string>
+    <string name="open_in_evernote_client">Open with Evernote app</string>
     <string name="note_title">Note Title</string>
     <string name="notebook_title">Notebook Title</string>
     <string name="note_content">Note Content</string>

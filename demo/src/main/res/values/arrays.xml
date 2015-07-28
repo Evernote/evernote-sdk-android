@@ -7,7 +7,7 @@
 
     <string-array name="notes_context_menu">
         <item>@string/share_public_link</item>
-        <item>@string/html_content</item>
+        <item>@string/open_in_evernote_client</item>
         <item>@string/raw_content</item>
         <item>@string/delete</item>
     </string-array>
