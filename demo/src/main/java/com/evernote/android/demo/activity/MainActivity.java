@@ -187,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class MyOnItemTouchListener implements RecyclerView.OnItemTouchListener {
+    private class MyOnItemTouchListener extends RecyclerView.SimpleOnItemTouchListener {
 
         private final GestureDetector mGestureDetector;
 
@@ -216,11 +216,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
             return false;
-        }
-
-        @Override
-        public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-            // no op
         }
     }
 
