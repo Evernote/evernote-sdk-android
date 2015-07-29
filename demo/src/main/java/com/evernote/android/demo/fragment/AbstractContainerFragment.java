@@ -1,7 +1,6 @@
 package com.evernote.android.demo.fragment;
 
 import android.annotation.TargetApi;
-import android.graphics.Outline;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,8 +9,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewOutlineProvider;
-import android.widget.Button;
 
 import com.evernote.android.demo.R;
 
@@ -39,27 +36,12 @@ public abstract class AbstractContainerFragment extends Fragment {
         });
 
 
-        Button fab = (Button) view.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        view.findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onFabClick();
             }
         });
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            fab.setOutlineProvider(new ViewOutlineProvider() {
-                @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-                @Override
-                public void getOutline(View view, Outline outline) {
-                    if (isAdded()) {
-                        int shapeSize = getResources().getDimensionPixelSize(R.dimen.fab_size);
-                        outline.setOval(0, 0, shapeSize, shapeSize);
-                    }
-                }
-            });
-            fab.setClipToOutline(true);
-        }
 
         if (savedInstanceState == null) {
             mSwipeRefreshLayout.postDelayed(new Runnable() {
