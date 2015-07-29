@@ -11,12 +11,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 
 import com.evernote.android.demo.R;
 import com.evernote.android.demo.task.CreateNewNoteTask;
@@ -55,8 +55,8 @@ public class CreateNoteDialogFragment extends DialogFragment {
 
         @SuppressLint("InflateParams")
         View view = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_create_note, null);
-        final EditText mTitleView = (EditText) view.findViewById(R.id.editText_title);
-        final EditText mContentView = (EditText) view.findViewById(R.id.editText_content);
+        final TextInputLayout titleView = (TextInputLayout) view.findViewById(R.id.textInputLayout_title);
+        final TextInputLayout contentView = (TextInputLayout) view.findViewById(R.id.textInputLayout_content);
 
         DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
             @Override
@@ -64,8 +64,8 @@ public class CreateNoteDialogFragment extends DialogFragment {
                 switch (which) {
                     case DialogInterface.BUTTON_POSITIVE:
                         if (getParentFragment() instanceof NoteContainerFragment) {
-                            ((NoteContainerFragment) getParentFragment()).createNewNote(mTitleView.getText().toString(),
-                                    mContentView.getText().toString(), mImageData);
+                            ((NoteContainerFragment) getParentFragment()).createNewNote(titleView.getEditText().getText().toString(),
+                                    contentView.getEditText().getText().toString(), mImageData);
                         } else {
                             throw new IllegalStateException();
                         }

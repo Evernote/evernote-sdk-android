@@ -5,18 +5,30 @@
               android:orientation="vertical"
               android:padding="8dp">
 
-    <EditText
-        android:id="@+id/editText_title"
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/textInputLayout_title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/note_title"/>
+        android:layout_height="wrap_content">
 
-    <EditText
-        android:layout_marginTop="16dp"
-        android:gravity="bottom"
-        android:id="@+id/editText_content"
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/note_title"/>
+
+    </android.support.design.widget.TextInputLayout>
+
+    <android.support.design.widget.TextInputLayout
+        android:id="@+id/textInputLayout_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:hint="@string/note_content"/>
+        android:layout_marginTop="16dp"
+        android:gravity="bottom">
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:hint="@string/note_content"/>
+
+    </android.support.design.widget.TextInputLayout>
 
 </LinearLayout>
