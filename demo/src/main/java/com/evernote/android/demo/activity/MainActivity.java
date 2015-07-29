@@ -3,22 +3,17 @@ package com.evernote.android.demo.activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.GestureDetector;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.evernote.android.demo.R;
@@ -28,7 +23,6 @@ import com.evernote.android.demo.fragment.notebook.NotebookTabsFragment;
 import com.evernote.android.demo.task.GetUserTask;
 import com.evernote.android.demo.util.Util;
 import com.evernote.client.android.EvernoteSession;
-import com.evernote.client.android.helper.Cat;
 import com.evernote.edam.type.User;
 
 import net.vrallev.android.task.TaskResult;
@@ -38,15 +32,13 @@ import net.vrallev.android.task.TaskResult;
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final Cat CAT = new Cat("MainActivity");
-
-    private static final String KEY_CURRENT_POSITION = "KEY_CURRENT_POSITION";
+    private static final String KEY_SELECTED_NAV_ITEM = "KEY_SELECTED_NAV_ITEM";
     private static final String KEY_USER = "KEY_USER";
 
     private DrawerLayout mDrawerLayout;
-    private MyAdapter mAdapter;
+    private TextView mTextViewUserName;
 
-    private int mCurrentPosition;
+    private int mSelectedNavItem;
 
     private User mUser;
 
@@ -62,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
         Resources resources = getResources();
 
-        mCurrentPosition = 1;
+        mSelectedNavItem = R.id.nav_item_notes;
         if (savedInstanceState != null) {
-            mCurrentPosition = savedInstanceState.getInt(KEY_CURRENT_POSITION, mCurrentPosition);
+            mSelectedNavItem = savedInstanceState.getInt(KEY_SELECTED_NAV_ITEM, mSelectedNavItem);
             mUser = (User) savedInstanceState.getSerializable(KEY_USER);
         }
 
@@ -74,20 +66,10 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         if (!isTaskRoot()) {
+            //noinspection ConstantConditions
             getSupportActionBar().setHomeButtonEnabled(true);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        recyclerView.setHasFixedSize(true);
-
-        mAdapter = new MyAdapter(resources.getStringArray(R.array.nav_items), mUser != null ? mUser.getUsername() : null, mCurrentPosition);
-        recyclerView.setAdapter(mAdapter);
-
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(layoutManager);
-
-        recyclerView.addOnItemTouchListener(new MyOnItemTouchListener());
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
         ActionBarDrawerToggle drawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, toolbar, R.string.open_drawer, R.string.close_drawer);
@@ -95,16 +77,40 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout.setDrawerListener(drawerToggle);
         drawerToggle.syncState();
 
+        NavigationView navigationView = (NavigationView) findViewById(R.id.navigationView);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem menuItem) {
+                menuItem.setChecked(true);
+                onNavDrawerItemClick(menuItem.getItemId());
+                return true;
+            }
+        });
+        navigationView.getMenu().findItem(mSelectedNavItem).setChecked(true);
+
+        mTextViewUserName = (TextView) findViewById(R.id.textView_user_name);
+        findViewById(R.id.nav_drawer_header_container).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mUser != null) {
+                    startActivity(UserInfoActivity.createIntent(MainActivity.this, mUser));
+                }
+            }
+        });
+
         if (savedInstanceState == null) {
-            showItem(mCurrentPosition);
+            showItem(mSelectedNavItem);
             new GetUserTask().start(this);
+
+        } else if (mUser != null) {
+            onGetUser(mUser);
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(KEY_CURRENT_POSITION, mCurrentPosition);
+        outState.putInt(KEY_SELECTED_NAV_ITEM, mSelectedNavItem);
         outState.putSerializable(KEY_USER, mUser);
     }
 
@@ -149,33 +155,27 @@ public class MainActivity extends AppCompatActivity {
     public void onGetUser(User user) {
         mUser = user;
         if (user != null) {
-            mAdapter.setUsername(user.getUsername());
+            mTextViewUserName.setText(user.getUsername());
         }
     }
 
-    private void onNavDrawerItemClick(int position) {
+    private void onNavDrawerItemClick(int navItemId) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
-        mCurrentPosition = position;
+        mSelectedNavItem = navItemId;
 
-        showItem(position);
+        showItem(navItemId);
     }
 
-    private void showItem(int position) {
-        switch (position) {
-            case 0:
-                if (mUser != null) {
-                    startActivity(UserInfoActivity.createIntent(this, mUser));
-                }
-                break;
-
-            case 1:
+    private void showItem(int navItemId) {
+        switch (navItemId) {
+            case R.id.nav_item_notes:
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, NoteContainerFragment.create())
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                         .commit();
                 break;
 
-            case 2:
+            case R.id.nav_item_notebooks:
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new NotebookTabsFragment())
                         .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
@@ -184,124 +184,6 @@ public class MainActivity extends AppCompatActivity {
 
             default:
                 throw new IllegalStateException("not implemented");
-        }
-    }
-
-    private class MyOnItemTouchListener extends RecyclerView.SimpleOnItemTouchListener {
-
-        private final GestureDetector mGestureDetector;
-
-        public MyOnItemTouchListener() {
-            mGestureDetector = new GestureDetector(MainActivity.this, new GestureDetector.SimpleOnGestureListener() {
-                @Override
-                public boolean onSingleTapUp(MotionEvent e) {
-                    return true;
-                }
-            });
-        }
-
-        @Override
-        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-            View child = rv.findChildViewUnder(e.getX(), e.getY());
-            if (child != null && mGestureDetector.onTouchEvent(e)) {
-                int position = rv.getChildAdapterPosition(child);
-                if (!mAdapter.isPositionHeader(position)) {
-                    rv.getAdapter().notifyItemChanged(mAdapter.mSelection);
-                    mAdapter.mSelection = position;
-                    rv.getAdapter().notifyItemChanged(position);
-                }
-
-                onNavDrawerItemClick(position);
-                return true;
-            }
-
-            return false;
-        }
-    }
-
-    private static class MyAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-        private static final int TYPE_HEADER = 0;
-        private static final int TYPE_ITEM = 1;
-
-        private final String[] mNavTitles;
-        private String mUsername;
-
-        private int mSelection;
-
-        public MyAdapter(String[] titles, String username, int initialPosition) {
-            mNavTitles = titles;
-            mUsername = username;
-            mSelection = initialPosition;
-        }
-
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            switch (viewType) {
-                case TYPE_HEADER:
-                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.nav_drawer_header, parent, false);
-                    return new ViewHolderHeader(view);
-
-                case TYPE_ITEM:
-                    view = LayoutInflater.from(parent.getContext()).inflate(R.layout.nav_drawer_item, parent, false);
-                    return new ViewHolderItem(view);
-
-                default:
-                    throw new IllegalStateException("not implemented");
-            }
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            boolean selected = position == mSelection;
-            holder.itemView.setSelected(selected);
-
-            if (isPositionHeader(position)) {
-                ViewHolderHeader viewHolderHeader = (ViewHolderHeader) holder;
-                viewHolderHeader.mTextViewUserName.setText(mUsername);
-
-            } else {
-                ViewHolderItem viewHolderItem = (ViewHolderItem) holder;
-                viewHolderItem.mTextViewTitle.setText(mNavTitles[position - 1]);
-            }
-        }
-
-        @Override
-        public int getItemCount() {
-            return mNavTitles.length + 1;
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            return isPositionHeader(position) ? TYPE_HEADER : TYPE_ITEM;
-        }
-
-        private boolean isPositionHeader(int position) {
-            return position == 0;
-        }
-
-        public void setUsername(String username) {
-            mUsername = username;
-            notifyItemChanged(0);
-        }
-
-        private static class ViewHolderHeader extends RecyclerView.ViewHolder {
-
-            private final TextView mTextViewUserName;
-
-            public ViewHolderHeader(View itemView) {
-                super(itemView);
-                mTextViewUserName = (TextView) itemView.findViewById(R.id.textView_user_name);
-            }
-        }
-
-        private static class ViewHolderItem extends RecyclerView.ViewHolder {
-            private final TextView mTextViewTitle;
-
-            public ViewHolderItem(View itemView) {
-                super(itemView);
-                mTextViewTitle = (TextView) itemView.findViewById(R.id.textView_title);
-            }
         }
     }
 }

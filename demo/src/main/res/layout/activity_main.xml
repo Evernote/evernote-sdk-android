@@ -2,12 +2,11 @@
 <android.support.v4.widget.DrawerLayout
     android:id="@+id/drawerLayout"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:elevation="7dp"
-    android:orientation="vertical"
-    tools:ignore="UnusedAttribute">
+    android:fitsSystemWindows="false">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -22,16 +21,22 @@
             android:id="@+id/fragment_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:elevation="2dp"/>
+            android:elevation="2dp"
+            tools:ignore="UnusedAttribute"/>
 
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="300dp"
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/grey_background"
-        android:scrollbars="vertical"/>
+        android:fitsSystemWindows="false"
+        app:headerLayout="@layout/nav_drawer_header"
+        app:itemBackground="@drawable/bg_nav_item"
+        app:itemIconTint="@android:color/secondary_text_light"
+        app:itemTextColor="@android:color/secondary_text_light"
+        app:menu="@menu/nav_drawer"/>
 
 </android.support.v4.widget.DrawerLayout>

@@ -4,6 +4,10 @@
 
     <item>
         <selector>
+            <item android:state_checked="true">
+                <color android:color="@color/grey_background_selected"/>
+            </item>
+
             <item android:state_selected="true">
                 <color android:color="@color/grey_background_selected"/>
             </item>
