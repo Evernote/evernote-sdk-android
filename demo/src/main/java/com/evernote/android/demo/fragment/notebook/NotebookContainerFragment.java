@@ -1,12 +1,12 @@
 package com.evernote.android.demo.fragment.notebook;
 
 import android.support.v4.app.FragmentTransaction;
-import android.widget.Toast;
 
 import com.evernote.android.demo.R;
 import com.evernote.android.demo.fragment.AbstractContainerFragment;
 import com.evernote.android.demo.fragment.EmptyFragment;
 import com.evernote.android.demo.task.FindNotebooksTask;
+import com.evernote.android.demo.util.ViewUtil;
 import com.evernote.edam.type.Notebook;
 
 import net.vrallev.android.task.TaskResult;
@@ -51,7 +51,7 @@ public class NotebookContainerFragment extends AbstractContainerFragment {
         if (notebook != null) {
             refresh();
         } else {
-            Toast.makeText(getActivity(), "Create notebook failed", Toast.LENGTH_LONG).show();
+            ViewUtil.showSnackbar(mSwipeRefreshLayout, "Create notebook failed");
         }
     }
 }

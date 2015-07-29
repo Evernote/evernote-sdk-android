@@ -14,7 +14,14 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
-        <include layout="@layout/fab_button"/>
+        <android.support.design.widget.CoordinatorLayout
+            android:id="@+id/coordinatorLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <include layout="@layout/fab_button"/>
+
+        </android.support.design.widget.CoordinatorLayout>
 
     </RelativeLayout>
 </com.evernote.android.demo.view.MySwipeRefreshLayout>

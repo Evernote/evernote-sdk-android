@@ -40,7 +40,7 @@ public class LinkedNotebookContainerFragment extends AbstractContainerFragment {
 
     @Override
     public void onFabClick() {
-        Toast.makeText(getActivity(), "Fab linked", Toast.LENGTH_SHORT).show();
+        // no op
     }
 
     @TaskResult(id = "linked")

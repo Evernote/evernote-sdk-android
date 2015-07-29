@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.evernote.android.demo.R;
 import com.evernote.android.demo.activity.MainActivity;
@@ -18,6 +17,7 @@ import com.evernote.android.demo.fragment.EmptyFragment;
 import com.evernote.android.demo.fragment.SearchQueryDialogFragment;
 import com.evernote.android.demo.task.CreateNewNoteTask;
 import com.evernote.android.demo.task.FindNotesTask;
+import com.evernote.android.demo.util.ViewUtil;
 import com.evernote.client.android.type.NoteRef;
 import com.evernote.edam.type.LinkedNotebook;
 import com.evernote.edam.type.Note;
@@ -134,7 +134,7 @@ public class NoteContainerFragment extends AbstractContainerFragment {
         if (note != null) {
             refresh();
         } else {
-            Toast.makeText(getActivity(), "Create note failed", Toast.LENGTH_LONG).show();
+            ViewUtil.showSnackbar(mSwipeRefreshLayout, "Create note failed");
         }
     }
 

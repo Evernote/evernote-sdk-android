@@ -3,10 +3,14 @@ package com.evernote.android.demo.task;
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.widget.Toast;
+import android.view.View;
 
+import com.evernote.android.demo.R;
 import com.evernote.android.demo.util.Util;
+import com.evernote.android.demo.util.ViewUtil;
 import com.evernote.client.android.helper.Cat;
 import com.evernote.edam.error.EDAMUserException;
 
@@ -80,7 +84,20 @@ public abstract class BaseTask<RESULT> extends Task<RESULT> {
                         activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(activity, ((EDAMUserException) e).getErrorCode().toString(), Toast.LENGTH_LONG).show();
+                                View view = activity.findViewById(android.R.id.content);
+                                CoordinatorLayout fabCoordinator = ViewUtil.findFabCoordinator(view, R.id.coordinatorLayout);
+                                if (fabCoordinator != null) {
+                                    view = fabCoordinator;
+                                }
+
+                                final Snackbar snackbar = Snackbar.make(view, ((EDAMUserException) e).getErrorCode().toString(), Snackbar.LENGTH_INDEFINITE);
+                                snackbar.setActionTextColor(activity.getResources().getColor(R.color.tb_bg))
+                                        .setAction(android.R.string.ok, new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        snackbar.dismiss();
+                                    }
+                                }).show();
                             }
                         });
                     }

@@ -16,7 +16,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.evernote.android.demo.R;
 import com.evernote.android.demo.activity.ViewHtmlActivity;
@@ -26,6 +25,7 @@ import com.evernote.android.demo.task.DeleteNoteTask;
 import com.evernote.android.demo.task.GetNoteContentTask;
 import com.evernote.android.demo.task.GetNoteHtmlTask;
 import com.evernote.android.demo.util.ParcelableUtil;
+import com.evernote.android.demo.util.ViewUtil;
 import com.evernote.android.intent.EvernoteIntent;
 import com.evernote.client.android.EvernoteSession;
 import com.evernote.client.android.asyncclient.EvernoteClientFactory;
@@ -133,7 +133,7 @@ public class NoteListFragment extends Fragment {
                 if (EvernoteIntent.isEvernoteInstalled(getActivity())) {
                     startActivity(intent);
                 } else {
-                    Toast.makeText(getActivity(), R.string.evernote_not_installed, Toast.LENGTH_SHORT).show();
+                    ViewUtil.showSnackbar(mListView, R.string.evernote_not_installed);
                 }
                 return true;
 
@@ -155,7 +155,7 @@ public class NoteListFragment extends Fragment {
         if (!TextUtils.isEmpty(url)) {
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
         } else {
-            Toast.makeText(getActivity(), "URL is null", Toast.LENGTH_LONG).show();
+            ViewUtil.showSnackbar(mListView, "URL is null");
         }
     }
 
@@ -164,7 +164,7 @@ public class NoteListFragment extends Fragment {
         if (result != null) {
             ((AbstractContainerFragment) getParentFragment()).refresh();
         } else {
-            Toast.makeText(getActivity(), "Delete note failed", Toast.LENGTH_LONG).show();
+            ViewUtil.showSnackbar(mListView, "Delete note failed");
         }
     }
 
@@ -173,7 +173,7 @@ public class NoteListFragment extends Fragment {
         if (note != null) {
             NoteContentDialogFragment.create(note).show(getChildFragmentManager(), NoteContentDialogFragment.TAG);
         } else {
-            Toast.makeText(getActivity(), "Get content failed", Toast.LENGTH_LONG).show();
+            ViewUtil.showSnackbar(mListView, "Get content failed");
         }
     }
 
