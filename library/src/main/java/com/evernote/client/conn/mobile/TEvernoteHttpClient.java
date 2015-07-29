@@ -22,6 +22,7 @@ import android.util.Log;
 
 import com.evernote.thrift.transport.TTransport;
 import com.evernote.thrift.transport.TTransportException;
+
 import org.apache.http.ConnectionReuseStrategy;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -44,6 +45,7 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -245,7 +247,7 @@ public class TEvernoteHttpClient extends TTransport {
           request.addHeader(header.getKey(), header.getValue());
         }
       }
-      InputStreamEntity entity = new InputStreamEntity(requestBuffer.getInputStream(), requestBuffer.getBytesWritten());
+      InputStreamEntity entity = new InputStreamEntity(new ByteArrayInputStream(requestBuffer.getData(), 0, requestBuffer.getBytesWritten()), requestBuffer.getBytesWritten());
       request.setEntity(entity);
       request.addHeader("Accept", "application/x-thrift");
       request.addHeader("User-Agent", userAgent == null ? "Java/THttpClient"

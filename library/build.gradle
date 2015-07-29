@@ -9,6 +9,9 @@ dependencies {
     
     compile 'net.vrallev.android:android-task:1.0.4'
     compile 'com.squareup.okhttp:okhttp:2.4.0'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.assertj:assertj-core:1.7.1'
 }
 
 android {

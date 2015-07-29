@@ -13,7 +13,6 @@ import com.squareup.okhttp.internal.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -110,7 +109,7 @@ public class TAndroidTransport extends TTransport {
 
             @Override
             public void writeTo(BufferedSink sink) throws IOException {
-                copy(mByteStore.getInputStream(), sink.outputStream());
+                sink.write(mByteStore.getData(), 0, mByteStore.getBytesWritten());
             }
         };
 
@@ -166,14 +165,5 @@ public class TAndroidTransport extends TTransport {
     public void close() {
         Util.closeQuietly(mResponseBody);
         mResponseBody = null;
-    }
-
-    protected void copy(InputStream inputStream, OutputStream outputStream) throws IOException {
-        byte[] buffer = new byte[4096];
-        int read;
-
-        while ((read = inputStream.read(buffer)) >= 0) {
-            outputStream.write(buffer, 0, read);
-        }
     }
 }

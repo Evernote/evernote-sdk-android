@@ -30,8 +30,6 @@ import android.support.annotation.NonNull;
 
 import com.squareup.okhttp.internal.Util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -53,17 +51,17 @@ public class DiskBackedByteStore extends ByteStore {
      */
     protected final int mMaxMemory;
     protected final File mCacheDir;
+    protected final LazyByteArrayOutputStream mByteArrayOutputStream;
 
     protected File mCacheFile;
-
     protected OutputStream mCurrentOutputStream;
     protected FileOutputStream mFileOutputStream;
-    protected ByteArrayOutputStream mByteArrayOutputStream;
 
     protected int mBytesWritten;
     protected boolean mClosed;
 
-    protected InputStream mInputStream;
+    protected byte[] mData;
+    protected byte[] mFileBuffer;
 
     /**
      * @param cacheDir A directory where the temporary data is stored.
@@ -72,6 +70,8 @@ public class DiskBackedByteStore extends ByteStore {
     protected DiskBackedByteStore(File cacheDir, int maxMemory) {
         mCacheDir = cacheDir;
         mMaxMemory = maxMemory;
+        mByteArrayOutputStream = new LazyByteArrayOutputStream();
+        mCurrentOutputStream = mByteArrayOutputStream;
     }
 
     @Override
@@ -92,23 +92,17 @@ public class DiskBackedByteStore extends ByteStore {
         mBytesWritten++;
     }
 
-    protected String generateRandomFileName() {
-        return Math.random() * Long.MAX_VALUE + ".tft";
-    }
-
     private void initBuffers() throws IOException {
         if (mClosed) {
             throw new IOException("Already closed");
         }
-        if (mCurrentOutputStream != null) {
-            return;
-        }
 
-        if (mByteArrayOutputStream == null) {
-            mByteArrayOutputStream = new ByteArrayOutputStream(mMaxMemory);
-        }
         if (mCurrentOutputStream == null) {
-            mCurrentOutputStream = mByteArrayOutputStream;
+            if (swapped()) {
+                mCurrentOutputStream = mFileOutputStream;
+            } else {
+                mCurrentOutputStream = mByteArrayOutputStream;
+            }
         }
     }
 
@@ -122,7 +116,7 @@ public class DiskBackedByteStore extends ByteStore {
         return !swapped() && mBytesWritten + delta > mMaxMemory;
     }
 
-    private boolean swapped() {
+    protected boolean swapped() {
         return mBytesWritten > mMaxMemory;
     }
 
@@ -134,12 +128,11 @@ public class DiskBackedByteStore extends ByteStore {
             throw new IOException("cache dir is no directory");
         }
 
-        mCacheFile = new File(mCacheDir, generateRandomFileName());
+        mCacheFile = File.createTempFile("byte_store", null, mCacheDir);
         mFileOutputStream = new FileOutputStream(mCacheFile);
 
         mByteArrayOutputStream.writeTo(mFileOutputStream);
-        Util.closeQuietly(mByteArrayOutputStream);
-        mByteArrayOutputStream = null;
+        mByteArrayOutputStream.reset();
 
         mCurrentOutputStream = mFileOutputStream;
     }
@@ -148,7 +141,7 @@ public class DiskBackedByteStore extends ByteStore {
     public void close() throws IOException {
         if (!mClosed) {
             Util.closeQuietly(mFileOutputStream);
-            Util.closeQuietly(mByteArrayOutputStream);
+            mByteArrayOutputStream.reset();
             mClosed = true;
         }
     }
@@ -159,27 +152,32 @@ public class DiskBackedByteStore extends ByteStore {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
-        if (mInputStream != null) {
-            return mInputStream;
+    public byte[] getData() throws IOException {
+        if (mData != null) {
+            return mData;
         }
 
         close();
 
-        if (mByteArrayOutputStream != null) {
-            mInputStream = new ByteArrayInputStream(mByteArrayOutputStream.toByteArray());
+        if (swapped()) {
+            if (mFileBuffer == null || mFileBuffer.length < mBytesWritten) {
+                mFileBuffer = new byte[mBytesWritten];
+            }
+
+            readFile(mCacheFile, mFileBuffer, mBytesWritten);
+            mData = mFileBuffer;
+
         } else {
-            mInputStream = new FileInputStream(mCacheFile);
+            mData = mByteArrayOutputStream.toByteArray();
         }
 
-        return mInputStream;
+        return mData;
     }
 
     @Override
     public void reset() throws IOException {
         try {
             close();
-            Util.closeQuietly(mInputStream);
 
             if (mCacheFile != null && mCacheFile.isFile()) {
                 if (!mCacheFile.delete()) {
@@ -187,12 +185,31 @@ public class DiskBackedByteStore extends ByteStore {
                 }
             }
         } finally {
-            mByteArrayOutputStream = null;
             mFileOutputStream = null;
             mCurrentOutputStream = null;
-            mInputStream = null;
             mBytesWritten = 0;
             mClosed = false;
+            mData = null;
+        }
+    }
+
+    private static void readFile(File file, byte[] buffer, int length) throws IOException {
+        InputStream inputStream = null;
+        try {
+            inputStream = new FileInputStream(file);
+
+            int read = 0;
+            int offset = 0;
+
+            while (length > 0 && read >= 0) {
+                read = inputStream.read(buffer, offset, length);
+                offset += read;
+                length -= read;
+            }
+
+
+        } finally {
+            Util.closeQuietly(inputStream);
         }
     }
 

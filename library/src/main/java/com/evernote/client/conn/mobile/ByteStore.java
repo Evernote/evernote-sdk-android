@@ -1,7 +1,6 @@
 package com.evernote.client.conn.mobile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
@@ -19,9 +18,13 @@ public abstract class ByteStore extends OutputStream {
     public abstract int getBytesWritten();
 
     /**
-     * @return An {@link InputStream} to read the data from this instance.
+     * The returned byte buffer very likely has a different size than the bytes written. If you want
+     * to read the data from the buffer only use the first {@link #getBytesWritten()} bytes with no
+     * offset.
+     *
+     * @return A byte array containing the data from the byte store.
      */
-    public abstract InputStream getInputStream() throws IOException;
+    public abstract byte[] getData() throws IOException;
 
     /**
      * Reset all pointers.

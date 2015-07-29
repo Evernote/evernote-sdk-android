@@ -28,12 +28,7 @@ package com.evernote.client.conn.mobile;
 
 import android.support.annotation.NonNull;
 
-import com.squareup.okhttp.internal.Util;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * Holds all the data in memory.
@@ -42,20 +37,20 @@ import java.io.InputStream;
  */
 public class MemoryByteStore extends ByteStore {
 
-    private ByteArrayOutputStream mByteArrayOutputStream;
+    protected final LazyByteArrayOutputStream mByteArrayOutputStream;
 
     protected int mBytesWritten;
     protected boolean mClosed;
 
-    protected InputStream mInputStream;
+    protected byte[] mData;
 
     protected MemoryByteStore() {
-        // no op
+        mByteArrayOutputStream = new LazyByteArrayOutputStream();
     }
 
     @Override
     public void write(@NonNull byte[] buffer, int offset, int count) throws IOException {
-        initBuffers();
+        checkNotClosed();
 
         mByteArrayOutputStream.write(buffer, offset, count);
         mBytesWritten += count;
@@ -63,25 +58,22 @@ public class MemoryByteStore extends ByteStore {
 
     @Override
     public void write(int oneByte) throws IOException {
-        initBuffers();
+        checkNotClosed();
 
         mByteArrayOutputStream.write(oneByte);
         mBytesWritten++;
     }
 
-    private void initBuffers() throws IOException {
+    private void checkNotClosed() throws IOException {
         if (mClosed) {
             throw new IOException("Already closed");
-        }
-        if (mByteArrayOutputStream == null) {
-            mByteArrayOutputStream = new ByteArrayOutputStream();
         }
     }
 
     @Override
     public void close() throws IOException {
         if (!mClosed) {
-            Util.closeQuietly(mByteArrayOutputStream);
+            mByteArrayOutputStream.reset();
             mClosed = true;
         }
     }
@@ -92,26 +84,24 @@ public class MemoryByteStore extends ByteStore {
     }
 
     @Override
-    public InputStream getInputStream() throws IOException {
-        if (mInputStream != null) {
-            return mInputStream;
+    public byte[] getData() throws IOException {
+        if (mData != null) {
+            return mData;
         }
 
         close();
 
-        mInputStream = new ByteArrayInputStream(mByteArrayOutputStream.toByteArray());
-        return mInputStream;
+        mData = mByteArrayOutputStream.toByteArray();
+        return mData;
     }
 
     @Override
     public void reset() throws IOException {
         try {
             close();
-            Util.closeQuietly(mInputStream);
 
         } finally {
-            mByteArrayOutputStream = null;
-            mInputStream = null;
+            mData = null;
             mBytesWritten = 0;
             mClosed = false;
         }
