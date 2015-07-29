@@ -235,7 +235,7 @@ public class EvernoteClientFactory {
         EvernoteNoteStoreClient client = getNoteStoreClient(mBusinessAuthenticationResult.getNoteStoreUrl(), mBusinessAuthenticationResult.getAuthenticationToken());
 
         User businessUser = mBusinessAuthenticationResult.getUser();
-        return new EvernoteBusinessNotebookHelper(client, mExecutorService, businessUser.getName(), businessUser.getShardId());
+        return new EvernoteBusinessNotebookHelper(client, mExecutorService, businessUser.getUsername(), businessUser.getShardId());
     }
 
     /**
