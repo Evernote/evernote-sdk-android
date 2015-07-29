@@ -3,6 +3,7 @@ package com.evernote.android.demo.fragment.notebook;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -13,7 +14,6 @@ import android.view.ViewGroup;
 
 import com.evernote.android.demo.R;
 import com.evernote.android.demo.activity.MainActivity;
-import com.evernote.android.demo.view.SlidingTabLayout;
 
 /**
  * @author rwondratschek
@@ -21,8 +21,7 @@ import com.evernote.android.demo.view.SlidingTabLayout;
 public class NotebookTabsFragment extends Fragment {
 
     private MyViewPagerAdapter mViewPagerAdapter;
-    private SlidingTabLayout mTabs;
-    private ViewPager mViewPager;
+    private TabLayout mTabs;
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -30,6 +29,7 @@ public class NotebookTabsFragment extends Fragment {
 
         FragmentActivity activity = getActivity();
         if (activity instanceof MainActivity) {
+            //noinspection ConstantConditions
             ((MainActivity) activity).getSupportActionBar().setTitle(R.string.notebooks);
         }
     }
@@ -41,21 +41,19 @@ public class NotebookTabsFragment extends Fragment {
 
         mViewPagerAdapter = new MyViewPagerAdapter(getActivity());
 
-        mViewPager = (ViewPager) view.findViewById(R.id.pager);
-        mViewPager.setAdapter(mViewPagerAdapter);
+        ViewPager viewPager = (ViewPager) view.findViewById(R.id.pager);
+        viewPager.setAdapter(mViewPagerAdapter);
 
-        mTabs = (SlidingTabLayout) view.findViewById(R.id.tabs);
-        mTabs.setDistributeEvenly(true);
-
-        final int toolbarTextColor = getResources().getColor(R.color.tb_text);
-        mTabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
+        mTabs = (TabLayout) view.findViewById(R.id.tabs);
+        mTabs.post(new Runnable() {
             @Override
-            public int getIndicatorColor(int position) {
-                return toolbarTextColor;
+            public void run() {
+                mTabs.setTabsFromPagerAdapter(mViewPagerAdapter);
             }
         });
 
-        mTabs.setViewPager(mViewPager);
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabs));
+        mTabs.setOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
 
         return view;
     }
