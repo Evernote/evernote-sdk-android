@@ -1,3 +1,8 @@
+## 2.0.0-RC3 / 2015-7-31
+
+* Remove custom Yinxiang API
+* Fix wrong username for business notebook helper
+
 ## 2.0.0-RC2 / 2015-6-5
 
 * Add fallback if multiple bootstrap profiles are supported (necessary for Chinese users)
