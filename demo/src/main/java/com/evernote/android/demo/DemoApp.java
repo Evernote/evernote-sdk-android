@@ -62,6 +62,8 @@ public class DemoApp extends Application {
         new EvernoteSession.Builder(this)
                 .setEvernoteService(EVERNOTE_SERVICE)
                 .setSupportAppLinkedNotebooks(SUPPORT_APP_LINKED_NOTEBOOKS)
+                .setForceAuthenticationInThirdPartyApp(true)
+//                .setLocale(Locale.SIMPLIFIED_CHINESE)
                 .build(consumerKey, consumerSecret)
                 .asSingleton();
 

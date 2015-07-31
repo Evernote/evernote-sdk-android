@@ -3,6 +3,7 @@ package com.evernote.client.conn.mobile;
 import android.annotation.SuppressLint;
 
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -88,7 +89,6 @@ public class DiskBackedByteStoreTest {
         testRandomLengthSwap(byteStore, length);
     }
 
-    @SuppressLint("Assert")
     @Test
     public void testClose() throws IOException {
         int length = ONE_MB;
@@ -97,6 +97,7 @@ public class DiskBackedByteStoreTest {
     }
 
     @Test
+    @Ignore
     public void testRepetition() throws IOException {
         int length = ONE_MB;
         DiskBackedByteStore byteStore = new DiskBackedByteStore(getCacheDir(), length);
@@ -114,6 +115,7 @@ public class DiskBackedByteStoreTest {
     }
 
     @Test
+    @Ignore
     public void testParallelism() throws InterruptedException, ExecutionException, TimeoutException {
         int threadCount = 4;
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);

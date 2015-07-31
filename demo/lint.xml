@@ -2,6 +2,7 @@
 <lint>
     <issue id="InvalidPackage" severity="ignore" />
     <issue id="IconMissingDensityFolder" severity="ignore" />
+    <issue id="IconDensities" severity="ignore" />
     <issue id="RtlEnabled" severity="ignore" />
     <issue id="IconColors">
         <ignore path="src/main/res/drawable-hdpi/ic_action_search.png" />
