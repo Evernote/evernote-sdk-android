@@ -38,7 +38,6 @@ import com.evernote.client.android.helper.EvernotePreconditions;
 import com.evernote.client.android.login.EvernoteLoginActivity;
 import com.evernote.client.android.login.EvernoteLoginFragment;
 
-import java.io.File;
 import java.util.Locale;
 
 /**
@@ -83,12 +82,6 @@ public final class EvernoteSession {
     public static final String SCREEN_NAME_INTERNATIONAL = "Evernote International";
 
     /**
-     * @deprecated Use {@link EvernoteSession#REQUEST_CODE_LOGIN} instead.
-     */
-    @Deprecated
-    public static final int REQUEST_CODE_OAUTH = 14390;
-
-    /**
      * The used request code when you launch authentication process from a {@link Activity}. Override
      * {@link Activity#onActivityResult(int, int, Intent)} to receive the result.
      */
@@ -102,50 +95,10 @@ public final class EvernoteSession {
         return sInstance;
     }
 
-    /**
-     * Use to acquire a singleton instance of the EvernoteSession for authentication.
-     * If the singleton has already been initialized, the existing instance will
-     * be returned (and the parameters passed to this method will be ignored).
-     *
-     * @param ctx                       Application Context or activity
-     * @param consumerKey               The consumer key portion of your application's API key.
-     * @param consumerSecret            The consumer secret portion of your application's API key.
-     * @param evernoteService           The enum of the Evernote service instance that you wish
-     *                                  to use. Development and testing is typically performed against {@link EvernoteService#SANDBOX}.
-     *                                  The production Evernote service is {@link EvernoteService#HOST_PRODUCTION}
-     * @param supportAppLinkedNotebooks true if you want to allow linked notebooks for
-     *                                  applications which can only access a single notebook.
-     * @return The EvernoteSession singleton instance.
-     * @throws IllegalArgumentException
-     * @deprecated Use the {@link Builder} instead and call {@link EvernoteSession#asSingleton()}.
-     */
-    @Deprecated
-    public static EvernoteSession getInstance(Context ctx,
-                                              String consumerKey,
-                                              String consumerSecret,
-                                              EvernoteService evernoteService,
-                                              boolean supportAppLinkedNotebooks) {
-
-        if (sInstance == null) {
-            synchronized (EvernoteSession.class) {
-                if (sInstance == null) {
-                    new Builder(ctx)
-                        .setEvernoteService(evernoteService)
-                        .setSupportAppLinkedNotebooks(supportAppLinkedNotebooks)
-                        .build(consumerKey, consumerSecret)
-                        .asSingleton();
-                }
-            }
-        }
-
-        return sInstance;
-    }
-
     private Context mApplicationContext;
     private String mConsumerKey;
     private String mConsumerSecret;
     private EvernoteService mEvernoteService;
-    @SuppressWarnings("deprecation")private ClientFactory mClientFactory;
     private AuthenticationResult mAuthenticationResult;
     private boolean mSupportAppLinkedNotebooks;
     private boolean mForceAuthenticationInThirdPartyApp;
@@ -163,16 +116,6 @@ public final class EvernoteSession {
      */
     protected EvernoteService getEvernoteService() {
         return mEvernoteService;
-    }
-
-    /**
-     * Use this to create {@link AsyncNoteStoreClient} and {@link AsyncUserStoreClient}.
-     * @deprecated Use {@link #getEvernoteClientFactory()} instead.
-     */
-    @SuppressWarnings("deprecation")
-    @Deprecated
-    public ClientFactory getClientFactory() {
-        return mClientFactory;
     }
 
     /**
@@ -384,11 +327,6 @@ public final class EvernoteSession {
         private boolean mSupportAppLinkedNotebooks;
         private Locale mLocale;
 
-        @Deprecated
-        private String mUserAgent;
-        @Deprecated
-        private File mMessageCacheDir;
-
         private boolean mForceAuthenticationInThirdPartyApp;
 
         /**
@@ -400,10 +338,6 @@ public final class EvernoteSession {
             mContext = context.getApplicationContext();
             mSupportAppLinkedNotebooks = true;
             mEvernoteService = EvernoteService.SANDBOX;
-            //noinspection deprecation
-            mUserAgent = EvernoteUtil.generateUserAgentString(mContext);
-            //noinspection deprecation
-            mMessageCacheDir = mContext.getFilesDir();
 
             mLocale = Locale.getDefault();
         }
@@ -468,21 +402,6 @@ public final class EvernoteSession {
             return this;
         }
 
-        @SuppressWarnings("deprecation")
-        @Deprecated
-        private Builder setUserAgent(String userAgent) {
-            // maybe set this to public
-            mUserAgent = userAgent;
-            return this;
-        }
-
-        @SuppressWarnings("deprecation")
-        @Deprecated
-        private Builder setMessageCacheDir(File messageCacheDir) {
-            mMessageCacheDir = messageCacheDir;
-            return this;
-        }
-
         /**
          * Creates a new instance with this consumer key and secret pair.
          *
@@ -518,8 +437,6 @@ public final class EvernoteSession {
             session.mApplicationContext = mContext;
             session.mLocale = mLocale;
             session.mSupportAppLinkedNotebooks = mSupportAppLinkedNotebooks;
-            //noinspection deprecation
-            session.mClientFactory = new ClientFactory(mUserAgent, mMessageCacheDir);
             session.mEvernoteService = mEvernoteService;
             session.mForceAuthenticationInThirdPartyApp = mForceAuthenticationInThirdPartyApp;
             return session;
