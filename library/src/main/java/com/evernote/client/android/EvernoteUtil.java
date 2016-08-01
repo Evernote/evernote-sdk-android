@@ -296,11 +296,11 @@ public final class EvernoteUtil {
         for (Signature signature : packageInfo.signatures) {
             digest.update(signature.toByteArray());
             String appSignature = encodeBase64(digest.digest());
-            if (!EVERNOTE_SIGNATURE.equals(appSignature)) {
-                return EvernoteInstallStatus.NOT_INSTALLED;
+            if (EVERNOTE_SIGNATURE.equals(appSignature)) {
+                return EvernoteInstallStatus.INSTALLED;
             }
         }
-        return EvernoteInstallStatus.INSTALLED;
+        return EvernoteInstallStatus.NOT_INSTALLED;
     }
 
     /**
