@@ -35,7 +35,7 @@ android {
 
 dependencies {
     compile project(':library')
-    compile 'com.android.support:recyclerview-v7:22.2.1'
-    compile 'com.android.support:design:22.2.1'
+    compile "com.android.support:recyclerview-v7:$rootProject.ext.supportLibVersion"
+    compile "com.android.support:design:$rootProject.ext.supportLibVersion"
     compile 'com.evernote:android-intent:1.0.1'
 }
