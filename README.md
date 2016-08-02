@@ -1,4 +1,4 @@
-Evernote SDK for Android version 2.0.0-RC3
+Evernote SDK for Android version 2.0.0-RC4
 ==========================================
 
 Evernote API version 1.25
@@ -24,7 +24,7 @@ Add the library as a dependency in your build.gradle file.
 
 ```groovy
 dependencies {
-    compile 'com.evernote:android-sdk:2.0.0-RC3'
+    compile 'com.evernote:android-sdk:2.0.0-RC4'
 }
 ```
 

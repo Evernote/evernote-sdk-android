@@ -25,13 +25,18 @@
  */
 package com.evernote.client.android;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.pm.Signature;
 import android.os.Build;
 import android.os.Looper;
+import android.support.annotation.Nullable;
+import android.util.Base64;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.ValueCallback;
@@ -100,6 +105,7 @@ public final class EvernoteUtil {
     private static final MessageDigest HASH_DIGEST;
 
     private static final String PACKAGE_NAME = "com.evernote";
+    private static final String EVERNOTE_SIGNATURE = "XS7HhF3x8-kho4iOnAQIdP7_m4UsbRKgaEAr1HaXwnc=";
 
     static {
         MessageDigest messageDigest;
@@ -253,7 +259,7 @@ public final class EvernoteUtil {
 
         List<ResolveInfo> resolveInfos = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
         if (!resolveInfos.isEmpty()) {
-            return EvernoteInstallStatus.INSTALLED;
+            return validateSignature(packageManager);
         }
 
         try {
@@ -264,6 +270,37 @@ public final class EvernoteUtil {
         } catch (Exception e) {
             return EvernoteInstallStatus.NOT_INSTALLED;
         }
+    }
+
+    @SuppressLint("PackageManagerGetSignatures")
+    private static EvernoteInstallStatus validateSignature(PackageManager packageManager) {
+        MessageDigest digest = getSha256Digest();
+        if (digest == null) {
+            // can't compare signatures
+            return EvernoteInstallStatus.NOT_INSTALLED;
+        }
+
+        PackageInfo packageInfo;
+        try {
+            packageInfo = packageManager.getPackageInfo(PACKAGE_NAME, PackageManager.GET_SIGNATURES);
+        } catch (PackageManager.NameNotFoundException e) {
+            return EvernoteInstallStatus.NOT_INSTALLED;
+        }
+
+        if (packageInfo.signatures == null || packageInfo.signatures.length == 0) {
+            // must have at least one signature
+            return EvernoteInstallStatus.NOT_INSTALLED;
+        }
+
+        // check all signatures
+        for (Signature signature : packageInfo.signatures) {
+            digest.update(signature.toByteArray());
+            String appSignature = encodeBase64(digest.digest());
+            if (EVERNOTE_SIGNATURE.equals(appSignature)) {
+                return EvernoteInstallStatus.INSTALLED;
+            }
+        }
+        return EvernoteInstallStatus.NOT_INSTALLED;
     }
 
     /**
@@ -357,5 +394,18 @@ public final class EvernoteUtil {
         public EvernoteUtilException(String message, Throwable cause) {
             super(message, cause);
         }
+    }
+
+    @Nullable
+    private static MessageDigest getSha256Digest() {
+        try {
+            return MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException ignored) {
+            return null;
+        }
+    }
+
+    private static String encodeBase64(byte[] data) {
+        return Base64.encodeToString(data, Base64.NO_WRAP | Base64.URL_SAFE);
     }
 }
