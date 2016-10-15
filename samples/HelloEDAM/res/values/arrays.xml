@@ -3,5 +3,6 @@
     <string-array name="esdk__main_list">
         <item>@string/esdk__image_picker</item>
         <item>@string/esdk__simple_note</item>
+        <item>@string/esdk__search_notes</item>
     </string-array>
 </resources>
