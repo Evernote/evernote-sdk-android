@@ -116,6 +116,12 @@ import java.util.concurrent.TimeUnit;
                     }
                 }
 
+                //start by cuishuo1 add for if china is default, then don't need switch product
+                if (EvernoteSession.HOST_CHINA.contains(mBootstrapProfiles.get(0).getSettings().getServiceHost())) {
+                    showBootstrapOption = false;
+                }
+                //end by cuishuo1
+
                 if (showBootstrapOption) {
                     for (int i = 0; i < mBootstrapProfiles.size(); i++) {
                         if (mBootstrapProfile.equals(mBootstrapProfiles.get(i))) {

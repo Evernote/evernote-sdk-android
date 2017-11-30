@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="esdk_loading">Loading…</string>
-    <string name="esdk_switch_to">Switch to %s</string>
+    <string name="esdk_switch_to">Switch to <xliff:g example="Name" id="name">%s</xliff:g></string>
 </resources>
