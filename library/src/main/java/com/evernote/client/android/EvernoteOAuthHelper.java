@@ -117,14 +117,16 @@ public class EvernoteOAuthHelper {
     }
 
     public Intent startAuthorization(Activity activity) {
+        //modify by cuishuo1 for a problem while creating a connection to the remote service
         try {
             initialize();
+            createRequestToken();
         } catch (Exception e) {
             CAT.e(e);
             return null;
         }
+        //end by cuishuo1
 
-        createRequestToken();
         String authorizationUrl = createAuthorizationUrl(mRequestToken);
         return EvernoteUtil.createAuthorizationIntent(activity, authorizationUrl, mSession.isForceAuthenticationInThirdPartyApp());
     }

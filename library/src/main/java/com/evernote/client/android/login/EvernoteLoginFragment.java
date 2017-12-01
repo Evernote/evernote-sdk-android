@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.evernote.androidsdk.R;
 import com.evernote.client.android.EvernoteOAuthHelper;
@@ -19,6 +20,7 @@ import com.evernote.client.android.EvernoteSession;
 import net.vrallev.android.task.TaskExecutor;
 import net.vrallev.android.task.TaskResult;
 
+import java.lang.reflect.Field;
 import java.util.Locale;
 
 /**
@@ -114,6 +116,32 @@ public class EvernoteLoginFragment extends DialogFragment implements EvernoteLog
         return progressDialog;
     }
 
+    /*
+     * cuishuo1: custom ProgressDialog for different devices
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+        ProgressDialog dialog = (ProgressDialog) getDialog();
+        if (dialog != null) {
+            Button button = dialog.getButton(DialogInterface.BUTTON_NEGATIVE);
+            if (button != null) {
+                button.setTextAppearance(android.R.style.TextAppearance_Medium);
+            }
+            try {
+                Class dialogClass = dialog.getClass();
+                Field field = dialogClass.getDeclaredField("mMessageView");
+                field.setAccessible(true);
+                TextView messageView = (TextView) field.get(dialog);
+                messageView.setTextAppearance(android.R.style.TextAppearance_Medium);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -166,6 +194,7 @@ public class EvernoteLoginFragment extends DialogFragment implements EvernoteLog
                 Button button = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
 
                 if (!TextUtils.isEmpty(bootstrapScreenName)) {
+                    button.setTextAppearance(android.R.style.TextAppearance_Medium);
                     button.setText(getString(R.string.esdk_switch_to, bootstrapScreenName));
                     button.setVisibility(View.VISIBLE);
                     button.setOnClickListener(new View.OnClickListener() {
