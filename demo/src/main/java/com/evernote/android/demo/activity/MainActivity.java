@@ -88,8 +88,9 @@ public class MainActivity extends AppCompatActivity {
         });
         navigationView.getMenu().findItem(mSelectedNavItem).setChecked(true);
 
-        mTextViewUserName = (TextView) findViewById(R.id.textView_user_name);
-        findViewById(R.id.nav_drawer_header_container).setOnClickListener(new View.OnClickListener() {
+        LinearLayout navHeader = (LinearLayout) navigationView.getHeaderView(0);
+        mTextViewUserName = (TextView) navHeader.findViewById(R.id.textView_user_name);
+        navHeader.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mUser != null) {
