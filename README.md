@@ -37,7 +37,7 @@ maven {
 }
 ```
 
-Add the snapshot depdendency.
+Add the snapshot dependency.
 ```groovy
 dependencies {
     compile 'com.evernote:android-sdk:2.0.0-SNAPSHOT'
