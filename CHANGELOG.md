@@ -1,7 +1,3 @@
-## 2.0.0-RC4 / 2015-8-01
-* Remove default http client and deprecated methods
-* Validate app signature
-
 ## 2.0.0-RC3 / 2015-7-31
 
 * Remove custom Yinxiang API

@@ -66,6 +66,17 @@ afterEvaluate { project ->
 
                     developers {
                         developer {
+                            name 'Ty Smith'
+                            email 'tsmith@evernote.com'
+                            id 'tylersmithnet'
+                            url 'http://tysmith.me'
+                            timezone '-5'
+                            roles {
+                                role 'developer'
+                            }
+                        }
+
+                        developer {
                             name 'Seth Hitchings'
                             email 'seth@evernote.com'
                             id 'sethhitch'
